@@ -20,10 +20,6 @@ namespace PatenteN.Quiz.Application.Web.Models
         public string Phone { get; set; }
 
         [Required]
-        [Display(Name = "Candidate ID")]
-        public string Candidate_ID { get; set; }
-
-        [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 

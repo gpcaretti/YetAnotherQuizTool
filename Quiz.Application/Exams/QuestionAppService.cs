@@ -8,50 +8,54 @@ using PatenteN.Quiz.Domain;
 using PatenteN.Quiz.Domain.Exams;
 
 namespace PatenteN.Quiz.Application.Exams {
-    public class QuestionAppService : QuizApplicationService<Question, QuestionDto>, IQuestionAppService {
+    public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
 
         public QuestionAppService(QuizDBContext dbContext, IMapper mapper) : base(dbContext, mapper) {
         }
 
-        public async Task<QnADto> GetQuestionList(int ExamID) {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ExamId"></param>
+        /// <returns></returns>
+        public async Task<QnADto> GetQuestionListByExam(Guid ExamId) {
             IList<QuestionDetailsDto> qListDto = new List<QuestionDetailsDto>();
 
-            string examName = await _dbContext.Exam.Where(e => e.ExamID == ExamID).Select(o => o.Name).SingleOrDefaultAsync();
-            var questions = await _dbContext.Question.Where(q => q.ExamID == ExamID).ToListAsync();
+            string examName = await _dbContext.Exams.Where(e => e.Id == ExamId).Select(o => o.Name).SingleOrDefaultAsync();
+            var questions = await _dbContext.Questions.Where(q => q.ExamId == ExamId).ToListAsync();
             foreach (var qItem in questions) {
+                // get question's details
                 IList<OptionDetailsDto> optDetailsDto = new List<OptionDetailsDto>();
-                var qDetailsDto = new QuestionDetailsDto();
-                qDetailsDto.QuestionID = qItem.QuestionID;
-                qDetailsDto.QuestionType = qItem.QuestionType;
-                qDetailsDto.QuestionText = qItem.DisplayText;
-
-                var options = await _dbContext.Choice
-                    .Where(q => q.QuestionID == qItem.QuestionID).Select(o => new { OptionID = o.ChoiceID, Option = o.DisplayText })
+                var qDetailsDto = new QuestionDetailsDto {
+                    QuestionId = qItem.Id,
+                    QuestionText = qItem.Statement,
+                };
+                // get question answers
+                var options = await _dbContext.Choices
+                    .Where(q => q.QuestionId == qItem.Id).Select(o => new { OptionId = o.Id, Option = o.Statement })
                     .ToListAsync();
 
-                foreach (var optItem in options) {
-                    var optDto = new OptionDetailsDto() {
-                        OptionID = optItem.OptionID,
-                        Option = optItem.Option
-                    };
-                    optDetailsDto.Add(optDto);
-                }
-                qDetailsDto.options = optDetailsDto;
+                qDetailsDto.options = options
+                    .Select(c => new OptionDetailsDto() {
+                                        OptionId = c.OptionId,
+                                        Option = c.Option,
+                                    })
+                    .ToList();
 
-                var ans = await _dbContext.Answer
-                    .Where(q => q.QuestionID == qItem.QuestionID).Select(o => new { AnswerID = o.Sl_No, OptionID = o.ChoiceID, Answer = o.DisplayText, })
-                    .FirstOrDefaultAsync();
-                qDetailsDto.answer = new AnswerDetailsDto() {
-                    AnswarID = ans.AnswerID,
-                    OptionID = ans.OptionID,
-                    Answar = ans.Answer
-                };
+                //var ans = await _dbContext.Answers
+                //    .Where(q => q.QuestionId == qItem.Id).Select(o => new { AnswerId = o.Id, OptionId = o.ChoiceId, Answer = o.Statement, })
+                //    .FirstOrDefaultAsync();
+                //qDetailsDto.answer = new AnswerDetailsDto() {
+                //    AnswerId = ans.AnswerId,
+                //    OptionId = ans.OptionId,
+                //    Answer = ans.Answer
+                //};
 
                 qListDto.Add(qDetailsDto);
             }
 
             return new QnADto() {
-                ExamID = ExamID,
+                ExamId = ExamId,
                 Exam = examName,
                 questions = qListDto
             };

@@ -1,25 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PatenteN.Quiz.Domain.Exams
-{
-   public class Exam:BaseEntity
-    {
-        [Key]
-        public int ExamID { get; set; }
+namespace PatenteN.Quiz.Domain.Exams {
+    public class Exam : BaseEntity<Guid> {
+        public Exam(Guid id)
+            : base(id) {
+        }
 
-        [Column(TypeName = "varchar(1000)")]
+        [ForeignKey(nameof(Ancestor))]
+        public Guid? AncestorId { get; set; }
+
+        [MaxLength(1024)]
         public string Name { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal FullMarks { get; set; }
+        [MaxLength(16)]
+        public string? Code { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Duration { get; set; }
+        [DefaultValue(false)]
+        public decimal FullMarks { get; set; } = 100;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Duration { get; set; }
+
+        public Exam Ancestor { get; set; }
     }
 }

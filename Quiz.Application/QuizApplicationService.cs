@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using PatenteN.Quiz.Domain;
-using PatenteN.Quiz.Domain.Users;
 
 namespace PatenteN.Quiz.Application {
-    public class QuizApplicationService<TEntity, TEntityDto> : IQuizApplicationService<TEntity, TEntityDto> where TEntity : BaseEntity {
+    public class QuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
+        : IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
+        where TEntity : BaseEntity<TPrimaryKey> {
 
         protected readonly QuizDBContext _dbContext;
         protected readonly DbSet<TEntity> _dbSet;
@@ -22,22 +23,22 @@ namespace PatenteN.Quiz.Application {
             _mapper = mapper;
         }
 
-        public virtual async Task<TEntityDto> FindById(int id) {
+        public virtual async Task<TEntityDto> FindById(TPrimaryKey id) {
             var entity = await _dbSet.FindAsync(id);
             return (entity != null) ? _mapper.Map<TEntityDto>(entity) : default(TEntityDto);
         }
 
-        public virtual async Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> search = null) {
+        public virtual async Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> predicate = null) {
             IQueryable<TEntity> query = _dbSet;
-            var entity = await query.FirstOrDefaultAsync(search);
+            var entity = await query.FirstOrDefaultAsync(predicate);
             return (entity != null) ? _mapper.Map<TEntityDto>(entity) : default(TEntityDto);
         }
 
-        public async Task<ICollection<TEntityDto>> Search(Expression<Func<TEntity, bool>> search = null) {
+        public async Task<ICollection<TEntityDto>> Search(Expression<Func<TEntity, bool>> predicate = null, string orderBy = null) {
             IQueryable<TEntity> query = _dbSet;
-            if (search != null) {
-                query = query.Where(search);
-            }
+            if (predicate != null) query = query.Where(predicate);
+            if (orderBy != null) query = query.OrderBy(orderBy);
+
             var entities = await query.ToListAsync();
             return _mapper.Map<TEntityDto[]>(entities);
         }
@@ -57,13 +58,13 @@ namespace PatenteN.Quiz.Application {
 
         public virtual async Task<int> Create(TEntityDto dto) {
             TEntity entity = _mapper.Map<TEntityDto, TEntity>(dto);
-            entity.CreatedOn = DateTime.Now;
+            entity.CreatedOn = DateTimeOffset.Now;
 
             _dbSet.Add(entity);
             return await _dbContext.SaveChangesAsync();
         }
 
-        public virtual async Task<int> Delete(int id) {
+        public virtual async Task<int> Delete(TPrimaryKey id) {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null) return 0;
             _dbSet.Remove(entity);

@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ignores from my local repo
+#[Dd]esktop.ini
+[Cc]lients/[Ii]mporter/
+[Uu]ploadedFiles/

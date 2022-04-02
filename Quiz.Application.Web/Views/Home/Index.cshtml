@@ -3,7 +3,7 @@
     ViewData["Title"] = "Home Page";
 }
 
-@Html.HiddenFor(c => c.Candidate_ID)
+@Html.HiddenFor(c => c.Id)
 
 <!-- Page Container -->
 <div class="w3-container w3-content" style="max-width:1400px;margin-top:80px">
@@ -26,7 +26,7 @@
                         }
                     </p>
                     <hr>
-                    <p><i class="fa fa-address-card fa-fw w3-margin-right w3-text-theme"></i><lable id="eqCandidateID">@Model.Candidate_ID</lable></p>
+                    <p><i class="fa fa-address-card fa-fw w3-margin-right w3-text-theme"></i><lable id="eqCandidateId">@Model.Id</lable></p>
                     <p><i class="fa fa-user fa-fw w3-margin-right w3-text-theme"></i>@Model.Name</p>
                     <p><i class="fa fa-phone fa-fw w3-margin-right w3-text-theme"></i>@Model.Phone</p>
                     <p><i class="fa fa-paper-plane fa-fw w3-margin-right w3-text-theme"></i>@Model.Email</p>            

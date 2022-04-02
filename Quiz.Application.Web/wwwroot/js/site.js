@@ -3,11 +3,11 @@
 // Write your JavaScript code.
 $(document).ready(function () {
 	
-	var ExmID = 0;
+	var ExmId = 0;
 	var Score = null;
 	var Status = null;
-	var QuestionID = 0;
-	var AnswerID = 0;
+	var QuestionId = 0;
+	var AnswerId = 0;
 	var Duration = 0;
 	var index = 0;
 	var qIndex = 0;
@@ -96,25 +96,38 @@ $(document).ready(function () {
 		url: "/api/Exams",
 		data: "{}",
 		success: function (data) {
-		   var string = '<option value="-1">--- Please Select ---</option>';
-		   for (var i = 0; i < data.length; i++) { string += '<option value="' + data[i].examID + '">' + data[i].name + '</option>'; }
+			var string = '<option value="">--- Please Select ---</option>';
+			//let tabs = "";
+			for (var i = 0; i < data.length; i++) {
+				let item = data[i];
+				let shortName = item.name	// get the text within the div
+					.trim()					// remove leading and trailing spaces
+					.substring(0, 40);		// get first N characters
+				if (shortName.length < item.name.length)
+					shortName = shortName
+					.split(" ")				// separate characters into an array of words
+					.slice(0, -1)			// remove the last full or partial word
+					.join(" ") + "...";		// combine into a single string and append "..."
+				let tabs = (!!item.ancestorId) ? "&nbsp;&nbsp;" : "";
+				string += '<option value="' + item.id + '">' + tabs + shortName + '</option>';
+			}
 			$("#ddlExam").html(string);
 		}
 	});
 
 	//Start the Exam
 	$('#btnStart').click(function () {
-		if ($("#ddlExam").val() > 0) {
+		if (!!$("#ddlExam").val()) {
 		   $('#ddlExam').prop('disabled', true);
 		   $('#btnStart').prop('disabled', true);
 		   $('#btnSave').prop('disabled', false);
-		   ExmID = $("#ddlExam").val();
-		   $.get('/api/Exam/', { ExamID: ExmID },
+		   ExmId = $("#ddlExam").val();
+		   $.get('/api/Exam/', { ExamId: ExmId },
 			   function (data, textStatus, jqXHR) {
 				   Duration = data.duration;
 				   StartTimer(Duration, checkTime);
 				   StartRecord();
-				   PopulateQuestions(ExmID);                   
+				   PopulateQuestions(ExmId);                   
 			   }).fail(function (jqXHR, textStatus) {
 				   $('#ddlExam').prop('disabled', false);
 				   $('#btnStart').prop('disabled', false);
@@ -149,8 +162,8 @@ $(document).ready(function () {
 	});
 
 	$('#btnPrev').click(function () {
-		QuestionID = 0;
-		AnswerID = 0;
+		QuestionId = 0;
+		AnswerId = 0;
 		//console.log(index);
 		index = (index - 1) % qIndex;
 		var count = index + 1;
@@ -161,9 +174,9 @@ $(document).ready(function () {
 			$('#eqCount').html("(" + count + " of " + qIndex + ")");
 			$('div#eqMain h3').html(objData.exam + " Quiz");
 			$('div#eqMain h4').html("Question " + count + " : " + objData.questions[index].questionText);
-			QuestionID = objData.questions[index].questionID;
-			AnswerID = objData.questions[index].answer.optionID;
-			let obj = result.find(o => o.QuestionID === QuestionID);                         
+			QuestionId = objData.questions[index].questionID;
+			AnswerId = objData.questions[index].answer.optionID;
+			let obj = result.find(o => o.QuestionId === QuestionId);                         
 			//console.log(obj.SelectedOption);
 			for (var i in objData.questions[index].options) {
 				if (!$.isEmptyObject(obj)) {
@@ -189,8 +202,8 @@ $(document).ready(function () {
 	});
 
 	$('#btnNext').click(function () {
-		QuestionID = 0;
-		AnswerID = 0;
+		QuestionId = 0;
+		AnswerId = 0;
 		//console.log(index);
 		index = (index + 1) % qIndex;
 		var count = index + 1;
@@ -201,9 +214,9 @@ $(document).ready(function () {
 			$('#eqCount').html("(" + count + " of " + qIndex + ")");
 			$('div#eqMain h3').html(objData.exam + " Quiz");
 			$('div#eqMain h4').html("Question " + count + " : " + objData.questions[index].questionText);
-			QuestionID = objData.questions[index].questionID;
-			AnswerID = objData.questions[index].answer.optionID;
-			let obj = result.find(o => o.QuestionID === QuestionID);
+			QuestionId = objData.questions[index].questionID;
+			AnswerId = objData.questions[index].answer.optionID;
+			let obj = result.find(o => o.QuestionId === QuestionId);
 			//console.log(obj);
 			for (var i in objData.questions[index].options) {
 				//console.log(i, data.questions[0].options[i]);   
@@ -231,15 +244,15 @@ $(document).ready(function () {
 
 	$('#btnSave').click(function () {       
 		var ans = {
-			CandidateID: $('#eqCandidateID').text(),
-			ExamID: ExmID,
-			QuestionID: QuestionID,
-			AnswerID: AnswerID,
+			CandidateId: $('#eqCandidateId').text(),
+			ExamId: ExmId,
+			QuestionId: QuestionId,
+			AnswerId: AnswerId,
 			SelectedOption: $('input[name="option"]:checked').val()           
 		};
-		if (result.some(item => item.QuestionID === QuestionID)) {
+		if (result.some(item => item.QuestionId === QuestionId)) {
 			//console.log('EXIST');
-			UpdateItem(QuestionID);
+			UpdateItem(QuestionId);
 		}
 		else {
 			result.push(ans);
@@ -309,9 +322,9 @@ $(document).ready(function () {
 
 	$('.btnScore').click(function () {
 		var request = {
-			ExamID: $(this).closest("tr").find('td:eq(2)').text(),
-			CandidateID: $('#hdnCandidateID').val(),            
-			SessionID: $(this).closest("tr").find('td:eq(1)').text()            
+			ExamId: $(this).closest("tr").find('td:eq(2)').text(),
+			CandidateId: $('#hdnCandidateId').val(),            
+			SessionId: $(this).closest("tr").find('td:eq(1)').text()            
 		};
 		Score = $(this).closest("tr").find('td:eq(4)').text();
 		Status = $(this).closest("tr").find('td:eq(6)').text();
@@ -336,9 +349,9 @@ $(document).ready(function () {
 	$('#btnReport').click(function () {
 		//console.log(objReport);
 		var scoreFormat = {
-			ExamID: objReport[0].examID,
-			CandidateID: $('#hdnCandidateID').val(),
-			SessionID: objReport[0].sessionID,
+			ExamId: objReport[0].examId,
+			CandidateId: $('#hdnCandidateId').val(),
+			SessionId: objReport[0].sessionID,
 			Exam: objReport[0].exam,
 			Date: objReport[0].date,
 			Score: Score
@@ -356,24 +369,24 @@ $(document).ready(function () {
 	  $('#noFile').text(file);
 	});
 	
-	function UpdateItem(QuestionID) {
+	function UpdateItem(QuestionId) {
 		for (var i in result) {
-			if (result[i].QuestionID == QuestionID) {               
-				result[i].CandidateID= $('#eqCandidateID').text();
-				result[i].ExamID= ExmID;
-				result[i].QuestionID= QuestionID;
-				result[i].AnswerID= AnswerID;
+			if (result[i].QuestionId == QuestionId) {               
+				result[i].CandidateId= $('#eqCandidateId').text();
+				result[i].ExamId= ExmId;
+				result[i].QuestionId= QuestionId;
+				result[i].AnswerId= AnswerId;
 				result[i].SelectedOption= $('input[name="option"]:checked').val();                
 				break;
 			}
 		}
 	}
 
-	function PopulateQuestions(ExmID) {
-		$.get('/api/Questions', { ExamID: ExmID },
+	function PopulateQuestions(ExmId) {
+		$.get('/api/Questions', { ExamId: ExmId },
 			function (data) {
-				QuestionID = 0;
-				AnswerID = 0;               
+				QuestionId = 0;
+				AnswerId = 0;               
 				objData = data;
 				//console.log(objData);
 				var Ostring = "<div style='padding: 5px;' id='eqOption'>";
@@ -381,8 +394,8 @@ $(document).ready(function () {
 				$('#eqCount').html("(1" + " of " + qIndex + ")");
 				$('div#eqMain h3').html(data.exam + " Quiz");
 				$('div#eqMain h4').html("Question 1 : " + data.questions[0].questionText);
-				QuestionID = data.questions[0].questionID;
-				AnswerID = data.questions[0].answer.optionID;
+				QuestionId = data.questions[0].questionID;
+				AnswerId = data.questions[0].answer.optionID;
 				for (var i in data.questions[0].options) {
 					//console.log(i, data.questions[0].options[i]);
 					Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + data.questions[0].options[i].optionID + "'><label> " + data.questions[0].options[i].option + "</label><br/>";

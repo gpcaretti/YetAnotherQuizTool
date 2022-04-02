@@ -10,7 +10,7 @@ using PatenteN.Quiz.Domain.Users;
 
 namespace PatenteN.Quiz.Application.Exams {
 
-    public class ResultAppService : QuizApplicationService<Result, ResultDto>, IResultAppService {
+    public class ResultAppService : QuizApplicationService<Result, ResultDto, Guid>, IResultAppService {
 
         public ResultAppService(QuizDBContext dbContext, IMapper mapper) : base(dbContext, mapper) {
         }
@@ -20,12 +20,12 @@ namespace PatenteN.Quiz.Application.Exams {
             output = await _dbContext.SaveChangesAsync();
             return output;
         }
-        public async Task<IEnumerable<QuizAttempt>> GetAttemptHistory(string argCandidateID) {
+        public async Task<IEnumerable<QuizAttempt>> GetAttemptHistory(Guid candidateId) {
             try {
                 List<QuizAttempt> obj = await _dbContext.Set<QuizAttempt>().FromSqlRaw(@"SELECT
                 CAST(ROW_NUMBER() OVER (ORDER BY R.CreatedOn DESC) AS int) Sl_No,
-                R.SessionID,
-                R.ExamID,
+                R.SessionId,
+                R.ExamId,
                 E.Name AS Exam,
                 CONVERT(varchar, R.CreatedOn, 106) AS Date,
                 (CAST(COUNT(R.Sl_No) as varchar(20)) + '/' + CAST(CAST(E.FullMarks AS INT) AS VARCHAR(20))) AS Score,
@@ -34,9 +34,9 @@ namespace PatenteN.Quiz.Application.Exams {
                     ELSE '0'
                 END AS 'Status'
                 FROM Result R
-                LEFT JOIN Exam E ON R.ExamID = E.ExamID
-                WHERE R.CandidateID ='" + argCandidateID + "' AND R.IsCorrent = 1"
-                + "GROUP BY R.SessionID, R.ExamID, E.Name, E.FullMarks, R.CreatedOn", argCandidateID).ToListAsync();
+                LEFT JOIN Exam E ON R.ExamId = E.ExamId
+                WHERE R.CandidateId ='" + candidateId + "' AND R.IsCorrent = 1"
+                + "GROUP BY R.SessionId, R.ExamId, E.Name, E.FullMarks, R.CreatedOn", candidateId).ToListAsync();
                 return obj;
             } catch (Exception ex) {
                 throw new Exception(ex.Message, ex.InnerException);
@@ -46,7 +46,7 @@ namespace PatenteN.Quiz.Application.Exams {
 
         public async Task<IEnumerable<QuizReport>> ScoreReport(ReqReport argRpt) {
             try {
-                List<QuizReport> obj = await _dbContext.Set<QuizReport>().FromSqlRaw(@"EXEC GetReport {0},{1},{2}", argRpt.ExamID, argRpt.CandidateID, argRpt.SessionID).ToListAsync();
+                List<QuizReport> obj = await _dbContext.Set<QuizReport>().FromSqlRaw(@"EXEC GetReport {0},{1},{2}", argRpt.ExamId, argRpt.CandidateId, argRpt.SessionId).ToListAsync();
                 return obj;
             } catch (Exception ex) {
                 throw new Exception(ex.Message, ex.InnerException);
@@ -55,7 +55,7 @@ namespace PatenteN.Quiz.Application.Exams {
         }
 
         public async Task<string> GetCertificateString(ReqCertificate argRpt) {
-            Candidate _candidate = await _dbContext.Candidate.Where(e => e.Candidate_ID == argRpt.CandidateID.ToString()).FirstOrDefaultAsync();
+            Candidate _candidate = await _dbContext.Candidates.Where(e => e.Id == argRpt.CandidateId).FirstOrDefaultAsync();
 
             try {
                 string cert = null;

@@ -1,19 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PatenteN.Quiz.Domain.Exams
-{
-  public  class Question:BaseEntity
-    {
-        [Key]
-        public int QuestionID { get; set; }
-        public int QuestionType { get; set; }  //MCQ-1      
-        public string DisplayText { get; set; }
-        public int ExamID { get; set; }
+namespace PatenteN.Quiz.Domain.Exams {
+
+    public class Question : BaseEntity<Guid> {
+        //public Question()
+        //    : this(Guid.Empty) {
+        //}
+
+        public Question(Guid id)
+            : base(id) {
+        }
+
+        [ForeignKey(nameof(Exam))]
+        public Guid ExamId { get; set; }
+        public Exam Exam { get; set; }
+
+        [MaxLength(16)]
+        public string? Code { get; set; }
+
+        public string Statement { get; set; }
+
+        [MaxLength(256)]
+        public string? ImageUri { get; set; }
     }
 }

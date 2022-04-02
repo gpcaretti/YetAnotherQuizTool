@@ -1,13 +1,11 @@
 ﻿namespace PatenteN.Quiz.Domain.Exams {
-    public class ResultDto {
-        public int Sl_No { get; set; }
-
-        public string SessionID { get; set; }
-        public int CandidateID { get; set; }
-        public int ExamID { get; set; }
-        public int QuestionID { get; set; }
-        public int AnswerID { get; set; }
-        public int SelectedOptionID { get; set; }
+    public class ResultDto : BaseEntityDto<Guid> {
+        public string SessionId { get; set; }
+        public Guid CandidateId { get; set; }
+        public Guid ExamId { get; set; }
+        public Guid QuestionId { get; set; }
+        public Guid AnswerId { get; set; }
+        public Guid SelectedOptionId { get; set; }
         public bool IsCorrent { get; set; }
     }
 }

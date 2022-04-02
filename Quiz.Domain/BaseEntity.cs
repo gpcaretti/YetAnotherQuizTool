@@ -1,23 +1,31 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PatenteN.Quiz.Domain {
-    public class BaseEntity {
 
-        [Column(TypeName = "datetime")]
-        [DataType(DataType.DateTime)]
-        public DateTime? CreatedOn { get; set; }
+    public abstract class BaseEntity<TPrimaryKey> {
 
-        [Column(TypeName = "datetime")]
-        [DataType(DataType.DateTime)]
-        public DateTime? ModifiedOn { get; set; }
+        public BaseEntity(TPrimaryKey id) {
+            Id = id;
+        }
 
-        [Column(TypeName = "varchar(200)")]
-        public string CreatedBy { get; set; }
+        // TODO: mettere private il setter
+        public TPrimaryKey Id { get; private set; }
 
-        [Column(TypeName = "varchar(200)")]
-        public string ModifiedBy { get; set; }
-        public bool IsDeleted { get; set; }
+        //[Column(TypeName = "datetime")]
+        //[DataType(DataType.DateTime)]
+        public DateTimeOffset? CreatedOn { get; set; }
+
+        public DateTimeOffset? ModifiedOn { get; set; }
+
+        [MaxLength(256)]
+        public string? CreatedBy { get; set; }
+
+        [MaxLength(256)]
+        public string? ModifiedBy { get; set; }
+
+        [DefaultValue(false)]
+        public bool? IsDeleted { get; set; } = false;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PatenteN.Quiz.Application.Guids;
 using PatenteN.Quiz.Application.Users;
 using PatenteN.Quiz.Application.Web.Extensions;
 using PatenteN.Quiz.Application.Web.Models;
@@ -7,14 +8,16 @@ using PatenteN.Quiz.Domain.Users;
 
 namespace PatenteN.Quiz.Application.Web.Controllers {
     public class AccountController : Controller {
-        private const string AUTH_USER_KEY = "AuthenticatedUser";
-
-        private readonly ILogger<AccountController> _logger;
         private readonly ICandidateAppService _candidateAppService;
+        private readonly IGuidGenerator GuidGenerator;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(ILogger<AccountController> logger, ICandidateAppService candidateAppService) {
-            _candidateAppService = candidateAppService;
+        public AccountController(ILogger<AccountController> logger,
+            ICandidateAppService candidateAppService,
+            IGuidGenerator guidGenerator) {
             _logger = logger;
+            _candidateAppService = candidateAppService;
+            GuidGenerator = guidGenerator;
         }
 
         // GET: AccountController
@@ -29,31 +32,33 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register([FromForm] RegisterViewModel objCollection) {
+        public async Task<IActionResult> Register([FromForm] RegisterViewModel registerVM) {
             int i = 0;
             if (ModelState.IsValid) {
                 try {
-                    if (!await _candidateAppService.Any(e => e.Candidate_ID.Equals(objCollection.Candidate_ID)) == true) {
-                        var _objcandidate = new CandidateDto() {
-                            Name = objCollection.Name,
-                            Email = objCollection.Email,
-                            Phone = objCollection.Phone,
-                            Candidate_ID = objCollection.Candidate_ID,
+                    registerVM.Email = registerVM.Email?.ToLowerInvariant().Trim();
+                    if (!await _candidateAppService.Any(e => e.Email == registerVM.Email)) {
+                        var dto = new CandidateDto() {
+                            Id = GuidGenerator.Create(),
+                            Name = registerVM.Name,
+                            Email = registerVM.Email,
+                            Phone = registerVM.Phone,
                             Roles = "User",
-                            Password = objCollection.Password.EncodeBase64(),
+                            Password = registerVM.Password.EncodeBase64(),
                             CreatedBy = "SYSTEM",
                         };
 
-                        i = await _candidateAppService.Create(_objcandidate);
+                        i = await _candidateAppService.Create(dto);
 
                         if (i > 0)
                             return RedirectToAction("Login", "Account");
                         else
                             TempData["Message"] = "An error occurred.";
                     } else
-                        TempData["Message"] = "A user already exists with that Candidate ID.";
+                        TempData["Message"] = "A user already exists with that email address.";
                 } catch (Exception ex) {
                     TempData["Message"] = ex.Message;
+                    if (ex.InnerException == null) throw;
                     throw new Exception(ex.Message, ex.InnerException);
                 }
             }
@@ -67,13 +72,14 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             try {
                 string _Action = string.Empty;
                 string _Controller = string.Empty;
-                string value = Convert.ToString(HttpContext.Session.GetString(AUTH_USER_KEY));
+                string value = Convert.ToString(HttpContext.Session.GetString(QuizConstants.AuthUserKey));
 
                 if (string.IsNullOrEmpty(value))
                     return PartialView("_Login");
                 else
                     return RedirectToAction("Index", "Home");
             } catch (Exception ex) {
+                if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
             } finally {
             }
@@ -85,14 +91,15 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             try {
                 string _Action = string.Empty;
                 string _Controller = string.Empty;
-                string value = Convert.ToString(HttpContext.Session.GetString(AUTH_USER_KEY));
+                string value = Convert.ToString(HttpContext.Session.GetString(QuizConstants.AuthUserKey));
 
                 if (ModelState.IsValid) {
                     if (string.IsNullOrEmpty(value)) {
-                        var candidate = await _candidateAppService.FirstOrDefault(x => x.Email.Equals(objCollection.Email) && x.Password.Equals(objCollection.Password.EncodeBase64()));
-                        if (candidate != null) {
+                        objCollection.Email = objCollection.Email.ToLowerInvariant().Trim();
+                        var candidateDto = await _candidateAppService.FirstOrDefault(x => x.Email.Equals(objCollection.Email) && x.Password.Equals(objCollection.Password.EncodeBase64()));
+                        if (candidateDto != null) {
                             //+++candidate.Password = candidate.Password.EncodeBase64();
-                            HttpContext.Session.SetObjectAsJson(AUTH_USER_KEY, candidate);
+                            HttpContext.Session.SetObjectAsJson(QuizConstants.AuthUserKey, candidateDto);
                             _Controller = "Home";
                             _Action = "Index";
                         } else {
@@ -107,6 +114,7 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
                 }
                 return RedirectToAction(_Action, _Controller, ViewBag.Alert);
             } catch (Exception ex) {
+                if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
             } finally {
             }
@@ -121,6 +129,7 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
                 HttpContext.Session.Clear();
                 return RedirectToAction("Login", "Account");
             } catch (Exception ex) {
+                if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
             } finally {
             }

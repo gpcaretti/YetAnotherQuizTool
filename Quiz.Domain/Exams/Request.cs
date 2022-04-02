@@ -1,60 +1,53 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PatenteN.Quiz.Domain.Users;
 
 namespace PatenteN.Quiz.Domain.Exams {
-    public class Option
-    {
-       public int CandidateID { get; set; }
-       public int ExamID { get; set; }
-       public int QuestionID { get; set; }
-       public int AnswerID { get; set; }
-       public int SelectedOption { get; set; }
+    public class Option {
+        public Guid CandidateId { get; set; }
+        public Guid ExamId { get; set; }
+        public Guid QuestionId { get; set; }
+        public Guid AnswerId { get; set; }
+        public Guid SelectedOption { get; set; }
     }
-    public class Root
-    {
+    public class Root {
         public Candidate objCandidate { get; set; }
         public List<QuizAttempt> objAttempt { get; set; }
     }
-    public class QuizAttempt
-    {
-        public int Sl_No { get; set; }
-        public string SessionID { get; set; }
-        public int ExamID { get; set; }
+    public class QuizAttempt {
+        public Guid Id { get; set; }
+        public string SessionId { get; set; }
+        public Guid ExamId { get; set; }
         public string Exam { get; set; }
         public string Date { get; set; }
         public string Score { get; set; }
         public string Status { get; set; }
-    }    
-    public class QuizReport
-    {
-        public int CandidateID { get; set; }
-        public string SessionID { get; set; }
-        public int ExamID { get; set; }
+    }
+    public class QuizReport {
+        public Guid CandidateId { get; set; }
+        public string SessionId { get; set; }
+        public Guid ExamId { get; set; }
         public string Exam { get; set; }
         public string Date { get; set; }
         public string Message { get; set; }
-    }    
-    public class ReqReport
-    {
-        public int ExamID { get; set; }
-        public string CandidateID { get; set; }
-        public string SessionID { get; set; }
     }
-    public class ReqCertificate
-    {
-        public int CandidateID { get; set; }
-        public string SessionID { get; set; }
-        public int ExamID { get; set; }
+    public class ReqReport {
+        public Guid ExamId { get; set; }
+        public string CandidateId { get; set; }
+        public string SessionId { get; set; }
+    }
+    public class ReqCertificate {
+        public Guid CandidateId { get; set; }
+        public string SessionId { get; set; }
+        public Guid ExamId { get; set; }
         public string Exam { get; set; }
         public string Date { get; set; }
         public string Score { get; set; }
     }
 
-    public class Request
-    {
+    public class Request {
     }
-    public class ResPDF
-    {
+    public class ResPDF {
         public bool IsSuccess { get; set; }
         public string Path { get; set; }
     }

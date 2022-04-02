@@ -1,24 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PatenteN.Quiz.Domain.Exams
-{
-    public  class Result:BaseEntity
-    {
-        [Key]
-        public int Sl_No { get; set; }
+namespace PatenteN.Quiz.Domain.Exams {
+    public class Result : BaseEntity<Guid> {
 
-        [MaxLength]
-        public string SessionID { get; set; }
-        public int CandidateID { get; set; }        
-        public int ExamID { get; set; }
-        public int QuestionID { get; set; }
-        public int AnswerID { get; set; }
-        public int SelectedOptionID { get; set; }
+        public Result()
+            : this(Guid.Empty) {
+        }
+
+        public Result(Guid id)
+            : base(id) {
+        }
+
+        [MaxLength(1024)]
+        public string SessionId { get; set; }
+        public Guid CandidateId { get; set; }
+        public Guid ExamId { get; set; }
+        public Guid QuestionId { get; set; }
+        public Guid AnswerId { get; set; }
+        public Guid SelectedOptionId { get; set; }
         public bool IsCorrent { get; set; }
     }
 }

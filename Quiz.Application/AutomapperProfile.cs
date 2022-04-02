@@ -7,9 +7,16 @@ namespace PatenteN.Quiz.Application {
     internal class AutomapperProfile : Profile {
 
         public AutomapperProfile() {
+            DefaultMaps();
             CandidateMaps();
             ExamMaps();
             ExamQuestions();
+        }
+
+        private void DefaultMaps() {
+            // trim all strings
+            CreateMap<string, string>()
+                .ConvertUsing(str => (str ?? "").Trim());
         }
 
         private void CandidateMaps() {

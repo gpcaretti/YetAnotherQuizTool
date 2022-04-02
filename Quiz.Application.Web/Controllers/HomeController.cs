@@ -22,20 +22,19 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
         [BasicAuthentication]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Index() {
-            Candidate objHis = HttpContext.Session.GetObjectFromJson<Candidate>("AuthenticatedUser");
-            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Sl_No.Equals(objHis.Sl_No));
+            CandidateDto objHis = HttpContext.Session.GetObjectFromJson<CandidateDto>(QuizConstants.AuthUserKey);
+            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Id.Equals(objHis.Id));
             return View(objCandidate);
         }
 
         [BasicAuthentication]
         public async Task<IActionResult> Profile() {
-            Candidate objHis = HttpContext.Session.GetObjectFromJson<Candidate>("AuthenticatedUser");
-            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Sl_No.Equals(objHis.Sl_No));
+            CandidateDto objHis = HttpContext.Session.GetObjectFromJson<CandidateDto>(QuizConstants.AuthUserKey);
+            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Id.Equals(objHis.Id));
 
             ProfileViewModel objModel = new ProfileViewModel() {
-                Sl_No = objCandidate.Sl_No,
+                Id = objCandidate.Id,
                 Name = objCandidate.Name,
-                Candidate_ID = objCandidate.Candidate_ID,
                 Email = objCandidate.Email,
                 Phone = objCandidate.Phone,
                 ImgFile = objCandidate.ImgFile != null ? objCandidate.ImgFile : null
@@ -45,42 +44,44 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile([FromForm] ProfileViewModel argObj) {
+        public async Task<IActionResult> Profile([FromForm] ProfileViewModel profileVM) {
             int i = 0;
             string UploadFolder = null;
             string UniqueFileName = null;
             string UploadPath = null;
             if (ModelState.IsValid) {
                 try {
-                    if (argObj.file != null) {
+                    if (profileVM.file != null) {
                         UploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "UploadedFiles/Image");
-                        UniqueFileName = Guid.NewGuid().ToString() + "_" + argObj.file.FileName;
+                        UniqueFileName = Guid.NewGuid().ToString() + "_" + profileVM.file.FileName;
+                        if (!System.IO.File.Exists(UploadFolder))
+                            Directory.CreateDirectory(UploadFolder);
                         UploadPath = Path.Combine(UploadFolder, UniqueFileName);
                     }
-                    CandidateDto _objCandidate = await _candidateAppService.FindById(argObj.Sl_No);
-                    _objCandidate.Name = argObj.Name;
-                    _objCandidate.Candidate_ID = argObj.Candidate_ID;
-                    _objCandidate.Phone = argObj.Phone;
-                    _objCandidate.Email = argObj.Email;
-                    if (UniqueFileName != null) { _objCandidate.ImgFile = UniqueFileName; } else { _objCandidate.ImgFile = _objCandidate.ImgFile; }
-                    _objCandidate.ModifiedBy = argObj.Name;
-                    argObj.ImgFile = _objCandidate.ImgFile;
-                    i = await _candidateAppService.UpdateCandidate(_objCandidate);
+                    CandidateDto candidateDto = await _candidateAppService.FindById(profileVM.Id);
+                    candidateDto.Name = profileVM.Name;
+                    candidateDto.Phone = profileVM.Phone;
+                    candidateDto.Email = profileVM.Email;
+                    candidateDto.ImgFile = !String.IsNullOrEmpty(UniqueFileName) ? UniqueFileName : candidateDto.ImgFile;
+                    candidateDto.ModifiedBy = profileVM.Name;
+                    profileVM.ImgFile = candidateDto.ImgFile;
+                    i = await _candidateAppService.UpdateCandidate(candidateDto);
                     if (i > 0) {
-                        if (argObj.file != null) {
-                            await argObj.file.CopyToAsync(new FileStream(UploadPath, FileMode.Create));
+                        if (profileVM.file != null) {
+                            await profileVM.file.CopyToAsync(new FileStream(UploadPath, FileMode.Create));
                         }
                         ViewBag.Alert = AlertExtension.ShowAlert(Alerts.Success, "Profile updated successfully.");
                     } else
                         ViewBag.Alert = AlertExtension.ShowAlert(Alerts.Danger, "An error occurred.");
                 } catch (Exception ex) {
                     ViewBag.Alert = AlertExtension.ShowAlert(Alerts.Danger, ex.Message);
+                    if (ex.InnerException == null) throw;
                     throw new Exception(ex.Message, ex.InnerException);
                 }
             } else
                 ModelState.AddModelError("Error", "Unknown  Error.");
 
-            return View(argObj);
+            return View(profileVM);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

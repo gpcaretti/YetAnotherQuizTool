@@ -5,13 +5,13 @@
 
 <div class="w3-container w3-content" style="max-width:1200px;margin-top:80px">
     <h2>Quiz Attempt</h2>
-    <input asp-for="objCandidate.Candidate_ID" type="hidden" id="hdnCandidateID" />
+    <input asp-for="objCandidate.Id" type="hidden" id="hdnCandidateId" />
     <p>
         <table class="w3-table-all w3-centered w3-card-4 w3-white w3-round">
             <tr class="w3-blue">
                 <th>Sl. No.</th>
-                <th style="display:none;">SessionID</th>
-                <th style="display:none;">ExamID</th>
+                <th style="display:none;">SessionId</th>
+                <th style="display:none;">ExamId</th>
                 <th>Quiz</th>
                 <th>Score</th>
                 <th>Date</th>
@@ -23,9 +23,9 @@
                 foreach (var item in Model.objAttempt)
                 {
                     <tr>
-                        <td>@item.Sl_No</td>
-                        <td style="display:none;">@item.SessionID</td>
-                        <td style="display:none;">@item.ExamID</td>
+                        <td>@item.Id</td>
+                        <td style="display:none;">@item.SessionId</td>
+                        <td style="display:none;">@item.ExamId</td>
                         <td>@item.Exam</td>
                         <td>@item.Score</td>
                         <td>@item.Date</td>

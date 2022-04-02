@@ -4,13 +4,13 @@ namespace PatenteN.Quiz.Application.Web.Models {
     public class ResultViewModel
     {
         [Required]
-        public int CandidateID;
+        public int CandidateId;
         [Required]
-        public int ExamID;
+        public int ExamId;
         [Required]
-        public int QuestionID;
+        public int QuestionId;
         [Required]
-        public int AnswerID;
+        public int AnswerId;
         [Required]
         public int SelectedOption;
     }

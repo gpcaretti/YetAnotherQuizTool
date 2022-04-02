@@ -131,7 +131,7 @@
                 <div class="w3-container w3-blue"><h2>Edit Profile</h2></div>
                 <form asp-controller="Home" asp-action="Profile" class="w3-container" enctype="multipart/form-data" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <p><input type="hidden" asp-for="Sl_No" /></p>
+                    <p><input type="hidden" asp-for="Id" /></p>
                     <p class="w3-center">
                         @if (@Model.ImgFile != null)
                         {
@@ -156,11 +156,6 @@
                         <b><label asp-for="Phone" class="w3-text-blue"></label></b>
                         <input asp-for="Phone" class="w3-input w3-border" />
                         <span asp-validation-for="Phone" class="text-danger"></span>
-                    </p>
-                    <p>
-                        <b><label asp-for="Candidate_ID" class="w3-text-blue"></label></b>
-                        <input asp-for="Candidate_ID" class="w3-input w3-border" />
-                        <span asp-validation-for="Candidate_ID" class="text-danger"></span>
                     </p>
                     <p>
                         <b class="w3-text-blue">Edit profile picture</b>
