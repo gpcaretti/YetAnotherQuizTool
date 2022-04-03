@@ -36,7 +36,7 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
         }
 
         [HttpGet]
-        [Route("~/api/Exam/{ExamId?}")]
+        [Route("~/api/Exam/{examId?}")]
         public async Task<IActionResult> Exam(Guid examId) {
             try {
                 ExamDto dto = await _examAppService.FindById(examId);
@@ -56,11 +56,10 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
         }
 
         [HttpGet]
-        [Route("~/api/Questions/{ExamId?}")]
-        public async Task<IActionResult> Questions(Guid examId) {
+        [Route("~/api/Questions/{input?}")]
+        public async Task<IActionResult> Questions(QuestionsByExamRequestDto input) {
             try {
-                var questionsDto = await _examAppService.GetQuestionsByExamId(examId);
-                QnADto qna = await _questionAppService.GetQuestionListByExam(examId);
+                QnADto qna = await _questionAppService.PrepareExamAttempt(input);
                 return Ok(qna);
             } catch (Exception ex) {
                 if (ex.InnerException == null) throw;
@@ -74,6 +73,25 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             } finally {
             }
         }
+
+        //[HttpGet]
+        //[Route("~/api/Questions/{examId?}")]
+        //public async Task<IActionResult> Questions(Guid examId) {
+        //    try {
+        //        QnADto qna = await _questionAppService.GetQuestionListByExam(examId);
+        //        return Ok(qna);
+        //    } catch (Exception ex) {
+        //        if (ex.InnerException == null) throw;
+        //        throw new Exception(ex.Message, ex.InnerException);
+        //        //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        //        //return Json(new {
+        //        //    Result = false,
+        //        //    Error = ex.Message,
+        //        //    Exception = ex.InnerException, 
+        //        //});
+        //    } finally {
+        //    }
+        //}
 
         [HttpPost]
         [Route("~/api/Score")]

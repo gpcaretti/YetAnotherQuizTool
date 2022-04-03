@@ -2,19 +2,21 @@
 // for details on configuring this project to bundle and minify static web assets.
 // Write your JavaScript code.
 $(document).ready(function () {
-	
-	var ExmId = 0;
+
+	var CurrentExamId = null;
+
+	var QnA = {};
+	var CurrentQId = null;
+	var CurrentQidx = -1;
+
+	var QnAResults = [];
+
 	var Score = null;
 	var Status = null;
-	var QuestionId = 0;
-	var AnswerId = 0;
-	var Duration = 0;
-	var index = 0;
-	var qIndex = 0;
-	var objData = [];
-	var result = [];
-	var checkTime = [];
+
 	var objReport = null;
+
+	var CheckTime = [];
 
 	var constraints = { audio: true, video: { width: { min: 640, ideal: 640, max: 640 }, height: { min: 480, ideal: 480, max: 480 }, framerate: 60 } };
 	var recBtn = document.querySelector('button#btnStart');
@@ -91,6 +93,7 @@ $(document).ready(function () {
 		}
 	}
 
+	// fetch available exams
 	$.ajax({
 		type: "GET",
 		url: "/api/Exams",
@@ -115,40 +118,13 @@ $(document).ready(function () {
 		}
 	});
 
-	//Start the Exam
+	/**
+	 * Click to fetch, init and start an exam based on the selected exam
+	 */
 	$('#btnStart').click(function () {
 		if (!!$("#ddlExam").val()) {
-		   $('#ddlExam').prop('disabled', true);
-		   $('#btnStart').prop('disabled', true);
-		   $('#btnSave').prop('disabled', false);
-		   ExmId = $("#ddlExam").val();
-		   $.get('/api/Exam/', { ExamId: ExmId },
-			   function (data, textStatus, jqXHR) {
-				   Duration = data.duration;
-				   StartTimer(Duration, checkTime);
-				   StartRecord();
-				   PopulateQuestions(ExmId);                   
-			   }).fail(function (jqXHR, textStatus) {
-				   $('#ddlExam').prop('disabled', false);
-				   $('#btnStart').prop('disabled', false);
-				   $('#btnSave').prop('disabled', true);
-				   //let errorData = $.parseJSON(jqXHR.responseText);
-				   //let errorJson = jqXHR.responseJSON;
-				   let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
-				   if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
-				   $.alert({
-					   icon: 'fa fa-error',
-					   type: 'red',
-					   title: errorJson.error,
-					   content: "Error: " + textStatus + " (" + errorJson.error + ")<br/>Status: " + jqXHR.status,
-					   boxWidth: '40%',
-					   useBootstrap: false,
-					   closeIcon: true,
-					   closeIconClass: 'fa fa-close'
-				   });
-			   });
-		}
-		else           
+			FetchExam($("#ddlExam").val());
+		} else {
 			$.alert({
 				icon: 'fa fa-warning',
 				type: 'orange',
@@ -159,106 +135,55 @@ $(document).ready(function () {
 				closeIcon: true,
 				closeIconClass: 'fa fa-close'
 			});
+		}
 	});
 
+	/**
+	 * Click previous question button
+	 */
 	$('#btnPrev').click(function () {
-		QuestionId = 0;
-		AnswerId = 0;
-		//console.log(index);
-		index = (index - 1) % qIndex;
-		var count = index + 1;
-		//console.log(objData.questions[index]);
-		if (index <= qIndex - 1) {
-			$('div#eqMain p').empty();
-			var Ostring = "<div style='padding: 5px;' id='eqOption'>";
-			$('#eqCount').html("(" + count + " of " + qIndex + ")");
-			$('div#eqMain h3').html(objData.exam + " Quiz");
-			$('div#eqMain h4').html("Question " + count + " : " + objData.questions[index].questionText);
-			QuestionId = objData.questions[index].questionID;
-			AnswerId = objData.questions[index].answer.optionID;
-			let obj = result.find(o => o.QuestionId === QuestionId);                         
-			//console.log(obj.SelectedOption);
-			for (var i in objData.questions[index].options) {
-				if (!$.isEmptyObject(obj)) {
-					if (obj.SelectedOption == objData.questions[index].options[i].optionID) {
-						Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "' checked><label> " + objData.questions[index].options[i].option + "</label><br/>";
-					}
-					else {
-						Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "'><label> " + objData.questions[index].options[i].option + "</label><br/>";
-					}
-				}
-				else {
-					Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "'><label> " + objData.questions[index].options[i].option + "</label><br/>";
-				}
-			}
-			Ostring = Ostring + "</div>";
-			//console.log(Ostring);
-			$('div#eqMain p').append(Ostring);
-			$('#eqMain button.w3-right').prop('disabled', false);
-			if (index == 0) {
-				$('#eqMain button.w3-left').prop('disabled', true);
-			}
+		let idx = (CurrentQidx - 1) % QnA.totalCount;
+		if (idx <= QnA.totalCount - 1) {
+			// save current choice of the user
+			$('#btnSave').click();
+			// change the print the previous question 
+			MoveToQuestionAndPrint(idx);
 		}
 	});
 
+	/**
+	 * Click next question button
+	 */
 	$('#btnNext').click(function () {
-		QuestionId = 0;
-		AnswerId = 0;
-		//console.log(index);
-		index = (index + 1) % qIndex;
-		var count = index + 1;
-		if (index <= qIndex - 1) {
-			//console.log(objData.questions[index]);
-			$('div#eqMain p').empty();
-			var Ostring = "<div style='padding: 5px;' id='eqOption'>";
-			$('#eqCount').html("(" + count + " of " + qIndex + ")");
-			$('div#eqMain h3').html(objData.exam + " Quiz");
-			$('div#eqMain h4').html("Question " + count + " : " + objData.questions[index].questionText);
-			QuestionId = objData.questions[index].questionID;
-			AnswerId = objData.questions[index].answer.optionID;
-			let obj = result.find(o => o.QuestionId === QuestionId);
-			//console.log(obj);
-			for (var i in objData.questions[index].options) {
-				//console.log(i, data.questions[0].options[i]);   
-				if (!$.isEmptyObject(obj)) {
-					if (obj.SelectedOption == objData.questions[index].options[i].optionID) {
-						Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "' checked><label> " + objData.questions[index].options[i].option + "</label><br/>";
-					}
-					else {
-						Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "'><label> " + objData.questions[index].options[i].option + "</label><br/>";
-					}
-				}
-				else {
-					Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + objData.questions[index].options[i].optionID + "'><label> " + objData.questions[index].options[i].option + "</label><br/>";
-				}
-			}
-			Ostring = Ostring + "</div>";
-			//console.log(Ostring);
-			$('div#eqMain p').append(Ostring);
-			$('#eqMain button.w3-left').prop('disabled', false);
-			if (index == qIndex - 1) {
-				$('#eqMain button.w3-right').prop('disabled', true);
-			}
+		let idx = (CurrentQidx + 1) % QnA.totalCount;
+		if (idx <= QnA.totalCount - 1) {
+			// save current choice of the user
+			$('#btnSave').click();
+			// change the print the next question
+			MoveToQuestionAndPrint(idx);
 		}
 	});
 
-	$('#btnSave').click(function () {       
-		var ans = {
-			CandidateId: $('#eqCandidateId').text(),
-			ExamId: ExmId,
-			QuestionId: QuestionId,
-			AnswerId: AnswerId,
-			SelectedOption: $('input[name="option"]:checked').val()           
+	/**
+	 * Click 'save answer/choice' to current question
+	 */
+	$('#btnSave').click(function () {
+		let answer = {
+			candidateId: $('#eqCandidateId').text(),
+			examId: CurrentExamId,
+			questionId: CurrentQId,
+			choiceId: $('input[name="option"]:checked').val() || null,
 		};
-		if (result.some(item => item.QuestionId === QuestionId)) {
-			//console.log('EXIST');
-			UpdateItem(QuestionId);
+		answer.isCorrect = !!answer.choiceId && (answer.choiceId == QnA.questions.find(item => item.id == answer.questionId)?.correctChoiceId)
+
+		let idx = QnAResults.findIndex(item => item.questionId === CurrentQId);
+		if (idx >= 0) {
+			QnAResults[idx] = answer;
+			//UpdateItem(CurrentQId);
 		}
 		else {
-			result.push(ans);
+			QnAResults.push(answer);
 		}       
-		//console.log(result);       
-		ans = [];
 	});
 
 	$('#btnSubmit').click(function () {              
@@ -276,10 +201,13 @@ $(document).ready(function () {
 					text: 'Submit',
 					btnClass: 'btn-red',
 					action: function () {
-						$.post('/api/Score/', { objRequest: result },
+						// save current choice of the user
+						$('#btnSave').click();
+						// now post the results of the quiz
+						$.post('/api/Score/', { objRequest: QnAResults },
 						 function (data) {
 							 if (data > 0) {
-								 stop(checkTime);
+								 StopTimer();
 								 StopRecord();
 								 $('#btnSubmit').prop('disabled', true);
 								 $("#eqReport").children().prop('disabled', false);
@@ -368,83 +296,117 @@ $(document).ready(function () {
 	  var file = $('#chooseFile')[0].files[0].name;
 	  $('#noFile').text(file);
 	});
-	
-	function UpdateItem(QuestionId) {
-		for (var i in result) {
-			if (result[i].QuestionId == QuestionId) {               
-				result[i].CandidateId= $('#eqCandidateId').text();
-				result[i].ExamId= ExmId;
-				result[i].QuestionId= QuestionId;
-				result[i].AnswerId= AnswerId;
-				result[i].SelectedOption= $('input[name="option"]:checked').val();                
-				break;
-			}
+
+
+	/**
+	 * 
+	 * @param {number} qIdx
+	 */
+	function MoveToQuestionAndPrint(qIdx) {
+		if ((qIdx < 0) || (qIdx >= QnA.totalCount)) {
+			DisplayErrorAlert(null, `Index out of range (${qIdx}). Cannot select the question.`);
+			return;
 		}
+		let question = QnA.questions[qIdx];
+		CurrentQidx = qIdx;
+		CurrentQId = question.id;
+
+		// print the question
+		$('div#eqMain p').empty();
+		$('#eqCount').html(`(${qIdx + 1} of ${QnA.totalCount})`);
+		$('div#eqMain h3').html(QnA.examName);
+		$('div#eqMain h4').html(`${(question.code || qIdx + 1)}: ${question.statement}`);
+
+		// print the possible choices. If the user previously selected one of them, check it
+		let choiceSelectedByUser = QnAResults.find(o => o.questionId === CurrentQId);
+		let oString = "<div style='padding: 5px;' id='eqOption'>";
+		for (let i in question.choices) {
+			let choice = question.choices[i];
+			let isSelected = choice.id == (choiceSelectedByUser?.choiceId ?? 0);
+			oString += `<label><input class='w3-radio' type='radio' name='option' value='${choice.id}' ${(isSelected ? 'checked' : '')}> ${choice.statement}</label><br/>`;
+		}
+		oString += "</div>";
+		$('div#eqMain p').append(oString);
+
+		// enable/disable prev & next btns
+		$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);
+		$('#eqMain button.w3-right').prop('disabled', (qIdx + 1) >= QnA.totalCount);
 	}
 
-	function PopulateQuestions(ExmId) {
-		$.get('/api/Questions', { ExamId: ExmId },
-			function (data) {
-				QuestionId = 0;
-				AnswerId = 0;               
-				objData = data;
-				//console.log(objData);
-				var Ostring = "<div style='padding: 5px;' id='eqOption'>";
-				qIndex = data.questions.length;
-				$('#eqCount').html("(1" + " of " + qIndex + ")");
-				$('div#eqMain h3').html(data.exam + " Quiz");
-				$('div#eqMain h4').html("Question 1 : " + data.questions[0].questionText);
-				QuestionId = data.questions[0].questionID;
-				AnswerId = data.questions[0].answer.optionID;
-				for (var i in data.questions[0].options) {
-					//console.log(i, data.questions[0].options[i]);
-					Ostring = Ostring + "<input class='w3-radio' type='radio' name='option' value='" + data.questions[0].options[i].optionID + "'><label> " + data.questions[0].options[i].option + "</label><br/>";
-				}
-				Ostring = Ostring + "</div>";
-				//console.log(Ostring);
-				$('div#eqMain p').append(Ostring);
-				$('#eqMain button.w3-right').prop('disabled', false);
+	/**
+	 * Fetch and exam and its question. Then start tuner and recording
+	 * @param {number} examId
+	 */
+	function FetchExam(examId) {
+		CurrentExamId = null;
+
+		// enable/disable proper buttons
+		$('#ddlExam').prop('disabled', true);
+		$('#btnStart').prop('disabled', true);
+		$('#btnSave').prop('disabled', false);
+
+		$.get('/api/Exam/', { ExamId: examId },
+			(data, textStatus, jqXHR) => {
+				CurrentExamId = examId;	// save the exam Id
+				FetchQuestions(examId);
+				StartTimer(data.duration || 0);
+				StartRecord();
+			}).fail((jqXHR, textStatus) => {
+				$('#ddlExam').prop('disabled', false);
+				$('#btnStart').prop('disabled', false);
+				$('#btnSave').prop('disabled', true);
+				//let errorData = $.parseJSON(jqXHR.responseText);
+				//let errorJson = jqXHR.responseJSON;
+				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
+				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
+				DisplayErrorAlert(errorJsonm, textStatus, jqXHR.status);
+			});
+	}
+
+	/**
+	 * Fetch question and print the first one
+	 * @param {any} examId
+	 */
+	function FetchQuestions(examId) {
+		$.get('/api/Questions', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 50 },
+			(data) => {
+				QnA = data;
+				MoveToQuestionAndPrint(0);
 			}).fail(function (jqXHR, textStatus) {
 				//let errorData = $.parseJSON(jqXHR.responseText);
 				//let errorJson = jqXHR.responseJSON;
 				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
 				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
-				$.alert({
-					icon: 'fa fa-error',
-					type: 'red',
-					title: errorJson.error,
-					content: "Error: " + textStatus + " (" + errorJson.error + ")<br/>Status: " + jqXHR.status,
-					boxWidth: '40%',
-					useBootstrap: false,
-					closeIcon: true,
-					closeIconClass: 'fa fa-close'
-				});
+				DisplayErrorAlert(errorJson, textStatus, jqXHR.status);
 			});
 	}
 
-	function StartTimer(Duration, checkTime) {
-		var deadline = new Date();
-		deadline.setHours(deadline.getHours() + Duration);
-		if (checkTime.length== 0) {
-			var x = setInterval(function () {
-				var now = new Date().getTime();
-				var t = deadline.getTime() - now;
-				var hours = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-				var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
-				var seconds = Math.floor((t % (1000 * 60)) / 1000);
+	/**
+	 * Start a timer to update the countdown
+	 * @param {number} durationMin
+	 */
+	function StartTimer(durationMin) {
+		let deadline = new Date(new Date().getTime() + durationMin * 60000);
+		if (CheckTime.length == 0) {
+			var x = setInterval(() => {
+				let now = new Date().getTime();
+				let deltaT = deadline.getTime() - now;
+				let hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+				let minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+				let seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
 				document.getElementById("timer").innerHTML = "Time : " + hours + ":" + minutes + ":" + seconds;
-				if (t < 0) {
+				if (deltaT < 0) {
 					clearInterval(x);
 					document.getElementById("timer").innerHTML = "Time : 00:00:00";
 				}
 			}, 1000);
-			checkTime.push(x);            
+			CheckTime.push(x);            
 		}
 	}
 
-	function stop(checkTime) {
-		clearInterval(checkTime[0]);
-		checkTime = [];       
+	function StopTimer() {
+		clearInterval(CheckTime[0]);
+		CheckTime = [];       
 	}
 
 	//Recording
@@ -556,6 +518,18 @@ $(document).ready(function () {
 		});
 	}
 
+	function DisplayErrorAlert(errorJson, messageText, statusCode) {
+		$.alert({
+			icon: 'fa fa-error',
+			type: 'red',
+			title: errorJson?.error || "Error",
+			content: "Error: " + messageText + " (" + errorJson?.error + ")<br/>Status: " + statusCode,
+			boxWidth: '40%',
+			useBootstrap: false,
+			closeIcon: true,
+			closeIconClass: 'fa fa-close'
+		});
+	}
 });
 
 //Image Upload Preview  

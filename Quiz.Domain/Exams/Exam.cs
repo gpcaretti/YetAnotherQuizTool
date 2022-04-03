@@ -11,6 +11,7 @@ namespace PatenteN.Quiz.Domain.Exams {
 
         [ForeignKey(nameof(Ancestor))]
         public Guid? AncestorId { get; set; }
+        public Exam Ancestor { get; set; }
 
         [MaxLength(1024)]
         public string Name { get; set; }
@@ -18,13 +19,12 @@ namespace PatenteN.Quiz.Domain.Exams {
         [MaxLength(16)]
         public string? Code { get; set; }
 
+        /// <summary>Duration of the exam (0 = no duration specifie </summary>
+        [Range(0, 1440)]
+        public int Duration { get; set; } = 0;
+
         [Column(TypeName = "decimal(18,2)")]
         [DefaultValue(false)]
         public decimal FullMarks { get; set; } = 100;
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? Duration { get; set; }
-
-        public Exam Ancestor { get; set; }
     }
 }

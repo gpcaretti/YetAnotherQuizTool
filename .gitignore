@@ -363,6 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # ignores from my local repo
-#[Dd]esktop.ini
+[Dd]esktop.ini
 [Cc]lients/[Ii]mporter/
 [Uu]ploadedFiles/
+*[Pp]rivate*

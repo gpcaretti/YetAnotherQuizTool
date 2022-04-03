@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,6 +12,7 @@ namespace PatenteN.Quiz.Domain.Exams {
 
         public Question(Guid id)
             : base(id) {
+            Choices = new HashSet<Choice>();
         }
 
         [ForeignKey(nameof(Exam))]
@@ -24,5 +26,7 @@ namespace PatenteN.Quiz.Domain.Exams {
 
         [MaxLength(256)]
         public string? ImageUri { get; set; }
+
+        public virtual ICollection<Choice> Choices { get; set; }
     }
 }

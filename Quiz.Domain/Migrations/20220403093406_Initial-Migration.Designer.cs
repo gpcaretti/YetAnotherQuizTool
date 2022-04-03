@@ -12,7 +12,7 @@ using PatenteN.Quiz.Domain;
 namespace PatenteN.Quiz.Domain.Migrations
 {
     [DbContext(typeof(QuizDBContext))]
-    [Migration("20220402032053_Initial-Migration")]
+    [Migration("20220403093406_Initial-Migration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,8 +125,8 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.Property<DateTimeOffset?>("CreatedOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<decimal?>("Duration")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("FullMarks")
                         .HasColumnType("decimal(18,2)");
@@ -366,7 +366,7 @@ namespace PatenteN.Quiz.Domain.Migrations
             modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Choice", b =>
                 {
                     b.HasOne("PatenteN.Quiz.Domain.Exams.Question", "Question")
-                        .WithMany()
+                        .WithMany("Choices")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -392,6 +392,11 @@ namespace PatenteN.Quiz.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Exam");
+                });
+
+            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Question", b =>
+                {
+                    b.Navigation("Choices");
                 });
 #pragma warning restore 612, 618
         }

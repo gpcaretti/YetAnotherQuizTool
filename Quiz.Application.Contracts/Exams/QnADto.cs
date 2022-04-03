@@ -3,8 +3,9 @@
 namespace PatenteN.Quiz.Domain.Exams {
     public class QnADto {
         public Guid ExamId { get; set; }
-        public string Exam { get; set; }
-        public IList<QuestionDetailsDto> questions { get; set; }
+        public string ExamName { get; set; }
+        public ICollection<QuestionAndChoicesDto> Questions { get; set; }
+        public int totalCount => Questions?.Count ?? 0;
     }
 
     public class QuestionDetailsDto {

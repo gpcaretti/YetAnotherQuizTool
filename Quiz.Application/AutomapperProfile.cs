@@ -10,15 +10,21 @@ namespace PatenteN.Quiz.Application {
             DefaultMaps();
             CandidateMaps();
             ExamMaps();
-            ExamQuestions();
+            //ExamQuestions();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void DefaultMaps() {
             // trim all strings
             CreateMap<string, string>()
                 .ConvertUsing(str => (str ?? "").Trim());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void CandidateMaps() {
             CreateMap<Candidate, CandidateDto>()
                 ;
@@ -28,6 +34,9 @@ namespace PatenteN.Quiz.Application {
                 ;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void ExamMaps() {
             CreateMap<Exam, ExamDto>()
                 ;
@@ -35,14 +44,16 @@ namespace PatenteN.Quiz.Application {
             CreateMap<ExamDto, Exam>()
                 //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
                 ;
-        }
 
-        private void ExamQuestions() {
+            CreateMap<Choice, ChoiceDto>()
+                ;
+
             CreateMap<Question, QuestionDto>()
+                ;
+            CreateMap<Question, QuestionAndChoicesDto>()
                 ;
 
             CreateMap<QuestionDto, Question>()
-                //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
                 ;
         }
     }
