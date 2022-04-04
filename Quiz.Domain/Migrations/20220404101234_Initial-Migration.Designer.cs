@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PatenteN.Quiz.Domain;
+using Quiz.Domain;
 
 #nullable disable
 
-namespace PatenteN.Quiz.Domain.Migrations
+namespace Quiz.Domain.Migrations
 {
     [DbContext(typeof(QuizDBContext))]
-    [Migration("20220403093406_Initial-Migration")]
+    [Migration("20220404101234_Initial-Migration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace PatenteN.Quiz.Domain.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Answer", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Answer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzAnswers");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Choice", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Choice", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,7 +105,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzChoices");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Exam", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Exam", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -153,7 +153,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzExams");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Question", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Question", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -198,7 +198,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzQuestions");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.QuizAttempt", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.QuizAttempt", b =>
                 {
                     b.Property<string>("Date")
                         .IsRequired()
@@ -229,7 +229,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToView(null);
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.QuizReport", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.QuizReport", b =>
                 {
                     b.Property<Guid>("CandidateId")
                         .HasColumnType("uniqueidentifier");
@@ -256,7 +256,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToView(null);
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Result", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Result", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -307,7 +307,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzQuizResults");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Users.Candidate", b =>
+            modelBuilder.Entity("Quiz.Domain.Users.Candidate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -363,9 +363,9 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.ToTable("qzCandidates");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Choice", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Choice", b =>
                 {
-                    b.HasOne("PatenteN.Quiz.Domain.Exams.Question", "Question")
+                    b.HasOne("Quiz.Domain.Exams.Question", "Question")
                         .WithMany("Choices")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -374,18 +374,18 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Exam", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Exam", b =>
                 {
-                    b.HasOne("PatenteN.Quiz.Domain.Exams.Exam", "Ancestor")
+                    b.HasOne("Quiz.Domain.Exams.Exam", "Ancestor")
                         .WithMany()
                         .HasForeignKey("AncestorId");
 
                     b.Navigation("Ancestor");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Question", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Question", b =>
                 {
-                    b.HasOne("PatenteN.Quiz.Domain.Exams.Exam", "Exam")
+                    b.HasOne("Quiz.Domain.Exams.Exam", "Exam")
                         .WithMany()
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -394,7 +394,7 @@ namespace PatenteN.Quiz.Domain.Migrations
                     b.Navigation("Exam");
                 });
 
-            modelBuilder.Entity("PatenteN.Quiz.Domain.Exams.Question", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Question", b =>
                 {
                     b.Navigation("Choices");
                 });

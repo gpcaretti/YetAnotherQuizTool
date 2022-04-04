@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PatenteN.Quiz.Domain.Exams {
+namespace Quiz.Domain.Exams {
 
     public class Answer : BaseEntity<Guid> {
         public Answer()

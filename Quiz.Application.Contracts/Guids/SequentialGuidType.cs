@@ -1,4 +1,4 @@
-﻿namespace PatenteN.Quiz.Application.Guids {
+﻿namespace Quiz.Application.Guids {
 
     /// <summary>
     /// Describes the type of a sequential GUID value.

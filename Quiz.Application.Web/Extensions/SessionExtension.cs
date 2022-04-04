@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PatenteN.Quiz.Application.Web.Extensions
+namespace Quiz.Application.Web.Extensions
 {
     public static class SessionExtension
     {

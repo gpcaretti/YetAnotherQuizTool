@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PatenteN.Quiz.Application.Dtos {
+namespace Quiz.Application.Dtos {
     public class PagedAndSortedResultRequestDto {
 
         [Range(1, int.MaxValue)]

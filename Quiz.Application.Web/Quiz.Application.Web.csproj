@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
-      <RootNamespace>PatenteN.$(MSBuildProjectName)</RootNamespace>
+      <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>

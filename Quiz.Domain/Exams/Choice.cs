@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PatenteN.Quiz.Domain.Exams {
+namespace Quiz.Domain.Exams {
 
     public class Choice : BaseEntity<Guid> {
         public Choice(Guid id)

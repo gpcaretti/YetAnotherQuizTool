@@ -1,4 +1,4 @@
-﻿namespace PatenteN.Quiz.Application.Web {
+﻿namespace Quiz.Application.Web {
     internal static class QuizConstants {
         public const string AuthUserKey = "AuthenticatedUser";
     }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PatenteN.Quiz.Application.Web.Models
+namespace Quiz.Application.Web.Models
 {
     public class RegisterViewModel
     {

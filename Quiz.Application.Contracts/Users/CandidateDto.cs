@@ -1,4 +1,4 @@
-﻿namespace PatenteN.Quiz.Domain.Users {
+﻿namespace Quiz.Domain.Users {
 
     public class CandidateDto : BaseEntityDto<Guid> {
         public string Name { get; set; }

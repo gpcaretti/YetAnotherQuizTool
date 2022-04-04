@@ -3,11 +3,17 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
       <Nullable>enable</Nullable>
-      <RootNamespace>PatenteN.$(MSBuildProjectName)</RootNamespace>
+      <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
       <!--<ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>-->
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DAL\**" />
+    <EmbeddedResource Remove="DAL\**" />
+    <None Remove="DAL\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />

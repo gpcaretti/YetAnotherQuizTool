@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PatenteN.Quiz.Domain;
-using PatenteN.Quiz.Domain.Exams;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Domain;
+using Quiz.Domain.Exams;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application.Exams {
+namespace Quiz.Application.Exams {
 
     public class ResultAppService : QuizApplicationService<Result, ResultDto, Guid>, IResultAppService {
 

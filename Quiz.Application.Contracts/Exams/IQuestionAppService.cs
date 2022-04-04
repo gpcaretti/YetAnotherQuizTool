@@ -1,10 +1,9 @@
-﻿using PatenteN.Quiz.Domain.Exams;
+﻿using Quiz.Domain.Exams;
 
-namespace PatenteN.Quiz.Application.Exams {
+namespace Quiz.Application.Exams {
     public interface IQuestionAppService : IQuizApplicationService<Question, QuestionDto, Guid> {
-        Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(QuestionsByExamRequestDto input);
-        Task<QnADto> GetQuestionListByExam(Guid ExamId);
+        Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(PrepareExamSessionRequestDto input);
         Task<int> UpdateQuestion(Question entity);
-        Task<QnADto> PrepareExamAttempt(QuestionsByExamRequestDto input);
+        Task<PrepareExamSessionResponseDto> PrepareExamSession(PrepareExamSessionRequestDto input);
     }
 }

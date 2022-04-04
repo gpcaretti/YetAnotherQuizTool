@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace PatenteN.Quiz.Domain {
+namespace Quiz.Domain {
 
     public abstract class BaseEntity<TPrimaryKey> {
 

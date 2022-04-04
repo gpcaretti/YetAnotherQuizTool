@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PatenteN.Quiz.Domain.Exams {
+namespace Quiz.Domain.Exams {
     public class Exam : BaseEntity<Guid> {
         public Exam(Guid id)
             : base(id) {
@@ -11,7 +11,7 @@ namespace PatenteN.Quiz.Domain.Exams {
 
         [ForeignKey(nameof(Ancestor))]
         public Guid? AncestorId { get; set; }
-        public Exam Ancestor { get; set; }
+        public Exam? Ancestor { get; set; }
 
         [MaxLength(1024)]
         public string Name { get; set; }

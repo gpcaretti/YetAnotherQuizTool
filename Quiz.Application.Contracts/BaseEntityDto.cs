@@ -1,5 +1,5 @@
 ﻿
-namespace PatenteN.Quiz.Domain {
+namespace Quiz.Domain {
 
     public abstract class BaseEntityDto<TPrimaryKey> {
         public TPrimaryKey? Id { get; set; }

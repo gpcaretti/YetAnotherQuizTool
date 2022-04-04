@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PatenteN.Quiz.Domain.Migrations
+namespace Quiz.Domain.Migrations
 {
     public partial class InitialMigration : Migration
     {

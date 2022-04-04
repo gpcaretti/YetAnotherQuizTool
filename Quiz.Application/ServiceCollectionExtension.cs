@@ -1,13 +1,16 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using PatenteN.Quiz.Application.Exams;
-using PatenteN.Quiz.Application.Guids;
-using PatenteN.Quiz.Application.Users;
+using Quiz.Application.Exams;
+using Quiz.Application.Guids;
+using Quiz.Application.Users;
 
-namespace PatenteN.Quiz {
+namespace Quiz {
 
     public static class ServiceCollectionExtension {
 
+        /// <summary>
+        ///     Register my application's services
+        /// </summary>
         public static IServiceCollection AddMyServices(this IServiceCollection services) {
             return services
                 .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies())

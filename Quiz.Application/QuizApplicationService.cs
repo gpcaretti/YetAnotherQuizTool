@@ -6,9 +6,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PatenteN.Quiz.Domain;
+using Quiz.Domain;
 
-namespace PatenteN.Quiz.Application {
+namespace Quiz.Application {
     public class QuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
         : IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
         where TEntity : BaseEntity<TPrimaryKey> {

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using PatenteN.Quiz.Domain.Exams;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Domain.Exams;
+using Quiz.Domain.Exams.Sessions;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Domain {
+namespace Quiz.Domain {
     public class QuizDBContext : DbContext {
         public QuizDBContext() {
         }
@@ -15,6 +16,9 @@ namespace PatenteN.Quiz.Domain {
         public virtual DbSet<Exam> Exams { get; set; }
         public virtual DbSet<Question> Questions { get; set; }
         public virtual DbSet<Choice> Choices { get; set; }
+        //public virtual DbSet<ExamSession> ExamSessions { get; set; }
+        //public virtual DbSet<ExamSessionItem> ExamSessionItems { get; set; }
+
         public virtual DbSet<Answer> Answers { get; set; }
         public virtual DbSet<Result> QuizResults { get; set; }
 

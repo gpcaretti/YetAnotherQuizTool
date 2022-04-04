@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PatenteN.Quiz.Application.Guids;
-using PatenteN.Quiz.Application.Users;
-using PatenteN.Quiz.Application.Web.Extensions;
-using PatenteN.Quiz.Application.Web.Models;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Application.Guids;
+using Quiz.Application.Users;
+using Quiz.Application.Web.Extensions;
+using Quiz.Application.Web.Models;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application.Web.Controllers {
+namespace Quiz.Application.Web.Controllers {
     public class AccountController : Controller {
         private readonly ICandidateAppService _candidateAppService;
         private readonly IGuidGenerator GuidGenerator;

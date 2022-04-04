@@ -1,10 +1,10 @@
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
-using PatenteN.Quiz.Application.Web.Authentication;
-using PatenteN.Quiz.Domain;
+using Quiz.Application.Web.Authentication;
+using Quiz.Domain;
 
-namespace PatenteN.Quiz.Application.Web {
+namespace Quiz.Application.Web {
 
     public class Program {
         public static void Main(string[] args) {

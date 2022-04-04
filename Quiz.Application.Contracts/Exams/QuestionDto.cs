@@ -1,4 +1,4 @@
-﻿namespace PatenteN.Quiz.Domain.Exams {
+﻿namespace Quiz.Domain.Exams {
     public class QuestionDto : BaseEntityDto<Guid> {
         public Guid ExamId { get; set; }
         public string Statement { get; set; }

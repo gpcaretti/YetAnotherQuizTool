@@ -1,4 +1,6 @@
-﻿namespace PatenteN.Quiz.Domain.Exams {
+﻿namespace Quiz.Domain.Exams {
+
+    [Obsolete()]
     public class ResultDto : BaseEntityDto<Guid> {
         public string SessionId { get; set; }
         public Guid CandidateId { get; set; }

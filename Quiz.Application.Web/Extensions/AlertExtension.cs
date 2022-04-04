@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PatenteN.Quiz.Application.Web.Enums;
+using Quiz.Application.Web.Enums;
 
-namespace PatenteN.Quiz.Application.Web.Extensions
+namespace Quiz.Application.Web.Extensions
 {
     public class AlertExtension
     {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 
-namespace PatenteN.Quiz.Application.Web.Authentication
+namespace Quiz.Application.Web.Authentication
 {
     public class BasicAuthentication : ActionFilterAttribute
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PatenteN.Quiz.Domain.Exams {
+namespace Quiz.Domain.Exams {
 
     public class Question : BaseEntity<Guid> {
         //public Question()
@@ -27,6 +27,6 @@ namespace PatenteN.Quiz.Domain.Exams {
         [MaxLength(256)]
         public string? ImageUri { get; set; }
 
-        public virtual ICollection<Choice> Choices { get; set; }
+        public virtual ICollection<Choice> Choices { get; private set; }
     }
 }

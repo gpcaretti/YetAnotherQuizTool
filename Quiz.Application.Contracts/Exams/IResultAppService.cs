@@ -1,6 +1,6 @@
-﻿using PatenteN.Quiz.Domain.Exams;
+﻿using Quiz.Domain.Exams;
 
-namespace PatenteN.Quiz.Application.Exams {
+namespace Quiz.Application.Exams {
     public interface IResultAppService : IQuizApplicationService<Result, ResultDto, Guid> {
         Task<IEnumerable<QuizAttempt>> GetAttemptHistory(Guid candidateId);
         Task<IEnumerable<QuizReport>> ScoreReport(ReqReport argRpt);

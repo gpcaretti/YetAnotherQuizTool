@@ -3,13 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PatenteN.Quiz.Application</title>
+    <title>@ViewData["Title"] - Quiz.Application</title>
     <link rel="icon" type="image/png" href="~/images/icons/favicon.ico" />
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
     <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <environment include="Development">
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
     <style>
         html, body, h1, h2, h3, h4, h5 {
             font-family: "Open Sans", sans-serif
@@ -54,7 +60,7 @@
         <marquee direction="left"><h6>Things to remember ! The test is not official, it's just a nice way to see how much you know, or don't know, about the skill.</h6></marquee>
     </footer>
     <footer class="w3-container w3-theme-d5 w3-padding-16">
-        <h6>Developed by <a href="https://www.c-sharpcorner.com/members/arnab-mukherjee" target="_blank">Arnab Mukherjee</a></h6>
+        <h6>Developed by <a href="https://www.gpsoftware.it" target="_blank">GP software engineering</a> &ndash; <a href="">info@gpsoftware.it</a> </h6>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

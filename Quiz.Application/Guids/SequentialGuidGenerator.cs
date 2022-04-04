@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace PatenteN.Quiz.Application.Guids {
+namespace Quiz.Application.Guids {
 
     public class SequentialGuidGenerator : IGuidGenerator {
 

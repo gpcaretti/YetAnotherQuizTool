@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PatenteN.Quiz.Application.Exams;
-using PatenteN.Quiz.Application.Web.Authentication;
-using PatenteN.Quiz.Domain.Exams;
+using Quiz.Application.Exams;
+using Quiz.Application.Web.Authentication;
+using Quiz.Domain.Exams;
 
-namespace PatenteN.Quiz.Application.Web.Controllers {
+namespace Quiz.Application.Web.Controllers {
 
     [BasicAuthentication]
     public class ExamController : Controller {
@@ -35,6 +35,10 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             }
         }
 
+        /// <summary>
+        ///     Get info about an exam
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
         [Route("~/api/Exam/{examId?}")]
         public async Task<IActionResult> Exam(Guid examId) {
@@ -55,12 +59,16 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             }
         }
 
+        /// <summary>
+        ///     Prepare an exam session based on the passed exam Id
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
-        [Route("~/api/Questions/{input?}")]
-        public async Task<IActionResult> Questions(QuestionsByExamRequestDto input) {
+        [Route("~/api/PrepareExamSession/{input?}")]
+        public async Task<IActionResult> PrepareExamSession(PrepareExamSessionRequestDto input) {
             try {
-                QnADto qna = await _questionAppService.PrepareExamAttempt(input);
-                return Ok(qna);
+                PrepareExamSessionResponseDto examSession = await _questionAppService.PrepareExamSession(input);
+                return Ok(examSession);
             } catch (Exception ex) {
                 if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
@@ -74,66 +82,46 @@ namespace PatenteN.Quiz.Application.Web.Controllers {
             }
         }
 
-        //[HttpGet]
-        //[Route("~/api/Questions/{examId?}")]
-        //public async Task<IActionResult> Questions(Guid examId) {
+        /// <summary>
+        ///     Save the passed test results
+        /// </summary>
+        /// <param name="qnaResults"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        //[HttpPost]
+        //[Route("~/api/Score")]
+        //public async Task<IActionResult> Score(QnAResultsDto qnaResults) {
+        //    bool isCorrect = false;
+        //    List<Result> objList = null;
+        //    string sessionId = null;
+        //    int nSaved = 0;
         //    try {
-        //        QnADto qna = await _questionAppService.GetQuestionListByExam(examId);
-        //        return Ok(qna);
+        //        if (qnaResults.Answers.Count > 0) {ite.js
+        //            sessionId = Guid.NewGuid().ToString() + "-" + DateTimeOffset.Now;
+        //            objList = new List<Result>();
+        //            foreach (var item in qnaResults.Answers) {
+        //                Result obj = new Result() {
+        //                    CandidateId = qnaResults.CandidateId,
+        //                    ExamId = item.ExamId,
+        //                    QuestionId = item.QuestionId,
+        //                    //FIXME SelectedChoiceId = item.ChoiceId,
+        //                    IsCorrent = isCorrect,
+        //                    SessionId = sessionId,
+        //                    CreatedBy = "SYSTEM",
+        //                    CreatedOn = DateTimeOffset.Now
+        //                };
+        //                objList.Add(obj);
+        //            }
+        //            nSaved = await _resultAppService.AddResults(objList);
+        //            return Ok(nSaved);
+        //        }
         //    } catch (Exception ex) {
         //        if (ex.InnerException == null) throw;
         //        throw new Exception(ex.Message, ex.InnerException);
-        //        //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        //        //return Json(new {
-        //        //    Result = false,
-        //        //    Error = ex.Message,
-        //        //    Exception = ex.InnerException, 
-        //        //});
         //    } finally {
         //    }
+        //    return Ok(nSaved);
         //}
-
-        [HttpPost]
-        [Route("~/api/Score")]
-        public async Task<IActionResult> Score(List<Option> objRequest) {
-            int i = 0;
-            bool IsCorrect = false;
-            List<Result> objList = null;
-            string sessionID = null;
-            try {
-                if (objRequest.Count > 0) {
-                    sessionID = Guid.NewGuid().ToString() + "-" + DateTimeOffset.Now;
-                    objList = new List<Result>();
-                    foreach (var item in objRequest) {
-                        if (item.AnswerId == item.SelectedOption)
-                            IsCorrect = true;
-                        else
-                            IsCorrect = false;
-
-                        Result obj = new Result() {
-                            CandidateId = item.CandidateId,
-                            ExamId = item.ExamId,
-                            QuestionId = item.QuestionId,
-                            AnswerId = item.AnswerId,
-                            SelectedOptionId = item.SelectedOption,
-                            IsCorrent = IsCorrect,
-                            SessionId = sessionID,
-                            CreatedBy = "SYSTEM",
-                            CreatedOn = DateTimeOffset.Now
-                        };
-                        objList.Add(obj);
-                    }
-                    i = await _resultAppService.AddResults(objList);
-                }
-
-            } catch (Exception ex) {
-                i = 0;
-                if (ex.InnerException == null) throw;
-                throw new Exception(ex.Message, ex.InnerException);
-            } finally {
-            }
-            return Ok(i);
-        }
 
     }
 }

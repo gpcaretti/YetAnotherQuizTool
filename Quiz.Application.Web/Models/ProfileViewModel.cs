@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PatenteN.Quiz.Application.Web.Models {
+namespace Quiz.Application.Web.Models {
     public class ProfileViewModel {
         public Guid Id { get; set; }
 

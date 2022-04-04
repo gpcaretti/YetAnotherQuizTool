@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using PatenteN.Quiz.Domain.Exams;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Domain.Exams;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application {
+namespace Quiz.Application {
 
     internal class AutomapperProfile : Profile {
 

@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
-using PatenteN.Quiz.Domain;
+using Quiz.Domain;
 
-namespace PatenteN.Quiz.Application {
+namespace Quiz.Application {
     public interface IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
         where TEntity : BaseEntity<TPrimaryKey> {
 

@@ -3,24 +3,20 @@
 // Write your JavaScript code.
 $(document).ready(function () {
 
-	var CurrentExamId = null;
+	var ExamSession = null;
+	var ExamSessionResults = null;
 
-	var QnA = {};
 	var CurrentQId = null;
 	var CurrentQidx = -1;
-
-	var QnAResults = [];
 
 	var Score = null;
 	var Status = null;
 
 	var objReport = null;
 
-	var CheckTime = [];
+	var CountDownTimer = null;
 
 	var constraints = { audio: true, video: { width: { min: 640, ideal: 640, max: 640 }, height: { min: 480, ideal: 480, max: 480 }, framerate: 60 } };
-	var recBtn = document.querySelector('button#btnStart');
-	var stopBtn = document.querySelector('button#btnSubmit');
 	var liveVideoElement = document.querySelector('#gum');   
 
 	$('#ddlExam').prop('disabled', false);
@@ -37,10 +33,12 @@ $(document).ready(function () {
 	var mediaRecorder;
 	var chunks = [];
 	var count = 0;
-	var localStream = null;
-	var soundMeter = null;
+	var LocalStream = null;
+	var SoundMeter = null;
 	var containerType = "video/webm"; //defaults to webm but we switch to mp4 on Safari 14.0.2+
 
+// TODO: media recording skipped by GP!
+/*
 	if (!navigator.mediaDevices.getUserMedia) {
 		alert('navigator.mediaDevices.getUserMedia not supported on your browser, use the latest version of Firefox or Chrome');
 	} else {
@@ -49,9 +47,9 @@ $(document).ready(function () {
 		} else {
 			navigator.mediaDevices.getUserMedia(constraints)
 				.then(function (stream) {
-					localStream = stream;
+					LocalStream = stream;
 
-					localStream.getTracks().forEach(function (track) {
+					LocalStream.getTracks().forEach(function (track) {
 						if (track.kind == "audio") {
 							track.onended = function (event) {
 								console.log("audio track.onended Audio track.readyState=" + track.readyState + ", track.muted=" + track.muted);
@@ -64,7 +62,7 @@ $(document).ready(function () {
 						}
 					});
 
-					liveVideoElement.srcObject = localStream;
+					liveVideoElement.srcObject = LocalStream;
 					liveVideoElement.play();
 
 					try {
@@ -74,45 +72,52 @@ $(document).ready(function () {
 						console.log('Web Audio API not supported.');
 					}
 
-					soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-					soundMeter.connectToSource(localStream, function (e) {
+					SoundMeter = window.soundMeter = new SoundMeter(window.audioContext);
+					SoundMeter.connectToSource(LocalStream, function (e) {
 						if (e) {
 							console.log(e);
 							return;
 						} else {
-							/*setInterval(function() {
-							   log(Math.round(soundMeter.instant.toFixed(2) * 100));
-						   }, 100);*/
+						   // setInterval(function() {
+						   //    log(Math.round(soundMeter.instant.toFixed(2) * 100));
+						   //}, 100);
 						}
 					});
 
 				}).catch(function (err) {
-					/* handle the error */
+					// handle the error
 					console.log('navigator.getUserMedia error: ' + err);
 				});
 		}
 	}
+*/
 
 	// fetch available exams
 	$.ajax({
 		type: "GET",
 		url: "/api/Exams",
 		data: "{}",
-		success: function (data) {
+		success: function (availableExams) {
 			var string = '<option value="">--- Please Select ---</option>';
-			//let tabs = "";
-			for (var i = 0; i < data.length; i++) {
-				let item = data[i];
+			let tabs = [];
+			let lastAncestorId = null;
+			let sorted = availableExams.sort((elem1, elem2) => (elem1.code > elem2.code) ? +1 : (elem1.code < elem2.code) ? -1 : 0);
+			for (let i in sorted) {
+				let item = availableExams[i];
 				let shortName = item.name	// get the text within the div
 					.trim()					// remove leading and trailing spaces
-					.substring(0, 40);		// get first N characters
+					.substring(0, 50);		// get first N characters
 				if (shortName.length < item.name.length)
 					shortName = shortName
-					.split(" ")				// separate characters into an array of words
-					.slice(0, -1)			// remove the last full or partial word
-					.join(" ") + "...";		// combine into a single string and append "..."
-				let tabs = (!!item.ancestorId) ? "&nbsp;&nbsp;" : "";
-				string += '<option value="' + item.id + '">' + tabs + shortName + '</option>';
+						.split(" ")				// separate characters into an array of words
+						.slice(0, -1)			// remove the last full or partial word
+						.join(" ") + "...";		// combine into a single string and append "..."
+				if (!item.ancestorId) {
+					tabs = [];
+				} else if (tabs.length == 0) {
+					tabs.push("&nbsp;&nbsp;&nbsp;");
+				}
+				string += `<option value="${item.id}">${tabs.join('')} + ${shortName}</option>`;
 			}
 			$("#ddlExam").html(string);
 		}
@@ -142,8 +147,8 @@ $(document).ready(function () {
 	 * Click previous question button
 	 */
 	$('#btnPrev').click(function () {
-		let idx = (CurrentQidx - 1) % QnA.totalCount;
-		if (idx <= QnA.totalCount - 1) {
+		let idx = (CurrentQidx - 1) % ExamSession.totalCount;
+		if (idx <= ExamSession.totalCount - 1) {
 			// save current choice of the user
 			$('#btnSave').click();
 			// change the print the previous question 
@@ -155,8 +160,8 @@ $(document).ready(function () {
 	 * Click next question button
 	 */
 	$('#btnNext').click(function () {
-		let idx = (CurrentQidx + 1) % QnA.totalCount;
-		if (idx <= QnA.totalCount - 1) {
+		let idx = (CurrentQidx + 1) % ExamSession.totalCount;
+		if (idx <= ExamSession.totalCount - 1) {
 			// save current choice of the user
 			$('#btnSave').click();
 			// change the print the next question
@@ -169,28 +174,40 @@ $(document).ready(function () {
 	 */
 	$('#btnSave').click(function () {
 		let answer = {
-			candidateId: $('#eqCandidateId').text(),
-			examId: CurrentExamId,
+			//candidateId: $('#eqCandidateId').text(),
+			examId: ExamSession.examId,
 			questionId: CurrentQId,
 			choiceId: $('input[name="option"]:checked').val() || null,
+			correctChoiceId: ExamSession.questions.find(item => item.id == CurrentQId)?.correctChoiceId
 		};
-		answer.isCorrect = !!answer.choiceId && (answer.choiceId == QnA.questions.find(item => item.id == answer.questionId)?.correctChoiceId)
+		answer.isCorrect = !!answer.choiceId && (answer.choiceId == answer.correctChoiceId);
 
-		let idx = QnAResults.findIndex(item => item.questionId === CurrentQId);
+		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
 		if (idx >= 0) {
-			QnAResults[idx] = answer;
+			ExamSessionResults.answers[idx] = answer;
 			//UpdateItem(CurrentQId);
 		}
 		else {
-			QnAResults.push(answer);
+			ExamSessionResults.answers.push(answer);
 		}       
 	});
 
+	$('#btnRestartSession').click(() => {
+		StartExamSession();
+	});
+
+	$('#btnStopSession').click(() => {
+		StopExamSession();
+	});
+
+	/**
+	 *
+	 */
 	$('#btnSubmit').click(function () {              
 		$.confirm({
 			icon: 'fa fa-warning',
 			title: 'Submit Quiz',
-			content: 'Are you sure you want to submit the quiz ?',
+			content: 'Are you sure you want to submit the quiz?',
 			type: 'orange',
 			closeIcon: true,
 			closeIconClass: 'fa fa-close',
@@ -204,7 +221,7 @@ $(document).ready(function () {
 						// save current choice of the user
 						$('#btnSave').click();
 						// now post the results of the quiz
-						$.post('/api/Score/', { objRequest: QnAResults },
+						$.post('/api/Score/', { objRequest: ExamSessionResults },
 						 function (data) {
 							 if (data > 0) {
 								 StopTimer();
@@ -297,40 +314,105 @@ $(document).ready(function () {
 	  $('#noFile').text(file);
 	});
 
+	/**
+	 *
+	 */
+	$('#btnStopContinueTimer').click(function () {
+		if (!ExamSession) return;
+		if (!CountDownTimer) {
+			ContinueTimer();
+			$('#btnStopContinueTimer').html("Pause timer");
+		} else {
+			StopTimer();
+			$('#btnStopContinueTimer').html("Continue timer");
+		}
+	});
+
+	/**
+	 *
+	 */
+	function StartExamSession() {
+		ExamSessionResults.answers = [];
+		ExamSessionResults.isEnded = false;
+		// enable/disable proper buttons
+		UINewSessionControls(false);
+		MoveToQuestionAndPrint(0);
+		StartTimer(ExamSession.duration || 0);
+		//TODO: StartRecord();
+	}
+
+	function StopExamSession() {
+		ExamSessionResults.isEnded = true;
+		UINewSessionControls(true);
+		MoveToQuestionAndPrint(0);
+		StopTimer();
+		StopRecord();
+	}
 
 	/**
 	 * 
 	 * @param {number} qIdx
 	 */
 	function MoveToQuestionAndPrint(qIdx) {
-		if ((qIdx < 0) || (qIdx >= QnA.totalCount)) {
-			DisplayErrorAlert(null, `Index out of range (${qIdx}). Cannot select the question.`);
+		if ((qIdx < 0) || (qIdx >= ExamSession.totalCount)) {
+			ShowErrorAlert(null, `Index out of range (${qIdx}). Cannot select the question.`);
 			return;
 		}
-		let question = QnA.questions[qIdx];
+
+		let question = ExamSession.questions[qIdx];
 		CurrentQidx = qIdx;
 		CurrentQId = question.id;
 
 		// print the question
 		$('div#eqMain p').empty();
-		$('#eqCount').html(`(${qIdx + 1} of ${QnA.totalCount})`);
-		$('div#eqMain h3').html(QnA.examName);
+		$('#eqCount').html(`(${qIdx + 1} of ${ExamSession.totalCount})`);
+		$('div#eqMain h3').html(ExamSession.name);
+		if (ExamSessionResults.isEnded) {
+			let correct = ExamSessionResults.answers.reduce((acc, answ) => answ.isCorrect ? ++acc : acc, 0);
+			let wrong = ExamSessionResults.answers.reduce((acc, answ) => !answ.isCorrect ? ++acc : acc, 0);
+			let notAnswered = ExamSession.questions.length - correct - wrong;
+			$('div#examSessionResults').html(
+				`<span class='correctChoice'>${correct} correct answer(s)</span><br/>` +
+				`<span class='wrongChoice'>${wrong} wrong answer(s)</span><br/>` +
+				`<span class=''><b>${notAnswered} not answered</b></span>`);
+		} else {
+			$('div#examSessionResults').empty();
+		}
+
 		$('div#eqMain h4').html(`${(question.code || qIdx + 1)}: ${question.statement}`);
 
 		// print the possible choices. If the user previously selected one of them, check it
-		let choiceSelectedByUser = QnAResults.find(o => o.questionId === CurrentQId);
+		let choiceSelectedByUser = ExamSessionResults.answers.find(o => o.questionId === CurrentQId);
 		let oString = "<div style='padding: 5px;' id='eqOption'>";
-		for (let i in question.choices) {
+		for (let i in question.choices.sort((elem1, elem2) => elem1.position - elem2.position)) {
 			let choice = question.choices[i];
-			let isSelected = choice.id == (choiceSelectedByUser?.choiceId ?? 0);
-			oString += `<label><input class='w3-radio' type='radio' name='option' value='${choice.id}' ${(isSelected ? 'checked' : '')}> ${choice.statement}</label><br/>`;
+			let checked = choice.id == (choiceSelectedByUser?.choiceId ?? 0) ? "checked" : "";
+			let readonly = ExamSessionResults.isEnded ? "disabled readonly" : "";
+			let colorMark = (readonly && checked && !choice.isCorrect)
+				? "wrongChoice"
+				: (readonly && !checked && choice.isCorrect)
+					? "correctChoiceHighlighted"
+					: (readonly && checked && choice.isCorrect)
+						? "correctChoice"
+						: "";
+			oString += `<div class='${colorMark}'><label class=''><input class='w3-radio' type='radio' name='option' value='${choice.id}' ${checked} ${readonly}> ${choice.statement}</label></div>`;
 		}
 		oString += "</div>";
 		$('div#eqMain p').append(oString);
 
 		// enable/disable prev & next btns
 		$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);
-		$('#eqMain button.w3-right').prop('disabled', (qIdx + 1) >= QnA.totalCount);
+		$('#eqMain button.w3-right').prop('disabled', (qIdx + 1) >= ExamSession.totalCount);
+	}
+
+	/**
+	 * Enable/disable proper buttons
+	 * @param {boolean } enabled
+	 */
+	function UINewSessionControls(enabled) {
+		$('#ddlExam').prop('disabled', !enabled);
+		$('#btnStart').prop('disabled', !enabled);
+		$('#btnSave').prop('disabled', !enabled);
 	}
 
 	/**
@@ -338,46 +420,49 @@ $(document).ready(function () {
 	 * @param {number} examId
 	 */
 	function FetchExam(examId) {
-		CurrentExamId = null;
-
 		// enable/disable proper buttons
-		$('#ddlExam').prop('disabled', true);
-		$('#btnStart').prop('disabled', true);
-		$('#btnSave').prop('disabled', false);
-
+		UINewSessionControls(false);
+		// fetch a new exam session
 		$.get('/api/Exam/', { ExamId: examId },
-			(data, textStatus, jqXHR) => {
-				CurrentExamId = examId;	// save the exam Id
-				FetchQuestions(examId);
-				StartTimer(data.duration || 0);
-				StartRecord();
+			(exam, textStatus, jqXHR) => {
+				try {
+					PrepareExamSession(exam.id);
+					StartExamSession();
+				} catch (e) {
+					StopExamSession();
+					StopTimer();
+					StopRecord();
+				}
 			}).fail((jqXHR, textStatus) => {
-				$('#ddlExam').prop('disabled', false);
-				$('#btnStart').prop('disabled', false);
-				$('#btnSave').prop('disabled', true);
+				UINewSessionControls(true);
 				//let errorData = $.parseJSON(jqXHR.responseText);
 				//let errorJson = jqXHR.responseJSON;
 				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
 				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
-				DisplayErrorAlert(errorJsonm, textStatus, jqXHR.status);
+				ShowErrorAlert(errorJsonm, textStatus, jqXHR.status);
 			});
 	}
 
 	/**
-	 * Fetch question and print the first one
+	 * Fetch questions for a test session and print the first question
 	 * @param {any} examId
 	 */
-	function FetchQuestions(examId) {
-		$.get('/api/Questions', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 50 },
+	function PrepareExamSession(examId) {
+		$.get('/api/PrepareExamSession', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 50 },
 			(data) => {
-				QnA = data;
+				ExamSession = data;
+				ExamSessionResults = {
+					candidateId: $('#eqCandidateId').text(),
+					examId: data.examId,
+					answers: []
+				};
 				MoveToQuestionAndPrint(0);
 			}).fail(function (jqXHR, textStatus) {
 				//let errorData = $.parseJSON(jqXHR.responseText);
 				//let errorJson = jqXHR.responseJSON;
 				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
 				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
-				DisplayErrorAlert(errorJson, textStatus, jqXHR.status);
+				ShowErrorAlert(errorJson, textStatus, jqXHR.status);
 			});
 	}
 
@@ -387,31 +472,67 @@ $(document).ready(function () {
 	 */
 	function StartTimer(durationMin) {
 		let deadline = new Date(new Date().getTime() + durationMin * 60000);
-		if (CheckTime.length == 0) {
-			var x = setInterval(() => {
-				let now = new Date().getTime();
-				let deltaT = deadline.getTime() - now;
-				let hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-				let minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
-				let seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
-				document.getElementById("timer").innerHTML = "Time : " + hours + ":" + minutes + ":" + seconds;
-				if (deltaT < 0) {
-					clearInterval(x);
-					document.getElementById("timer").innerHTML = "Time : 00:00:00";
-				}
-			}, 1000);
-			CheckTime.push(x);            
-		}
+		DoStartTimer(deadline);
 	}
 
+	/**
+	 * Continue current timer update the countdown
+	 */
+	function ContinueTimer() {
+		let timeString = document.getElementById("timer").innerHTML;
+		let idx = "Time: ".length;
+		timeString = timeString.substring(idx);
+
+		//innerHTML.substr("Time: ").length();
+		timeString = document.getElementById("timer").innerHTML.substr("Time: ".length).trim();
+		let deadline = AddTimeToDay(new Date(), timeString);
+		DoStartTimer(deadline);
+	}
+
+	/**
+	 * Stop the timer to update the countdown
+	 */
 	function StopTimer() {
-		clearInterval(CheckTime[0]);
-		CheckTime = [];       
+		if (!!CountDownTimer) clearInterval(CountDownTimer);
+		CountDownTimer = null;
 	}
 
-	//Recording
+	function DoStartTimer(deadline) {
+		StopTimer();
+		CountDownTimer = setInterval(() => {
+			let now = new Date().getTime();
+			let deltaT = deadline.getTime() - now;
+			let hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+			let minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+			let seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
+			document.getElementById("timer").innerHTML = "Time : " + hours + ":" + minutes + ":" + seconds;
+			if (deltaT < 0) {
+				StopTimer();
+				document.getElementById("timer").innerHTML = "Time : 00:00:00";
+			}
+		}, 1000);
+	}
+
+	/**
+	 * Add the passed timeString to the passed date (only the date)
+	 * 
+	 * @param {Date} date
+	 * @param {String} timeString - in the form of hh:mm:ss
+	 */
+	function AddTimeToDay(date, timeString) {
+		var month = '' + (date.getMonth() + 1),
+			day = '' + date.getDate(),
+			year = date.getFullYear();
+		if (month.length < 2) month = '0' + month;
+		if (day.length < 2) day = '0' + day;
+
+		return new Date(`${year}-${month}-${day}T${timeString}`);
+	}
+
+
+	// Recording
 	function StartRecord() {
-		if (localStream == null) {
+		if (LocalStream == null) {
 			alert('Could not get local stream from mic/camera');
 		} else {            
 			chunks = [];
@@ -433,14 +554,14 @@ $(document).ready(function () {
 					var options = { mimeType: 'video/mp4' };
 				}
 				console.log('Using ' + options.mimeType);
-				mediaRecorder = new MediaRecorder(localStream, options);
+				mediaRecorder = new MediaRecorder(LocalStream, options);
 			} else {
 				console.log('isTypeSupported is not supported, using default codecs for browser');
-				mediaRecorder = new MediaRecorder(localStream);
+				mediaRecorder = new MediaRecorder(LocalStream);
 			}
 
 			mediaRecorder.ondataavailable = function (e) {
-				console.log('mediaRecorder.ondataavailable, e.data.size=' + e.data.size);
+				//console.log('mediaRecorder.ondataavailable, e.data.size=' + e.data.size);
 				if (e.data && e.data.size > 0) {
 					chunks.push(e.data);
 				}
@@ -453,7 +574,7 @@ $(document).ready(function () {
 			mediaRecorder.onstart = function () {
 				console.log('mediaRecorder.onstart, mediaRecorder.state = ' + mediaRecorder.state);
 
-				localStream.getTracks().forEach(function (track) {
+				LocalStream.getTracks().forEach(function (track) {
 					if (track.kind == "audio") {
 						console.log("onstart - Audio track.readyState=" + track.readyState + ", track.muted=" + track.muted);
 					}
@@ -485,7 +606,7 @@ $(document).ready(function () {
 		   
 			mediaRecorder.start(1000);
 
-			localStream.getTracks().forEach(function (track) {
+			LocalStream.getTracks().forEach(function (track) {
 				console.log(track.kind + ":" + JSON.stringify(track.getSettings()));
 				console.log(track.getSettings());
 			})
@@ -493,8 +614,8 @@ $(document).ready(function () {
 	}
 
 	function StopRecord() {
-		mediaRecorder.stop();
-		liveVideoElement.srcObject = null;
+		if (!!mediaRecorder) mediaRecorder.stop();
+		if (!liveVideoElement) liveVideoElement.srcObject = null;
 	}
 
 	function PostBlob(blob) {
@@ -518,7 +639,7 @@ $(document).ready(function () {
 		});
 	}
 
-	function DisplayErrorAlert(errorJson, messageText, statusCode) {
+	function ShowErrorAlert(errorJson, messageText, statusCode) {
 		$.alert({
 			icon: 'fa fa-error',
 			type: 'red',

@@ -5,16 +5,16 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PatenteN.Quiz.Domain;
-using PatenteN.Quiz.Domain.Exams;
+using Quiz.Domain;
+using Quiz.Domain.Exams;
 
-namespace PatenteN.Quiz.Application.Exams {
+namespace Quiz.Application.Exams {
     public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
 
         public QuestionAppService(QuizDBContext dbContext, IMapper mapper) : base(dbContext, mapper) {
         }
 
-        public async Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(QuestionsByExamRequestDto input) {
+        public async Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(PrepareExamSessionRequestDto input) {
             // get the exam ids
             IList<Guid> examIds = null;
             if (!input.IsRecursive) {
@@ -48,69 +48,18 @@ namespace PatenteN.Quiz.Application.Exams {
             return _mapper.Map<QuestionAndChoicesDto[]>(entities);
         }
 
-        public async Task<QnADto> PrepareExamAttempt(QuestionsByExamRequestDto input) {
+        public async Task<PrepareExamSessionResponseDto> PrepareExamSession(PrepareExamSessionRequestDto input) {
             // get the exam title/name
-            string examName = await _dbContext.Exams.Where(e => e.Id == input.ExamId).Select(o => o.Name).SingleOrDefaultAsync();
-            if (string.IsNullOrEmpty(examName) && !await _dbContext.Exams.AnyAsync(e => e.Id == input.ExamId))
-                throw new Exception($"Exam not found (id: ${input.ExamId})");
+            var exam = await _dbContext.Exams.FirstOrDefaultAsync(e => e.Id == input.ExamId);
+            if (exam == null) throw new Exception($"Exam not found (id: ${input.ExamId})");
             // get the questions
             var questions = await GetRecursiveQuestionsByExam(input);
 
-            return new QnADto {
+            return new PrepareExamSessionResponseDto {
                 ExamId = input.ExamId,
-                ExamName = examName,
+                Name = exam.Name,
+                Duration = exam.Duration,
                 Questions = questions,
-            };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="examId"></param>
-        /// <returns></returns>
-        public async Task<QnADto> GetQuestionListByExam(Guid examId) {
-            IList<QuestionDetailsDto> qListDto = new List<QuestionDetailsDto>();
-
-            string examName = await _dbContext.Exams.Where(e => e.Id == examId).Select(o => o.Name).SingleOrDefaultAsync();
-            if (string.IsNullOrEmpty(examName) && !await _dbContext.Exams.AnyAsync(e => e.Id == examId))
-                throw new Exception($"Exam not found (id: ${examId})");
-
-            var questions = await _dbContext.Questions.Where(q => q.ExamId == examId).ToListAsync();
-            foreach (var qItem in questions) {
-                // get question's details
-                IList<OptionDetailsDto> optDetailsDto = new List<OptionDetailsDto>();
-                var qDetailsDto = new QuestionDetailsDto {
-                    QuestionId = qItem.Id,
-                    QuestionText = qItem.Statement,
-                };
-                // get question answers
-                var options = await _dbContext.Choices
-                    .Where(q => q.QuestionId == qItem.Id).Select(o => new { OptionId = o.Id, Option = o.Statement })
-                    .ToListAsync();
-
-                qDetailsDto.options = options
-                    .Select(c => new OptionDetailsDto() {
-                                        OptionId = c.OptionId,
-                                        Option = c.Option,
-                                    })
-                    .ToList();
-
-                var ans = await _dbContext.Answers
-                    .Where(q => q.QuestionId == qItem.Id).Select(o => new { AnswerId = o.Id, OptionId = o.ChoiceId, Answer = o.Statement, })
-                    .FirstOrDefaultAsync();
-                qDetailsDto.answer = new AnswerDetailsDto() {
-                    AnswerId = ans.AnswerId,
-                    OptionId = ans.OptionId,
-                    Answer = ans.Answer
-                };
-
-                qListDto.Add(qDetailsDto);
-            }
-
-            return new QnADto() {
-                ExamId = examId,
-                ExamName = examName,
-                //questionsOLD = qListDto
             };
         }
 

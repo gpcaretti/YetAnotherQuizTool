@@ -1,13 +1,13 @@
 ﻿using DinkToPdf;
 using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Mvc;
-using PatenteN.Quiz.Application.Exams;
-using PatenteN.Quiz.Application.Web.Authentication;
-using PatenteN.Quiz.Application.Web.Extensions;
-using PatenteN.Quiz.Domain.Exams;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Application.Exams;
+using Quiz.Application.Web.Authentication;
+using Quiz.Application.Web.Extensions;
+using Quiz.Domain.Exams;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application.Web.Controllers {
+namespace Quiz.Application.Web.Controllers {
     [BasicAuthentication]
     public class ScoreController : Controller {
         private readonly ILogger<ScoreController> _logger;

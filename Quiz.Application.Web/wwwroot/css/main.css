@@ -1,7 +1,5 @@
 
 
-
-
 /*//////////////////////////////////////////////////////////////////
 [ FONT ]*/
 
@@ -296,13 +294,13 @@ input.input100 {
 
 @keyframes full-w {
   to {
-    width: calc(100% + 1px);
+	width: calc(100% + 1px);
   }
 }
 
 @keyframes full-h {
   to {
-    height: calc(100% + 1px);
+	height: calc(100% + 1px);
   }
 }
 
@@ -411,10 +409,7 @@ input.input100 {
 
 @media (max-width: 992px) {
   .alert-validate::before {
-    visibility: visible;
-    opacity: 1;
+	visibility: visible;
+	opacity: 1;
   }
 }
-
-
-

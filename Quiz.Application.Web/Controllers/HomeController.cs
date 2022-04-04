@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using PatenteN.Quiz.Application.Users;
-using PatenteN.Quiz.Application.Web.Authentication;
-using PatenteN.Quiz.Application.Web.Enums;
-using PatenteN.Quiz.Application.Web.Extensions;
-using PatenteN.Quiz.Application.Web.Models;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Application.Users;
+using Quiz.Application.Web.Authentication;
+using Quiz.Application.Web.Enums;
+using Quiz.Application.Web.Extensions;
+using Quiz.Application.Web.Models;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application.Web.Controllers {
+namespace Quiz.Application.Web.Controllers {
 
     public class HomeController : Controller {
         private readonly ILogger<HomeController> _logger;

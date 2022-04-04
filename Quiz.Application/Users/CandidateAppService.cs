@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using PatenteN.Quiz.Domain;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Domain;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Application.Users {
+namespace Quiz.Application.Users {
 
     public class CandidateAppService
         : QuizApplicationService<Candidate, CandidateDto, Guid>, ICandidateAppService {

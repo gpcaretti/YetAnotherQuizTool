@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace PatenteN.Quiz.Domain.Users {
+namespace Quiz.Domain.Users {
 
     public class Candidate : BaseEntity<Guid> {
 

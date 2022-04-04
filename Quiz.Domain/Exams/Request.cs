@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using PatenteN.Quiz.Domain.Users;
+using Quiz.Domain.Users;
 
-namespace PatenteN.Quiz.Domain.Exams {
-    public class Option {
-        public Guid CandidateId { get; set; }
-        public Guid ExamId { get; set; }
-        public Guid QuestionId { get; set; }
-        public Guid AnswerId { get; set; }
-        public Guid SelectedOption { get; set; }
-    }
+namespace Quiz.Domain.Exams {
+    //public class Option {
+    //    public Guid CandidateId { get; set; }
+    //    public Guid ExamId { get; set; }
+    //    public Guid QuestionId { get; set; }
+    //    public Guid AnswerId { get; set; }
+    //    public Guid SelectedOption { get; set; }
+    //}
     public class Root {
         public Candidate objCandidate { get; set; }
         public List<QuizAttempt> objAttempt { get; set; }

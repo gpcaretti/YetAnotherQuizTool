@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using PatenteN.Quiz.Domain;
-using PatenteN.Quiz.Domain.Exams;
+using Quiz.Domain;
+using Quiz.Domain.Exams;
 
-namespace PatenteN.Quiz.Application.Exams {
+namespace Quiz.Application.Exams {
     public class ExamAppService : QuizApplicationService<Exam, ExamDto, Guid>, IExamAppService {
 
         public ExamAppService(QuizDBContext dbContext, IMapper mapper) : base(dbContext, mapper) {
