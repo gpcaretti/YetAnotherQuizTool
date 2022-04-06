@@ -3,8 +3,8 @@
 // Write your JavaScript code.
 $(document).ready(function () {
 
-	var ExamSession = null;
-	var ExamSessionResults = null;
+	var ExamSession = {};
+	var ExamSessionResults = {};
 
 	var CurrentQId = null;
 	var CurrentQidx = -1;
@@ -22,9 +22,14 @@ $(document).ready(function () {
 	$('#ddlExam').prop('disabled', false);
 	$('#btnStart').prop('disabled', false);
 	$('#btnSubmit').prop('disabled', false);
-	$('#btnSave').prop('disabled', true);
+
+	//$('#btnSave').prop('disabled', true);
+	//$('#btnShowHideSession').prop('disabled', true);
+	//$('#btnEndSession').prop('disabled', true);
+	//$('#btnRestartSession').prop('disabled', true);
 	$('#eqMain button.w3-left').prop('disabled', true);
 	$('#eqMain button.w3-right').prop('disabled', true);
+
 	$("#eqReport").children().prop('disabled', true);
 	$('#eqReport a').removeAttr("href");
 	$('#eqReport i').addClass("w3-opacity-max");
@@ -143,61 +148,47 @@ $(document).ready(function () {
 		}
 	});
 
+	$('#btnMoveToStart').click(function () {
+		SaveUserAnswerAndMoveTo(0);
+	});
+
 	/**
 	 * Click previous question button
 	 */
 	$('#btnPrev').click(function () {
-		let idx = (CurrentQidx - 1) % ExamSession.totalCount;
-		if (idx <= ExamSession.totalCount - 1) {
-			// save current choice of the user
-			$('#btnSave').click();
-			// change the print the previous question 
-			MoveToQuestionAndPrint(idx);
-		}
+		SaveUserAnswerAndMoveTo(CurrentQidx - 1);
 	});
 
 	/**
 	 * Click next question button
 	 */
 	$('#btnNext').click(function () {
-		let idx = (CurrentQidx + 1) % ExamSession.totalCount;
-		if (idx <= ExamSession.totalCount - 1) {
-			// save current choice of the user
-			$('#btnSave').click();
-			// change the print the next question
-			MoveToQuestionAndPrint(idx);
-		}
+		SaveUserAnswerAndMoveTo(CurrentQidx + 1);
+	});
+
+	$('#btnMoveToEnd').click(function () {
+		SaveUserAnswerAndMoveTo(ExamSession.totalCount - 1);
 	});
 
 	/**
 	 * Click 'save answer/choice' to current question
 	 */
 	$('#btnSave').click(function () {
-		let answer = {
-			//candidateId: $('#eqCandidateId').text(),
-			examId: ExamSession.examId,
-			questionId: CurrentQId,
-			choiceId: $('input[name="option"]:checked').val() || null,
-			correctChoiceId: ExamSession.questions.find(item => item.id == CurrentQId)?.correctChoiceId
-		};
-		answer.isCorrect = !!answer.choiceId && (answer.choiceId == answer.correctChoiceId);
+		SaveUserAnswer();
+	});
 
-		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
-		if (idx >= 0) {
-			ExamSessionResults.answers[idx] = answer;
-			//UpdateItem(CurrentQId);
-		}
-		else {
-			ExamSessionResults.answers.push(answer);
-		}       
+	$('#btnShowHideSession').click(() => {
+		SaveUserAnswer();
+		ExamSessionStopStartToggle();
+		$('#btnShowHideSession').html(ExamSessionResults.isEnded ? "Hide solutions" : "Show solutions");
+	});
+
+	$('#btnEndSession').click(() => {
+		EndExamSession();
 	});
 
 	$('#btnRestartSession').click(() => {
 		StartExamSession();
-	});
-
-	$('#btnStopSession').click(() => {
-		StopExamSession();
 	});
 
 	/**
@@ -219,7 +210,7 @@ $(document).ready(function () {
 					btnClass: 'btn-red',
 					action: function () {
 						// save current choice of the user
-						$('#btnSave').click();
+						SaveUserAnswer();
 						// now post the results of the quiz
 						$.post('/api/Score/', { objRequest: ExamSessionResults },
 						 function (data) {
@@ -328,12 +319,45 @@ $(document).ready(function () {
 		}
 	});
 
+
+	/**
+	 *
+	 */
+	function SaveUserAnswer() {
+		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
+		let choiceId = $('input[name="option"]:checked').val() || null;
+		if (!choiceId) {
+			// user did not select a choice. Update the answer history and return
+			if (idx >= 0) ExamSessionResults.answers.splice(idx, 1);
+			return;
+		}
+
+		let answer = {
+			//candidateId: $('#eqCandidateId').text(),
+			examId: ExamSession.examId,
+			questionId: CurrentQId,
+			choiceId: choiceId,
+			correctChoiceId: ExamSession.questions.find(item => item.id == CurrentQId)?.correctChoiceId
+		};
+		answer.isCorrect = !!answer.choiceId && (answer.choiceId == answer.correctChoiceId);
+
+		if (idx >= 0) {
+			ExamSessionResults.answers[idx] = answer;
+			//UpdateItem(CurrentQId);
+		}
+		else {
+			ExamSessionResults.answers.push(answer);
+		}
+	}
+
 	/**
 	 *
 	 */
 	function StartExamSession() {
-		ExamSessionResults.answers = [];
-		ExamSessionResults.isEnded = false;
+		ExamSessionResults = {
+			answers: [],
+			isEnded: false
+		};
 		// enable/disable proper buttons
 		UINewSessionControls(false);
 		MoveToQuestionAndPrint(0);
@@ -341,12 +365,32 @@ $(document).ready(function () {
 		//TODO: StartRecord();
 	}
 
-	function StopExamSession() {
+	function EndExamSession() {
 		ExamSessionResults.isEnded = true;
 		UINewSessionControls(true);
-		MoveToQuestionAndPrint(0);
+		ClearQuestionArea();
+		if (ExamSession.totalCount > 0) MoveToQuestionAndPrint(0);
 		StopTimer();
 		StopRecord();
+	}
+
+	function ExamSessionStopStartToggle() {
+		ExamSessionResults.isEnded = !ExamSessionResults.isEnded;
+		MoveToQuestionAndPrint(CurrentQidx);
+		//UINewSessionControls(ExamSessionResults.isEnded);
+	//	StopTimer();
+	//	StopRecord();
+	}
+
+	function SaveUserAnswerAndMoveTo(idx) {
+		// save current choice of the user
+		SaveUserAnswer();
+		idx = idx % ExamSession.totalCount;
+		if (idx <= ExamSession.totalCount - 1) MoveToQuestionAndPrint(idx);
+	}
+
+	function ClearQuestionArea() {
+		$('p#choices, div#eqMain h3, div#eqMain h4').empty();
 	}
 
 	/**
@@ -364,7 +408,7 @@ $(document).ready(function () {
 		CurrentQId = question.id;
 
 		// print the question
-		$('div#eqMain p').empty();
+		$('p#choices').empty();
 		$('#eqCount').html(`(${qIdx + 1} of ${ExamSession.totalCount})`);
 		$('div#eqMain h3').html(ExamSession.name);
 		if (ExamSessionResults.isEnded) {
@@ -398,7 +442,7 @@ $(document).ready(function () {
 			oString += `<div class='${colorMark}'><label class=''><input class='w3-radio' type='radio' name='option' value='${choice.id}' ${checked} ${readonly}> ${choice.statement}</label></div>`;
 		}
 		oString += "</div>";
-		$('div#eqMain p').append(oString);
+		$('p#choices').append(oString);
 
 		// enable/disable prev & next btns
 		$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);
@@ -413,6 +457,10 @@ $(document).ready(function () {
 		$('#ddlExam').prop('disabled', !enabled);
 		$('#btnStart').prop('disabled', !enabled);
 		$('#btnSave').prop('disabled', !enabled);
+
+	//	$('#btnShowHideSession').prop('disabled', !enabled);
+	//	$('#btnEndSession').prop('disabled', !enabled);
+	//	$('#btnRestartSession').prop('disabled', !enabled);
 	}
 
 	/**
@@ -429,7 +477,7 @@ $(document).ready(function () {
 					PrepareExamSession(exam.id);
 					StartExamSession();
 				} catch (e) {
-					StopExamSession();
+					EndExamSession();
 					StopTimer();
 					StopRecord();
 				}
@@ -448,7 +496,7 @@ $(document).ready(function () {
 	 * @param {any} examId
 	 */
 	function PrepareExamSession(examId) {
-		$.get('/api/PrepareExamSession', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 50 },
+		$.get('/api/PrepareExamSession', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 20 },
 			(data) => {
 				ExamSession = data;
 				ExamSessionResults = {
@@ -615,7 +663,7 @@ $(document).ready(function () {
 
 	function StopRecord() {
 		if (!!mediaRecorder) mediaRecorder.stop();
-		if (!liveVideoElement) liveVideoElement.srcObject = null;
+		if (!!liveVideoElement) liveVideoElement.srcObject = null;
 	}
 
 	function PostBlob(blob) {

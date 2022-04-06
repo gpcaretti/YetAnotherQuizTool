@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Domain;
 using Quiz.Domain.Exams;
@@ -20,6 +16,8 @@ namespace Quiz.Application.Exams {
             output = await _dbContext.SaveChangesAsync();
             return output;
         }
+
+        [Obsolete("TODO a better version")]
         public async Task<IEnumerable<QuizAttempt>> GetAttemptHistory(Guid candidateId) {
             try {
                 List<QuizAttempt> obj = await _dbContext.Set<QuizAttempt>().FromSqlRaw(@"SELECT
@@ -44,6 +42,7 @@ namespace Quiz.Application.Exams {
             }
         }
 
+        [Obsolete("TODO a better version")]
         public async Task<IEnumerable<QuizReport>> ScoreReport(ReqReport argRpt) {
             try {
                 List<QuizReport> obj = await _dbContext.Set<QuizReport>().FromSqlRaw(@"EXEC GetReport {0},{1},{2}", argRpt.ExamId, argRpt.CandidateId, argRpt.SessionId).ToListAsync();
@@ -54,6 +53,7 @@ namespace Quiz.Application.Exams {
             }
         }
 
+        [Obsolete("TODO a better version")]
         public async Task<string> GetCertificateString(ReqCertificate argRpt) {
             Candidate _candidate = await _dbContext.Candidates.Where(e => e.Id == argRpt.CandidateId).FirstOrDefaultAsync();
 
