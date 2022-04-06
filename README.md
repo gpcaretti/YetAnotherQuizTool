@@ -1,4 +1,4 @@
-# YetAnotherQuizToolSample
+# Yet Another Quiz Tool
 
 A almost completed ASP.NET Core 6 (NET6.0) application for quizzes inspired by
 [ArnabMSDN/Quiz-Application](http://squarespace.com/ "Title").
