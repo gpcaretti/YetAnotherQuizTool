@@ -36,7 +36,7 @@ namespace Quiz.Application.Exams {
             // run the query over the questions to get all with the proper exam id
             var query = _dbSet //.Set<Question>()
                 .Include(q => q.Choices)
-                .Where(q => examIds.Contains(q.ExamId));
+                .Where(q => examIds.Contains(q.ExamId) /*&& q.ImageUri != null*/);
             query = (input.IsRandom)
                 ? query.OrderBy(q => Guid.NewGuid())
                 : !string.IsNullOrEmpty(input.Sorting)
@@ -45,6 +45,9 @@ namespace Quiz.Application.Exams {
             query = query.AsNoTracking().Skip(input.SkipCount).Take(input.MaxResultCount);
 
             var entities = await query.ToListAsync();
+
+            //var errori = entities.Where(e => (e.Choices?.Count ?? 0) == 0).ToList();
+
             return _mapper.Map<QuestionAndChoicesDto[]>(entities);
         }
 

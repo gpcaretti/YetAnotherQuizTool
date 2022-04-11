@@ -1,4 +1,4 @@
-﻿namespace Quiz.Domain.Exams {
+﻿namespace Quiz.Application.Exams {
 
     public class PrepareExamSessionResponseDto {
         public Guid ExamId { get; set; }

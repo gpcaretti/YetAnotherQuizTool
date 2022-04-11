@@ -1,4 +1,6 @@
-﻿namespace Quiz.Domain.Exams {
+﻿using Quiz.Application;
+
+namespace Quiz.Application.Exams {
 
     [Obsolete()]
     public class ResultDto : BaseEntityDto<Guid> {

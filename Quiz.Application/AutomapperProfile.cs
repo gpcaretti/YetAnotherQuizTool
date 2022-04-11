@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Quiz.Application.Exams;
+using Quiz.Application.Users;
 using Quiz.Domain.Exams;
 using Quiz.Domain.Users;
 

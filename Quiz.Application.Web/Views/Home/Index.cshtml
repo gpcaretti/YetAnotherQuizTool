@@ -1,4 +1,5 @@
-﻿@model Quiz.Domain.Users.CandidateDto
+﻿@model Quiz.Application.Users.CandidateDto
+
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -59,13 +60,16 @@
                 </div>
             </div>
             <div class="w3-container w3-card w3-white w3-round w3-margin" id="eqMain">
-                <h3>Your test will start once you press the Start button.</h3>
-                <div id="examSessionResults"></div>
+                <h3 name="eqExamTile">Your test will start once you press the Start button.</h3>
+                <div name="eqExamSessionStats"></div>
                 <hr class="w3-clear">
-                <h4 style="color: blue;" id="eqQuestion"></h4>
-                <br>
-                <span class="w3-right w3-opacity" id="eqCount"></span>
-                <p id="choices"></p>               
+
+                <h4 style="color: blue;" name="eqQuestion"></h4>
+                <div class="dis-block" name="eqQuestionImage"></div>
+                <span class="w3-right w3-opacity" name="eqCounter"></span>
+
+                <p name="eqChoices"></p>
+
                 <button style="display: none; visibility: hidden" class="w3-button w3-block w3-blue" id="btnSave"><i class="fa fa-check"></i> Save</button>
                 <hr class="w3-clear">
                 <p>

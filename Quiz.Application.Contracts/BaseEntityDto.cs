@@ -1,5 +1,4 @@
-﻿
-namespace Quiz.Domain {
+﻿namespace Quiz.Application {
 
     public abstract class BaseEntityDto<TPrimaryKey> {
         public TPrimaryKey? Id { get; set; }
@@ -8,9 +7,9 @@ namespace Quiz.Domain {
 
         public DateTimeOffset? ModifiedOn { get; set; }
 
-        public string? CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
-        public string? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
 
         public bool IsDeleted { get; set; } = false;
     }

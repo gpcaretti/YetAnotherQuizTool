@@ -6,7 +6,6 @@ using Quiz.Application.Web.Authentication;
 using Quiz.Application.Web.Enums;
 using Quiz.Application.Web.Extensions;
 using Quiz.Application.Web.Models;
-using Quiz.Domain.Users;
 
 namespace Quiz.Application.Web.Controllers {
 

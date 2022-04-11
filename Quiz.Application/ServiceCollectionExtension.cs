@@ -4,7 +4,7 @@ using Quiz.Application.Exams;
 using Quiz.Application.Guids;
 using Quiz.Application.Users;
 
-namespace Quiz {
+namespace Quiz.Application {
 
     public static class ServiceCollectionExtension {
 

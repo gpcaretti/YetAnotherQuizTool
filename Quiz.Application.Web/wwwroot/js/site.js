@@ -325,7 +325,7 @@ $(document).ready(function () {
 	 */
 	function SaveUserAnswer() {
 		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
-		let choiceId = $('input[name="option"]:checked').val() || null;
+		let choiceId = $('div#eqMain').find('input[name="option"]:checked').val() || null;
 		if (!choiceId) {
 			// user did not select a choice. Update the answer history and return
 			if (idx >= 0) ExamSessionResults.answers.splice(idx, 1);
@@ -368,7 +368,7 @@ $(document).ready(function () {
 	function EndExamSession() {
 		ExamSessionResults.isEnded = true;
 		UINewSessionControls(true);
-		ClearQuestionArea();
+		ClearQuestionAndChoicesArea();
 		if (ExamSession.totalCount > 0) MoveToQuestionAndPrint(0);
 		StopTimer();
 		StopRecord();
@@ -389,12 +389,13 @@ $(document).ready(function () {
 		if (idx <= ExamSession.totalCount - 1) MoveToQuestionAndPrint(idx);
 	}
 
-	function ClearQuestionArea() {
-		$('p#choices, div#eqMain h3, div#eqMain h4').empty();
+	function ClearQuestionAndChoicesArea() {
+		$qnaArea = $('div#eqMain')
+			.find('[name^="eq"]').empty();
 	}
 
 	/**
-	 * 
+	 * Move to the indicated question/quiz and print it and the choices
 	 * @param {number} qIdx
 	 */
 	function MoveToQuestionAndPrint(qIdx) {
@@ -408,26 +409,34 @@ $(document).ready(function () {
 		CurrentQId = question.id;
 
 		// print the question
-		$('p#choices').empty();
-		$('#eqCount').html(`(${qIdx + 1} of ${ExamSession.totalCount})`);
-		$('div#eqMain h3').html(ExamSession.name);
+		ClearQuestionAndChoicesArea();
+
+		let $qnaArea = $('div#eqMain');
+		$qnaArea.find('[name="eqExamTile"]').html(ExamSession.name);
+		$qnaArea.find('[name="eqCounter"]').html(`(${qIdx + 1} of ${ExamSession.totalCount})`);
+
 		if (ExamSessionResults.isEnded) {
+			// show the overall results
 			let correct = ExamSessionResults.answers.reduce((acc, answ) => answ.isCorrect ? ++acc : acc, 0);
 			let wrong = ExamSessionResults.answers.reduce((acc, answ) => !answ.isCorrect ? ++acc : acc, 0);
 			let notAnswered = ExamSession.questions.length - correct - wrong;
-			$('div#examSessionResults').html(
+			$qnaArea.find('[name="eqExamSessionStats"]').html(
 				`<span class='correctChoice'>${correct} correct answer(s)</span><br/>` +
 				`<span class='wrongChoice'>${wrong} wrong answer(s)</span><br/>` +
 				`<span class=''><b>${notAnswered} not answered</b></span>`);
-		} else {
-			$('div#examSessionResults').empty();
 		}
 
-		$('div#eqMain h4').html(`${(question.code || qIdx + 1)}: ${question.statement}`);
+		// show the question
+		$qnaArea.find('[name="eqQuestion"]').html(`${(question.code || qIdx + 1)}: ${question.statement}`);
+
+		if (!!question.imageUri) {
+			$qnaArea.find('[name="eqQuestionImage"]')
+				.html(`<img src="${((question.imageUri.charAt(0) === '~') ? question.imageUri.slice(1) : question.imageUri)}" class="" style="max-width:100%" alt="Immagine">`);
+		}
 
 		// print the possible choices. If the user previously selected one of them, check it
 		let choiceSelectedByUser = ExamSessionResults.answers.find(o => o.questionId === CurrentQId);
-		let oString = "<div style='padding: 5px;' id='eqOption'>";
+		let oString = "<div style='padding: 5px;'>";
 		for (let i in question.choices.sort((elem1, elem2) => elem1.position - elem2.position)) {
 			let choice = question.choices[i];
 			let checked = choice.id == (choiceSelectedByUser?.choiceId ?? 0) ? "checked" : "";
@@ -442,7 +451,7 @@ $(document).ready(function () {
 			oString += `<div class='${colorMark}'><label class=''><input class='w3-radio' type='radio' name='option' value='${choice.id}' ${checked} ${readonly}> ${choice.statement}</label></div>`;
 		}
 		oString += "</div>";
-		$('p#choices').append(oString);
+		$qnaArea.find('[name="eqChoices"]').append(oString);
 
 		// enable/disable prev & next btns
 		$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);

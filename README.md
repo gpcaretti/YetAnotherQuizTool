@@ -22,4 +22,4 @@ A almost completed ASP.NET Core 6 (NET6.0) application for quizzes inspired by
 
 ## Remarks
 
-The solution is simple and implement a very basic security login system. Password are just base64 encoded.
+The solution is simple and implement a very basic security login system. Passwords are just base64 encoded.

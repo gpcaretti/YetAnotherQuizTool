@@ -55,6 +55,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
     <ProjectReference Include="..\Quiz.Application\Quiz.Application.csproj" />
   </ItemGroup>
 

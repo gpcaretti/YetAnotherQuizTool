@@ -2,8 +2,6 @@ using System.Net;
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quiz.Application.Web.Authentication;
 using Quiz.Domain;
 
@@ -47,11 +45,12 @@ namespace Quiz.Application.Web {
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
 #if (DEBUG)
+            // useful to allow modification to cshtml pages during development
             services.AddRazorPages().AddRazorRuntimeCompilation();
 #else
             services.AddRazorPages();
 #endif
-            // configure session and its timeout
+            // configure http session and its timeout
             services.AddSession(options => {
                 var section = configuration.GetSection("Session");
                 options.IdleTimeout = TimeSpan.FromMinutes(section?.GetValue<int?>("IdleTimeout") ?? 30);
@@ -78,7 +77,7 @@ namespace Quiz.Application.Web {
         }
 
         private static void ConfigureMiddleware(IApplicationBuilder app, IWebHostEnvironment env) {
-            // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();

@@ -1,4 +1,4 @@
-﻿namespace Quiz.Domain.Exams {
+﻿namespace Quiz.Application.Exams {
 
     public class ChoiceDto : BaseEntityDto<Guid> {
         public Guid QuestionId { get; set; }

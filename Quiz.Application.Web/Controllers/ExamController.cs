@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Quiz.Application.Exams;
 using Quiz.Application.Web.Authentication;
-using Quiz.Domain.Exams;
 
 namespace Quiz.Application.Web.Controllers {
 

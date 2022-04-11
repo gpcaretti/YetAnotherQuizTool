@@ -366,5 +366,6 @@ FodyWeavers.xsd
 [Dd]esktop.ini
 [Cc]lients/[Ii]mporter/
 [Uu]ploadedFiles/
+[Pp]atenteN/
 DAL/
 *[Pp]rivate*
