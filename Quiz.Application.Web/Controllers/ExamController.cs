@@ -84,43 +84,42 @@ namespace Quiz.Application.Web.Controllers {
         /// <summary>
         ///     Save the passed test results
         /// </summary>
-        /// <param name="qnaResults"></param>
-        /// <returns></returns>
+        /// <param name="input"></param>
         /// <exception cref="Exception"></exception>
-        //[HttpPost]
-        //[Route("~/api/Score")]
-        //public async Task<IActionResult> Score(QnAResultsDto qnaResults) {
-        //    bool isCorrect = false;
-        //    List<Result> objList = null;
-        //    string sessionId = null;
-        //    int nSaved = 0;
-        //    try {
-        //        if (qnaResults.Answers.Count > 0) {ite.js
-        //            sessionId = Guid.NewGuid().ToString() + "-" + DateTimeOffset.Now;
-        //            objList = new List<Result>();
-        //            foreach (var item in qnaResults.Answers) {
-        //                Result obj = new Result() {
-        //                    CandidateId = qnaResults.CandidateId,
-        //                    ExamId = item.ExamId,
-        //                    QuestionId = item.QuestionId,
-        //                    //FIXME SelectedChoiceId = item.ChoiceId,
-        //                    IsCorrent = isCorrect,
-        //                    SessionId = sessionId,
-        //                    CreatedBy = "SYSTEM",
-        //                    CreatedOn = DateTimeOffset.Now
-        //                };
-        //                objList.Add(obj);
-        //            }
-        //            nSaved = await _resultAppService.AddResults(objList);
-        //            return Ok(nSaved);
-        //        }
-        //    } catch (Exception ex) {
-        //        if (ex.InnerException == null) throw;
-        //        throw new Exception(ex.Message, ex.InnerException);
-        //    } finally {
-        //    }
-        //    return Ok(nSaved);
-        //}
+        [HttpPost]
+        [Route("~/api/Score")]
+        public async Task<IActionResult> Score(ExamSessionResultsRequestDto input) {
+            bool isCorrect = false;
+            //List<Result> objList = null;
+            string sessionId = null;
+            int nSaved = 0;
+            try {
+                if (input.Answers.Count > 0) {
+                    //    ite.jssessionId = Guid.NewGuid().ToString() + "-" + DateTimeOffset.Now;
+                    //    objList = new List<Result>();
+                    //    foreach (var item in input.Answers) {
+                    //        Result obj = new Result() {
+                    //            CandidateId = input.CandidateId,
+                    //            ExamId = item.ExamId,
+                    //            QuestionId = item.QuestionId,
+                    //            //FIXME SelectedChoiceId = item.ChoiceId,
+                    //            IsCorrent = isCorrect,
+                    //            SessionId = sessionId,
+                    //            CreatedBy = "SYSTEM",
+                    //            CreatedOn = DateTimeOffset.Now
+                    //        };
+                    //        objList.Add(obj);
+                    //    }
+                    //    nSaved = await _resultAppService.AddResults(objList);
+                    return Ok(nSaved);
+                }
+            } catch (Exception ex) {
+                if (ex.InnerException == null) throw;
+                throw new Exception(ex.Message, ex.InnerException);
+            } finally {
+            }
+            return Ok(nSaved);
+        }
 
     }
 }

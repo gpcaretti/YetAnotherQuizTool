@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
+﻿using System.Linq.Dynamic.Core;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Domain;
 using Quiz.Domain.Exams;
+
 
 namespace Quiz.Application.Exams {
     public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
@@ -14,21 +11,21 @@ namespace Quiz.Application.Exams {
         public QuestionAppService(QuizDBContext dbContext, IMapper mapper) : base(dbContext, mapper) {
         }
 
-        public async Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(PrepareExamSessionRequestDto input) {
-            // get the exam ids
-            IList<Guid> examIds = null;
-            if (!input.IsRecursive) {
-                examIds = new List<Guid>() { input.ExamId };
-            } else {
-                var qryExamIds1stLevel = _dbContext.Exams
-                    .Where(e => e.Id == input.ExamId || e.AncestorId == input.ExamId)
-                    .Select(e => e.Id);
-                examIds = await _dbContext.Exams
-                    .Where(e => qryExamIds1stLevel.Contains(e.Id))
-                    //.Select(e => new { e.Id, e.Code })
-                    .Select(e => e.Id)
-                    .ToListAsync();
+        private async Task<IList<Guid>> GetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 100) {
+            var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
+            if (maxDeep > 0) {
+                var qry = _dbContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
+                if (qry.Any()) {
+                    result.AddRange(await GetRecursiveExamIds(qry, --maxDeep));
+                }
             }
+            return result.Distinct().ToList();
+        }
+
+        public async Task<ICollection<QuestionAndChoicesDto>> GetRecursiveQuestionsByExam(PrepareExamSessionRequestDto input) {
+            IList<Guid> examIds = input.IsRecursive
+                ? await GetRecursiveExamIds(_dbContext.Exams.Where(ex => ex.Id == input.ExamId), 10)
+                : new List<Guid>() { input.ExamId };
 
             // if there are no exam ids to select, return an empty list
             if (!examIds.Any()) return new QuestionAndChoicesDto[0];
@@ -37,12 +34,19 @@ namespace Quiz.Application.Exams {
             var query = _dbSet //.Set<Question>()
                 .Include(q => q.Choices)
                 .Where(q => examIds.Contains(q.ExamId) /*&& q.ImageUri != null*/);
-            query = (input.IsRandom)
-                ? query.OrderBy(q => Guid.NewGuid())
-                : !string.IsNullOrEmpty(input.Sorting)
-                    ? query.OrderBy(input.Sorting)
-                    : query.OrderBy(q => q.ExamId).ThenBy(q => q.Code);
-            query = query.AsNoTracking().Skip(input.SkipCount).Take(input.MaxResultCount);
+            if (input.IsRandom) {
+                query = query.OrderBy(q => Guid.NewGuid());
+            } else if (!string.IsNullOrEmpty(input.Sorting)) {
+                query = query.OrderBy(input.Sorting);
+            } else {
+                query = query.OrderBy(q => q.Position);
+            }
+            //query = (input.IsRandom)
+            //    ? query.OrderBy(q => Guid.NewGuid())
+            //    : !string.IsNullOrEmpty(input.Sorting)
+            //        ? query.OrderBy(input.Sorting)
+            //        : query.OrderBy(q => q.Code)/*.ThenBy(q => q.Code)*/;
+            query = query/*.AsNoTracking()*/.Skip(input.SkipCount).Take(input.MaxResultCount);
 
             var entities = await query.ToListAsync();
 
@@ -50,6 +54,7 @@ namespace Quiz.Application.Exams {
 
             return _mapper.Map<QuestionAndChoicesDto[]>(entities);
         }
+
 
         public async Task<PrepareExamSessionResponseDto> PrepareExamSession(PrepareExamSessionRequestDto input) {
             // get the exam title/name

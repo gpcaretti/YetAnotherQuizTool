@@ -1,4 +1,5 @@
-﻿using Quiz.Application.Dtos;
+﻿using System.ComponentModel.DataAnnotations;
+using Quiz.Application.Dtos;
 
 namespace Quiz.Application.Exams {
 

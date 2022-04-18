@@ -3,8 +3,20 @@
 // Write your JavaScript code.
 $(document).ready(function () {
 
-	var ExamSession = {};
-	var ExamSessionResults = {};
+	var ExamSession = {
+		examId: 0,
+		name: '',
+		duration: 0,
+		totalCount: 0,
+		questions: []
+	};
+
+	var ExamSessionResults = {
+		//candidateId: null,
+		examId: 0,
+		isEnded: true,
+		answers: []
+	};
 
 	var CurrentQId = null;
 	var CurrentQidx = -1;
@@ -19,16 +31,7 @@ $(document).ready(function () {
 	var constraints = { audio: true, video: { width: { min: 640, ideal: 640, max: 640 }, height: { min: 480, ideal: 480, max: 480 }, framerate: 60 } };
 	var liveVideoElement = document.querySelector('#gum');   
 
-	$('#ddlExam').prop('disabled', false);
-	$('#btnStart').prop('disabled', false);
-	$('#btnSubmit').prop('disabled', false);
-
-	//$('#btnSave').prop('disabled', true);
-	//$('#btnShowHideSession').prop('disabled', true);
-	//$('#btnEndSession').prop('disabled', true);
-	//$('#btnRestartSession').prop('disabled', true);
-	$('#eqMain button.w3-left').prop('disabled', true);
-	$('#eqMain button.w3-right').prop('disabled', true);
+	UISetSessionControlsStatus();
 
 	$("#eqReport").children().prop('disabled', true);
 	$('#eqReport a').removeAttr("href");
@@ -133,7 +136,14 @@ $(document).ready(function () {
 	 */
 	$('#btnStart').click(function () {
 		if (!!$("#ddlExam").val()) {
-			FetchExam($("#ddlExam").val());
+			let input = {
+				examId: $("#ddlExam").val(),
+				isRandom: $("#cbRandomStart").is(":checked"),
+				isRecursive: true,
+				maxResultCount: $("#ddlNumOfQuestions").val()
+			};
+			PrepareExamSession(input);
+			//FetchExam(input);
 		} else {
 			$.alert({
 				icon: 'fa fa-warning',
@@ -170,13 +180,6 @@ $(document).ready(function () {
 		SaveUserAnswerAndMoveTo(ExamSession.totalCount - 1);
 	});
 
-	/**
-	 * Click 'save answer/choice' to current question
-	 */
-	$('#btnSave').click(function () {
-		SaveUserAnswer();
-	});
-
 	$('#btnShowHideSession').click(() => {
 		SaveUserAnswer();
 		ExamSessionStopStartToggle();
@@ -185,20 +188,11 @@ $(document).ready(function () {
 
 	$('#btnEndSession').click(() => {
 		EndExamSession();
-	});
-
-	$('#btnRestartSession').click(() => {
-		StartExamSession();
-	});
-
-	/**
-	 *
-	 */
-	$('#btnSubmit').click(function () {              
+		// ask for save quiz session
 		$.confirm({
 			icon: 'fa fa-warning',
-			title: 'Submit Quiz',
-			content: 'Are you sure you want to submit the quiz?',
+			title: 'Test ended',
+			content: 'Do you want to save the quiz session?',
 			type: 'orange',
 			closeIcon: true,
 			closeIconClass: 'fa fa-close',
@@ -209,44 +203,9 @@ $(document).ready(function () {
 					text: 'Submit',
 					btnClass: 'btn-red',
 					action: function () {
-						// save current choice of the user
+						// save current choice of the user and POST the results of current quiz session
 						SaveUserAnswer();
-						// now post the results of the quiz
-						$.post('/api/Score/', { objRequest: ExamSessionResults },
-						 function (data) {
-							 if (data > 0) {
-								 StopTimer();
-								 StopRecord();
-								 $('#btnSubmit').prop('disabled', true);
-								 $("#eqReport").children().prop('disabled', false);
-								 $("#eqReport a").attr("href", "/Score/Result");
-								 $('#eqReport i').removeClass("w3-opacity-max");
-								 $.alert({
-									 type: 'green',
-									 title: 'Success !',
-									 content: 'Please check the score.',
-									 boxWidth: '40%',
-									 useBootstrap: false,
-									 closeIcon: true,
-									 closeIconClass: 'fa fa-close'
-								 });
-							 }
-							 else {
-								 $('#btnSubmit').prop('disabled', false);
-								 $("#eqReport").children().prop('disabled', true);
-								 $('#eqReport a').removeAttr("href");
-								 $('#eqReport i').addClass("w3-opacity-max");
-								 $.alert({
-									 type: 'red',
-									 title: 'Error !',
-									 content: 'Please try again.',
-									 boxWidth: '40%',
-									 useBootstrap: false,
-									 closeIcon: true,
-									 closeIconClass: 'fa fa-close'
-								 });
-							 }
-						 });
+						SubmitCurrentQuizSession();
 					}
 				},
 				Cancel: function () {
@@ -254,6 +213,52 @@ $(document).ready(function () {
 				}
 			}
 		});
+	});
+
+	/**
+	 * Post current quiz session to the server
+	 */
+	function SubmitCurrentQuizSession() {
+		$.post('/api/Score/', ExamSessionResults,
+			function (data) {
+				if (data > 0) {
+					StopTimer();
+					StopRecord();
+					$('#btnSubmit').prop('disabled', true);
+					$("#eqReport").children().prop('disabled', false);
+					$("#eqReport a").attr("href", "/Score/Result");
+					$('#eqReport i').removeClass("w3-opacity-max");
+					$.alert({
+						type: 'green',
+						title: 'Success !',
+						content: 'Please check the score.',
+						boxWidth: '40%',
+						useBootstrap: false,
+						closeIcon: true,
+						closeIconClass: 'fa fa-close'
+					});
+				}
+				else {
+					$('#btnSubmit').prop('disabled', false);
+					$("#eqReport").children().prop('disabled', true);
+					$('#eqReport a').removeAttr("href");
+					$('#eqReport i').addClass("w3-opacity-max");
+					$.alert({
+						type: 'red',
+						title: 'Error !',
+						content: 'Please try again.',
+						boxWidth: '40%',
+						useBootstrap: false,
+						closeIcon: true,
+						closeIconClass: 'fa fa-close'
+					});
+				}
+			});
+
+	}
+
+	$('#btnRestartSession').click(() => {
+		StartExamSession();
 	});
 
 	$('.btnScore').click(function () {
@@ -321,25 +326,23 @@ $(document).ready(function () {
 
 
 	/**
-	 *
+	 * Save current user answer of the current question
 	 */
 	function SaveUserAnswer() {
 		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
-		let choiceId = $('div#eqMain').find('input[name="option"]:checked').val() || null;
-		if (!choiceId) {
+		let userChoiceId = $('div#eqMain').find('input[name="option"]:checked').val() || null;
+		if (!userChoiceId) {
 			// user did not select a choice. Update the answer history and return
 			if (idx >= 0) ExamSessionResults.answers.splice(idx, 1);
 			return;
 		}
 
 		let answer = {
-			//candidateId: $('#eqCandidateId').text(),
-			examId: ExamSession.examId,
 			questionId: CurrentQId,
-			choiceId: choiceId,
+			userChoiceId: userChoiceId,
 			correctChoiceId: ExamSession.questions.find(item => item.id == CurrentQId)?.correctChoiceId
 		};
-		answer.isCorrect = !!answer.choiceId && (answer.choiceId == answer.correctChoiceId);
+		answer.isCorrect = !!answer.userChoiceId && (answer.userChoiceId == answer.correctChoiceId);
 
 		if (idx >= 0) {
 			ExamSessionResults.answers[idx] = answer;
@@ -355,23 +358,16 @@ $(document).ready(function () {
 	 */
 	function StartExamSession() {
 		ExamSessionResults = {
-			answers: [],
-			isEnded: false
+			//candidateId: $('#eqCandidateId').text(),
+			examId: ExamSession.examId,
+			isEnded: false,
+			answers: []
 		};
 		// enable/disable proper buttons
-		UINewSessionControls(false);
+		UISetSessionControlsStatus();
 		MoveToQuestionAndPrint(0);
 		StartTimer(ExamSession.duration || 0);
 		//TODO: StartRecord();
-	}
-
-	function EndExamSession() {
-		ExamSessionResults.isEnded = true;
-		UINewSessionControls(true);
-		ClearQuestionAndChoicesArea();
-		if (ExamSession.totalCount > 0) MoveToQuestionAndPrint(0);
-		StopTimer();
-		StopRecord();
 	}
 
 	function ExamSessionStopStartToggle() {
@@ -380,6 +376,15 @@ $(document).ready(function () {
 		//UINewSessionControls(ExamSessionResults.isEnded);
 	//	StopTimer();
 	//	StopRecord();
+	}
+
+	function EndExamSession() {
+		ExamSessionResults.isEnded = true;
+		UISetSessionControlsStatus();
+		ClearQuestionAndChoicesArea();
+		if (ExamSession.totalCount > 0) MoveToQuestionAndPrint(0);
+		StopTimer();
+		StopRecord();
 	}
 
 	function SaveUserAnswerAndMoveTo(idx) {
@@ -435,11 +440,11 @@ $(document).ready(function () {
 		}
 
 		// print the possible choices. If the user previously selected one of them, check it
-		let choiceSelectedByUser = ExamSessionResults.answers.find(o => o.questionId === CurrentQId);
+		let answer = ExamSessionResults.answers.find(o => o.questionId === CurrentQId);
 		let oString = "<div style='padding: 5px;'>";
 		for (let i in question.choices.sort((elem1, elem2) => elem1.position - elem2.position)) {
 			let choice = question.choices[i];
-			let checked = choice.id == (choiceSelectedByUser?.choiceId ?? 0) ? "checked" : "";
+			let checked = choice.id == (answer?.userChoiceId ?? 0) ? "checked" : "";
 			let readonly = ExamSessionResults.isEnded ? "disabled readonly" : "";
 			let colorMark = (readonly && checked && !choice.isCorrect)
 				? "wrongChoice"
@@ -460,12 +465,22 @@ $(document).ready(function () {
 
 	/**
 	 * Enable/disable proper buttons
-	 * @param {boolean } enabled
+	 * @param {boolean } examEnded
 	 */
-	function UINewSessionControls(enabled) {
-		$('#ddlExam').prop('disabled', !enabled);
-		$('#btnStart').prop('disabled', !enabled);
-		$('#btnSave').prop('disabled', !enabled);
+	function UISetSessionControlsStatus(examEnded) {
+		if (examEnded == null) examEnded = ExamSessionResults.isEnded;
+
+		$('#ddlExam').prop('disabled', !examEnded);
+		$('#btnStart').prop('disabled', !examEnded);
+
+		$('#btnShowHideSession').prop('disabled', examEnded);
+		$('#btnEndSession').prop('disabled', examEnded);
+		$('#btnRestartSession').prop('disabled', (ExamSession.totalCount <= 0));
+
+		$('#btnShowHideSession').html(examEnded ? "Hide solutions" : "Show solutions");
+
+		$('#eqMain button.w3-left').prop('disabled', (ExamSession.totalCount <= 0));
+		$('#eqMain button.w3-right').prop('disabled', (ExamSession.totalCount <= 0));
 
 	//	$('#btnShowHideSession').prop('disabled', !enabled);
 	//	$('#btnEndSession').prop('disabled', !enabled);
@@ -473,39 +488,11 @@ $(document).ready(function () {
 	}
 
 	/**
-	 * Fetch and exam and its question. Then start tuner and recording
-	 * @param {number} examId
-	 */
-	function FetchExam(examId) {
-		// enable/disable proper buttons
-		UINewSessionControls(false);
-		// fetch a new exam session
-		$.get('/api/Exam/', { ExamId: examId },
-			(exam, textStatus, jqXHR) => {
-				try {
-					PrepareExamSession(exam.id);
-					StartExamSession();
-				} catch (e) {
-					EndExamSession();
-					StopTimer();
-					StopRecord();
-				}
-			}).fail((jqXHR, textStatus) => {
-				UINewSessionControls(true);
-				//let errorData = $.parseJSON(jqXHR.responseText);
-				//let errorJson = jqXHR.responseJSON;
-				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
-				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
-				ShowErrorAlert(errorJsonm, textStatus, jqXHR.status);
-			});
-	}
-
-	/**
 	 * Fetch questions for a test session and print the first question
 	 * @param {any} examId
 	 */
-	function PrepareExamSession(examId) {
-		$.get('/api/PrepareExamSession', { examId: examId, isRecursive: true, isRandom: true, maxResultCount: 20 },
+	function PrepareExamSession(input) {
+		$.get('/api/PrepareExamSession', input,
 			(data) => {
 				ExamSession = data;
 				ExamSessionResults = {
@@ -513,7 +500,7 @@ $(document).ready(function () {
 					examId: data.examId,
 					answers: []
 				};
-				MoveToQuestionAndPrint(0);
+				StartExamSession();
 			}).fail(function (jqXHR, textStatus) {
 				//let errorData = $.parseJSON(jqXHR.responseText);
 				//let errorJson = jqXHR.responseJSON;

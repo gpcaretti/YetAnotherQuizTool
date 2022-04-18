@@ -6,6 +6,7 @@ namespace Quiz.Application.Exams {
         public string Statement { get; set; }
         public string Code { get; set; }
         public string ImageUri { get; set; }
+        public int Position { get; set; } = -1;
     }
 
     public class QuestionAndChoicesDto : QuestionDto {

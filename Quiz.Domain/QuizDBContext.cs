@@ -33,6 +33,11 @@ namespace Quiz.Domain {
             //    .HasIndex(u => new { u.QuestionId, u.IsCorrect })
             //    .IsUnique();
 
+            modelBuilder.Entity<Question>()
+                .HasIndex(u => u.Position)
+                //.IsUnique()
+                ;
+
             modelBuilder.Entity<QuizAttempt>(eb => {
                 eb.HasNoKey();
                 eb.ToView(null);

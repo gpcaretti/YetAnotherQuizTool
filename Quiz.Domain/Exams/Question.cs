@@ -22,6 +22,8 @@ namespace Quiz.Domain.Exams {
         [MaxLength(16)]
         public string? Code { get; set; }
 
+        public int? Position { get; set; }
+
         public string Statement { get; set; }
 
         [MaxLength(256)]
