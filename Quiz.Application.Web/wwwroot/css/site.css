@@ -1,25 +1,34 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
-
 /* ********* Gp ******** */
 .correctChoice {
-    color: green;
-    font-weight: bold;
-    padding-bottom: 3px;
-    padding-top: 3px;
+  color: green;
+  font-weight: bold;
+  padding-bottom: 3px;
+  padding-top: 3px;
 }
 
 .correctChoiceHighlighted {
-    color: green;
-    font-weight: bold;
-    padding-bottom: 3px;
-    padding-top: 0px;
-    margin-top: 3px;
-    border: 1px solid green;
+  color: green;
+  font-weight: bold;
+  padding-bottom: 3px;
+  padding-top: 0px;
+  margin-top: 3px;
+  border: 1px solid green;
 }
 
 .wrongChoice {
-    color: red;
-    font-weight: bold;
+  color: red;
+  font-weight: bold;
 }
 
+.newSessionOptions ul {
+  padding: 0;
+}
+.newSessionOptions ul li {
+  display: inline-block;
+  margin-right: 0.5em;
+}
+.newSessionOptions ul li.break {
+  display: block;
+}

@@ -3,7 +3,7 @@ using Quiz.Domain;
 
 namespace Quiz.Application {
     public interface IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey> {
+        where TEntity : Entity<TPrimaryKey> {
 
         Task<TEntityDto> FindById(TPrimaryKey id);
         Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> predicate = null);

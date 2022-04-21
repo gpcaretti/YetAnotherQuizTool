@@ -4,20 +4,15 @@ using Quiz.Application.Guids;
 using Quiz.Application.Users;
 using Quiz.Application.Web.Extensions;
 using Quiz.Application.Web.Models;
-using Quiz.Domain.Users;
+using Quiz.Domain.Exams.Sessions;
 
 namespace Quiz.Application.Web.Controllers {
-    public class AccountController : Controller {
-        private readonly ICandidateAppService _candidateAppService;
-        private readonly IGuidGenerator GuidGenerator;
-        private readonly ILogger<AccountController> _logger;
+    public class AccountController : BaseController {
 
         public AccountController(ILogger<AccountController> logger,
             ICandidateAppService candidateAppService,
-            IGuidGenerator guidGenerator) {
-            _logger = logger;
-            _candidateAppService = candidateAppService;
-            GuidGenerator = guidGenerator;
+            IGuidGenerator guidGenerator)
+            : base(logger, guidGenerator, candidateAppService) {
         }
 
         // GET: AccountController
@@ -163,6 +158,14 @@ namespace Quiz.Application.Web.Controllers {
                     TempData["Message"] = "Invalid Email.";
             }
             return PartialView("_Reset");
+        }
+
+        [HttpGet]
+        [Route("~/api/Ping")]
+        //[AllowAnonymous]
+        public IActionResult Ping() {
+            _ = this.GetCurrentLoggedInUser();
+            return Ok(new { IsSuccess = true });
         }
 
     }

@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Quiz.Application.Exams;
+using Quiz.Application.Exams.Sessions;
 using Quiz.Application.Users;
 using Quiz.Domain.Exams;
+using Quiz.Domain.Exams.Sessions;
 using Quiz.Domain.Users;
 
 namespace Quiz.Application {
@@ -12,6 +14,7 @@ namespace Quiz.Application {
             DefaultMaps();
             CandidateMaps();
             ExamMaps();
+            ExamSessionMaps();
             //ExamQuestions();
         }
 
@@ -56,6 +59,17 @@ namespace Quiz.Application {
                 ;
 
             CreateMap<QuestionDto, Question>()
+                ;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ExamSessionMaps() {
+            CreateMap<ExamSessionResultsRequestDto, ExamSession>()
+                ;
+
+            CreateMap<AnswerDetailsDto, ExamSessionItem>()
                 ;
         }
     }

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Content Remove="bundleconfig.json" />
+    <Content Remove="compilerconfig.json" />
     <Content Remove="wwwroot\js\site.min.js" />
   </ItemGroup>
 
@@ -27,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\css\site.min.css" />
     <_ContentIncludedByDefault Remove="wwwroot\js\site.min.js" />
   </ItemGroup>
 
@@ -55,6 +55,7 @@
 
   <ItemGroup>
     <None Include="bundleconfig.json" />
+    <None Include="compilerconfig.json" />
     <None Include="wwwroot\js\site.min.js" />
   </ItemGroup>
 

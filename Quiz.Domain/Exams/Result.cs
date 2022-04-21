@@ -2,7 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Quiz.Domain.Exams {
-    public class Result : BaseEntity<Guid> {
+
+    [Obsolete()]
+    public class Result : Entity<Guid> {
 
         public Result()
             : this(Guid.Empty) {

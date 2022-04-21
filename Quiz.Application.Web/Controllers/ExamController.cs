@@ -1,24 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Quiz.Application.Exams;
+using Quiz.Application.Exams.Sessions;
+using Quiz.Application.Guids;
+using Quiz.Application.Users;
 using Quiz.Application.Web.Authentication;
 
 namespace Quiz.Application.Web.Controllers {
 
     [BasicAuthentication]
-    public class ExamController : Controller {
-        private readonly ILogger<ExamController> _logger;
+    public class ExamController : BaseController {
         private readonly IExamAppService _examAppService;
         private readonly IQuestionAppService _questionAppService;
-        private readonly IResultAppService _resultAppService;
+
         public ExamController(
             ILogger<ExamController> logger,
+            IGuidGenerator guidGenerator,
+            ICandidateAppService candidateAppService,
             IExamAppService examAppService,
-            IQuestionAppService questionAppService,
-            IResultAppService resultAppService) {
-            _logger = logger;
+            IQuestionAppService questionAppService)
+            : base(logger, guidGenerator, candidateAppService) {
             _examAppService = examAppService;
             _questionAppService = questionAppService;
-            _resultAppService = resultAppService;
         }
 
         [HttpGet]
@@ -28,6 +31,7 @@ namespace Quiz.Application.Web.Controllers {
                 IEnumerable<ExamDto> lst = await _examAppService.Search(null, $"{nameof(ExamDto.Code)}");
                 return Ok(lst.ToList());
             } catch (Exception ex) {
+                _logger.LogError(ex, nameof(Exams));
                 if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
             } finally {
@@ -46,6 +50,7 @@ namespace Quiz.Application.Web.Controllers {
                 if (dto == null) throw new Exception($"Exam not found (id: ${examId})");
                 return Ok(dto);
             } catch (Exception ex) {
+                _logger.LogError(ex, nameof(Exam));
                 if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
                 //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -62,13 +67,22 @@ namespace Quiz.Application.Web.Controllers {
         ///     Prepare an exam session based on the passed exam Id
         /// </summary>
         /// <exception cref="Exception"></exception>
-        [HttpGet]
+        [HttpPost]
         [Route("~/api/PrepareExamSession/{input?}")]
         public async Task<IActionResult> PrepareExamSession(PrepareExamSessionRequestDto input) {
             try {
-                PrepareExamSessionResponseDto examSession = await _questionAppService.PrepareExamSession(input);
-                return Ok(examSession);
+                if (!ModelState.IsValid) return Ok(new { IsSuccess = false, Message = "Invalid posted data" });
+
+                CandidateDto candidate = await GetCurrentLoggedInUser();
+                PrepareExamSessionResponseDto examSession = await _examAppService.PrepareExamSession(input, candidate);
+
+                return Ok(new {
+                    IsSuccess = true,
+                    Message = "Sesssion saved!",
+                    data = examSession
+                });
             } catch (Exception ex) {
+                _logger.LogError(ex, nameof(PrepareExamSession));
                 if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
                 //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -88,37 +102,33 @@ namespace Quiz.Application.Web.Controllers {
         /// <exception cref="Exception"></exception>
         [HttpPost]
         [Route("~/api/Score")]
+        //[AllowAnonymous]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Score(ExamSessionResultsRequestDto input) {
-            bool isCorrect = false;
-            //List<Result> objList = null;
-            string sessionId = null;
-            int nSaved = 0;
             try {
-                if (input.Answers.Count > 0) {
-                    //    ite.jssessionId = Guid.NewGuid().ToString() + "-" + DateTimeOffset.Now;
-                    //    objList = new List<Result>();
-                    //    foreach (var item in input.Answers) {
-                    //        Result obj = new Result() {
-                    //            CandidateId = input.CandidateId,
-                    //            ExamId = item.ExamId,
-                    //            QuestionId = item.QuestionId,
-                    //            //FIXME SelectedChoiceId = item.ChoiceId,
-                    //            IsCorrent = isCorrect,
-                    //            SessionId = sessionId,
-                    //            CreatedBy = "SYSTEM",
-                    //            CreatedOn = DateTimeOffset.Now
-                    //        };
-                    //        objList.Add(obj);
-                    //    }
-                    //    nSaved = await _resultAppService.AddResults(objList);
-                    return Ok(nSaved);
-                }
+                if (!ModelState.IsValid) return Ok(new { IsSuccess = false, Message = "Invalid posted data (too much large?)" });
+
+                CandidateDto candidate = await GetCurrentLoggedInUser() ?? await _candidateAppService.FindById(input.CandidateId);
+                Guid savedSessionId = await _examAppService.SaveUserSession(input, candidate);
+
+                return Ok(new {
+                    IsSuccess = true,
+                    Message = "Sesssion saved!",
+                    data = savedSessionId
+                });
             } catch (Exception ex) {
+                _logger.LogError(ex, nameof(Score));
                 if (ex.InnerException == null) throw;
                 throw new Exception(ex.Message, ex.InnerException);
+                //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                //return Json(new {
+                //    Result = false,
+                //    Error = ex.Message,
+                //    Exception = ex.InnerException, 
+                //});
             } finally {
             }
-            return Ok(nSaved);
+
         }
 
     }

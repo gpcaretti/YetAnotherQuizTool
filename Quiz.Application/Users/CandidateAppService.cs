@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
+using Quiz.Application.Guids;
 using Quiz.Domain;
 using Quiz.Domain.Users;
 
@@ -9,8 +9,12 @@ namespace Quiz.Application.Users {
     public class CandidateAppService
         : QuizApplicationService<Candidate, CandidateDto, Guid>, ICandidateAppService {
 
-        public CandidateAppService(QuizDBContext dbContext, IMapper mapper)
-            : base(dbContext, mapper) {
+        public CandidateAppService(
+            ILogger<CandidateAppService> logger,
+            IGuidGenerator guidGenerator,
+            QuizDBContext dbContext,
+            IMapper mapper)
+            : base( logger, guidGenerator, dbContext, mapper) {
         }
 
         public async Task<int> UpdateCandidate(CandidateDto dto) {

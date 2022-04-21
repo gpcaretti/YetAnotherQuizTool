@@ -4,7 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Quiz.Domain.Exams {
-    public class Exam : BaseEntity<Guid> {
+    public class Exam : Entity<Guid> {
+
+        // only for EF
+        private Exam() {
+        }
+
         public Exam(Guid id)
             : base(id) {
         }

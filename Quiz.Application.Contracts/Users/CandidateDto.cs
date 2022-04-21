@@ -1,9 +1,10 @@
-﻿using Quiz.Application;
+﻿namespace Quiz.Application.Users {
 
-namespace Quiz.Application.Users {
-
-    public class CandidateDto : BaseEntityDto<Guid> {
+    public class BasicCandidateDto : BaseEntityDto<Guid> {
         public string Name { get; set; }
+    }
+
+    public class CandidateDto : BasicCandidateDto {
 
         public string Email { get; set; }
 

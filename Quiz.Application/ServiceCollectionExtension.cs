@@ -19,7 +19,8 @@ namespace Quiz.Application {
                 .AddScoped<ICandidateAppService, CandidateAppService>()
                 .AddScoped<IExamAppService, ExamAppService>()
                 .AddScoped<IQuestionAppService, QuestionAppService>()
-                .AddScoped<IResultAppService, ResultAppService>();
+                //.AddScoped<IResultAppService, ResultAppService>()
+                ;
         }
     }
 }

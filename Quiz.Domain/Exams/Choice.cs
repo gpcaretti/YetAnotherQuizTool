@@ -3,13 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Quiz.Domain.Exams {
 
-    public class Choice : BaseEntity<Guid> {
+    public class Choice : Entity<Guid> {
+        // only for EF
+        private Choice() {
+        }
+
         public Choice(Guid id)
             : base(id) {
         }
 
         [ForeignKey(nameof(Question))]
         public Guid QuestionId { get; set; }
+
         public Question Question { get; set; }
 
         public string Statement { get; set; }

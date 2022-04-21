@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Quiz.Application.Guids;
 using Quiz.Application.Users;
 using Quiz.Application.Web.Authentication;
 using Quiz.Application.Web.Enums;
@@ -9,27 +10,25 @@ using Quiz.Application.Web.Models;
 
 namespace Quiz.Application.Web.Controllers {
 
-    public class HomeController : Controller {
-        private readonly ILogger<HomeController> _logger;
-        private readonly ICandidateAppService _candidateAppService;
+    public class HomeController : BaseController {
 
-        public HomeController(ILogger<HomeController> logger, ICandidateAppService candidateAppService) {
-            _logger = logger;
-            _candidateAppService = candidateAppService;
+        public HomeController(
+            ILogger<HomeController> logger,
+            IGuidGenerator guidGenerator,
+            ICandidateAppService candidateAppService)
+            : base(logger, guidGenerator, candidateAppService) {
         }
 
         [BasicAuthentication]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Index() {
-            CandidateDto objHis = HttpContext.Session.GetObjectFromJson<CandidateDto>(QuizConstants.AuthUserKey);
-            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Id.Equals(objHis.Id));
+            CandidateDto objCandidate = await GetCurrentLoggedInUser();
             return View(objCandidate);
         }
 
         [BasicAuthentication]
         public async Task<IActionResult> Profile() {
-            CandidateDto objHis = HttpContext.Session.GetObjectFromJson<CandidateDto>(QuizConstants.AuthUserKey);
-            CandidateDto objCandidate = await _candidateAppService.FirstOrDefault(e => e.Id.Equals(objHis.Id));
+            CandidateDto objCandidate = await GetCurrentLoggedInUser();
 
             ProfileViewModel objModel = new ProfileViewModel() {
                 Id = objCandidate.Id,

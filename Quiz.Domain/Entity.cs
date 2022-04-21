@@ -4,14 +4,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Quiz.Domain {
 
-    public abstract class BaseEntity<TPrimaryKey> {
+    public abstract class Entity {
 
-        public BaseEntity(TPrimaryKey id) {
-            Id = id;
+        protected Entity() {
+            CreatedOn = DateTimeOffset.Now;
         }
-
-        // TODO: mettere private il setter
-        public TPrimaryKey Id { get; private set; }
 
         //[Column(TypeName = "datetime")]
         //[DataType(DataType.DateTime)]
@@ -27,5 +24,17 @@ namespace Quiz.Domain {
 
         [DefaultValue(false)]
         public bool? IsDeleted { get; set; } = false;
+    }
+
+    public abstract class Entity<TPrimaryKey> : Entity {
+
+        protected Entity() {
+        }
+
+        public Entity(TPrimaryKey id) {
+            Id = id;
+        }
+
+        public TPrimaryKey Id { get; private set; }
     }
 }

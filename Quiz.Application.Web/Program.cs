@@ -1,18 +1,23 @@
 using System.Net;
 using DinkToPdf;
 using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Quiz.Application.Web.Authentication;
 using Quiz.Domain;
 
 namespace Quiz.Application.Web {
 
     public class Program {
-        //private static Logger<Program> Logger { get; set; }
+
+        private static ILogger<Program> Logger;
 
         public static void Main(string[] args) {
             // NET6 startup (without Startup.cs)
             var builder = WebApplication.CreateBuilder(args);
+
+            ConfigureLogger(builder, builder.Configuration);
             ConfigureServices(builder.Configuration, builder.Services);
 
             PreConfigureMiddleware(builder.Configuration, builder.Services, builder.Environment);
@@ -21,7 +26,19 @@ namespace Quiz.Application.Web {
             ConfigureMiddleware(app, app.Environment);
             ConfigureEndpoints(app);
 
+            Logger = app.Services.GetService<ILogger<Program>>();
+
+            Logger.LogInformation("Web app running...");
             app.Run();
+        }
+
+        private static void ConfigureLogger(WebApplicationBuilder builder, ConfigurationManager configuration) {
+            builder.Host.ConfigureLogging(logging => {
+                //logging.ClearProviders();
+                logging.AddConsole();
+                logging.AddDebug();
+                logging.SetMinimumLevel(LogLevel.Information);
+            });
         }
 
         // Add services to the container
@@ -38,6 +55,7 @@ namespace Quiz.Application.Web {
             }
 
             // Add services to the container.
+            services.AddLogging();
             services.AddMyServices();
             services.AddDistributedMemoryCache();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -52,8 +70,16 @@ namespace Quiz.Application.Web {
 #endif
             // configure http session and its timeout
             services.AddSession(options => {
-                var section = configuration.GetSection("Session");
-                options.IdleTimeout = TimeSpan.FromMinutes(section?.GetValue<int?>("IdleTimeout") ?? 30);
+                var timeout = configuration.GetSection("Session")?.GetValue<int?>("IdleTimeout") ?? 30;
+                options.IdleTimeout = TimeSpan.FromMinutes(timeout);
+            });
+
+            // configure form post size
+            services.Configure<FormOptions>(options => {
+                options.ValueCountLimit = 32 * 1024;
+                options.ValueLengthLimit = 16 * 1024 * 1024;
+                //options.MultipartBodyLengthLimit = int.MaxValue;
+                //options.MultipartHeadersLengthLimit = int.MaxValue;// 64 * 1024;
             });
         }
 
@@ -87,7 +113,12 @@ namespace Quiz.Application.Web {
                 app.UseHsts();
             }
 
-            app.UseSession();
+            app.UseSession(
+                //new SessionOptions() {
+                //    IdleTimeout = TimeSpan.FromMinutes(Environment.con con configuration.GetSection("Session")?.GetValue<int?>("IdleTimeout") ?? 30),
+                //}
+            );
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Quiz.Domain.Exams {
 
-    public class Question : BaseEntity<Guid> {
-        //public Question()
-        //    : this(Guid.Empty) {
-        //}
+    public class Question : Entity<Guid> {
+
+        // only for EF
+        private Question() {
+        }
 
         public Question(Guid id)
             : base(id) {

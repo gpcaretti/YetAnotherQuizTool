@@ -12,9 +12,10 @@ $(document).ready(function () {
 	};
 
 	var ExamSessionResults = {
-		//candidateId: null,
+		candidateId: null,
 		examId: 0,
 		isEnded: true,
+		isSubmitted: false,
 		answers: []
 	};
 
@@ -139,6 +140,7 @@ $(document).ready(function () {
 			let input = {
 				examId: $("#ddlExam").val(),
 				isRandom: $("#cbRandomStart").is(":checked"),
+				onlyErrorOrDoubt: $("#cbOnlyErrors").is(":checked"),
 				isRecursive: true,
 				maxResultCount: $("#ddlNumOfQuestions").val()
 			};
@@ -150,7 +152,7 @@ $(document).ready(function () {
 				type: 'orange',
 				title: 'Select Skill',
 				content: 'Please select your skill !',
-				boxWidth: '40%',
+				boxWidth: '60%',
 				useBootstrap: false,
 				closeIcon: true,
 				closeIconClass: 'fa fa-close'
@@ -188,6 +190,10 @@ $(document).ready(function () {
 
 	$('#btnEndSession').click(() => {
 		EndExamSession();
+	});
+
+	$('#btnEndAndSaveSession').click(() => {
+		EndExamSession();
 		// ask for save quiz session
 		$.confirm({
 			icon: 'fa fa-warning',
@@ -196,7 +202,7 @@ $(document).ready(function () {
 			type: 'orange',
 			closeIcon: true,
 			closeIconClass: 'fa fa-close',
-			boxWidth: '40%',
+			boxWidth: '60%',
 			useBootstrap: false,
 			buttons: {
 				Submit: {
@@ -215,57 +221,15 @@ $(document).ready(function () {
 		});
 	});
 
-	/**
-	 * Post current quiz session to the server
-	 */
-	function SubmitCurrentQuizSession() {
-		$.post('/api/Score/', ExamSessionResults,
-			function (data) {
-				if (data > 0) {
-					StopTimer();
-					StopRecord();
-					$('#btnSubmit').prop('disabled', true);
-					$("#eqReport").children().prop('disabled', false);
-					$("#eqReport a").attr("href", "/Score/Result");
-					$('#eqReport i').removeClass("w3-opacity-max");
-					$.alert({
-						type: 'green',
-						title: 'Success !',
-						content: 'Please check the score.',
-						boxWidth: '40%',
-						useBootstrap: false,
-						closeIcon: true,
-						closeIconClass: 'fa fa-close'
-					});
-				}
-				else {
-					$('#btnSubmit').prop('disabled', false);
-					$("#eqReport").children().prop('disabled', true);
-					$('#eqReport a').removeAttr("href");
-					$('#eqReport i').addClass("w3-opacity-max");
-					$.alert({
-						type: 'red',
-						title: 'Error !',
-						content: 'Please try again.',
-						boxWidth: '40%',
-						useBootstrap: false,
-						closeIcon: true,
-						closeIconClass: 'fa fa-close'
-					});
-				}
-			});
-
-	}
-
 	$('#btnRestartSession').click(() => {
 		StartExamSession();
 	});
 
 	$('.btnScore').click(function () {
 		var request = {
-			ExamId: $(this).closest("tr").find('td:eq(2)').text(),
-			CandidateId: $('#hdnCandidateId').val(),            
-			SessionId: $(this).closest("tr").find('td:eq(1)').text()            
+			examId: $(this).closest("tr").find('td:eq(2)').text(),
+			candidateId: $('#hdnCandidateId').val(),
+			sessionId: $(this).closest("tr").find('td:eq(1)').text()            
 		};
 		Score = $(this).closest("tr").find('td:eq(4)').text();
 		Status = $(this).closest("tr").find('td:eq(6)').text();
@@ -290,18 +254,18 @@ $(document).ready(function () {
 	$('#btnReport').click(function () {
 		//console.log(objReport);
 		var scoreFormat = {
-			ExamId: objReport[0].examId,
-			CandidateId: $('#hdnCandidateId').val(),
-			SessionId: objReport[0].sessionID,
+			examId: objReport[0].examId,
+			candidateId: $('#hdnCandidateId').val(),
+			sessionId: objReport[0].sessionID,
 			Exam: objReport[0].exam,
 			Date: objReport[0].date,
 			Score: Score
 		};
 		//console.log(scoreFormat);
 		$.post('/api/CreatePDF/', { argPDFRpt:scoreFormat},
-		   function (data) {
+		   function (output) {
 				//console.log(data);
-				if (data.isSuccess = true) { window.open(data.path, '_blank'); }
+				if (output.isSuccess = true) { window.open(output.path, '_blank'); }
 		   });       
 	});
 
@@ -326,31 +290,12 @@ $(document).ready(function () {
 
 
 	/**
-	 * Save current user answer of the current question
+	 * Locally save current user answer of the current question
 	 */
 	function SaveUserAnswer() {
-		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
 		let userChoiceId = $('div#eqMain').find('input[name="option"]:checked').val() || null;
-		if (!userChoiceId) {
-			// user did not select a choice. Update the answer history and return
-			if (idx >= 0) ExamSessionResults.answers.splice(idx, 1);
-			return;
-		}
-
-		let answer = {
-			questionId: CurrentQId,
-			userChoiceId: userChoiceId,
-			correctChoiceId: ExamSession.questions.find(item => item.id == CurrentQId)?.correctChoiceId
-		};
-		answer.isCorrect = !!answer.userChoiceId && (answer.userChoiceId == answer.correctChoiceId);
-
-		if (idx >= 0) {
-			ExamSessionResults.answers[idx] = answer;
-			//UpdateItem(CurrentQId);
-		}
-		else {
-			ExamSessionResults.answers.push(answer);
-		}
+		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
+		ExamSessionResults.answers[idx].userChoiceId = userChoiceId;
 	}
 
 	/**
@@ -358,11 +303,25 @@ $(document).ready(function () {
 	 */
 	function StartExamSession() {
 		ExamSessionResults = {
-			//candidateId: $('#eqCandidateId').text(),
+			candidateId: $('#eqCandidateId').text(),
 			examId: ExamSession.examId,
 			isEnded: false,
+			isSubmitted: false,
 			answers: []
 		};
+		for (let i = 0; i < ExamSession.totalCount; i++) {
+			let question = ExamSession.questions[i];
+			let answer = {
+				examId: question.examId,
+				questionId: question.id,
+				correctChoiceId: question.correctChoiceId,
+				userChoiceId: null,
+				get isAnswerd() { return this.userChoiceId; },
+				get isCorrect() { return (answer.userChoiceId == answer.correctChoiceId); }
+			};
+			ExamSessionResults.answers.push(answer);
+		}
+
 		// enable/disable proper buttons
 		UISetSessionControlsStatus();
 		MoveToQuestionAndPrint(0);
@@ -390,8 +349,10 @@ $(document).ready(function () {
 	function SaveUserAnswerAndMoveTo(idx) {
 		// save current choice of the user
 		SaveUserAnswer();
-		idx = idx % ExamSession.totalCount;
-		if (idx <= ExamSession.totalCount - 1) MoveToQuestionAndPrint(idx);
+		// ping the server to refresh the http session
+		PingServer();
+		//idx = idx % ExamSession.totalCount;
+		if (idx < ExamSession.totalCount) MoveToQuestionAndPrint(idx);
 	}
 
 	function ClearQuestionAndChoicesArea() {
@@ -405,7 +366,7 @@ $(document).ready(function () {
 	 */
 	function MoveToQuestionAndPrint(qIdx) {
 		if ((qIdx < 0) || (qIdx >= ExamSession.totalCount)) {
-			ShowErrorAlert(null, `Index out of range (${qIdx}). Cannot select the question.`);
+			//ShowErrorAlert(null, `Index out of range (${qIdx}). Cannot select the question.`);
 			return;
 		}
 
@@ -422,13 +383,13 @@ $(document).ready(function () {
 
 		if (ExamSessionResults.isEnded) {
 			// show the overall results
-			let correct = ExamSessionResults.answers.reduce((acc, answ) => answ.isCorrect ? ++acc : acc, 0);
-			let wrong = ExamSessionResults.answers.reduce((acc, answ) => !answ.isCorrect ? ++acc : acc, 0);
-			let notAnswered = ExamSession.questions.length - correct - wrong;
+			let nCorrect = ExamSessionResults.answers.reduce((acc, answ) => (answ.isCorrect) ? ++acc : acc, 0);
+			let nWrong = ExamSessionResults.answers.reduce((acc, answ) => (answ.isAnswerd && !answ.isCorrect) ? ++acc : acc, 0);
+			let nNotAnswered = ExamSession.questions.length - nCorrect - nWrong;
 			$qnaArea.find('[name="eqExamSessionStats"]').html(
-				`<span class='correctChoice'>${correct} correct answer(s)</span><br/>` +
-				`<span class='wrongChoice'>${wrong} wrong answer(s)</span><br/>` +
-				`<span class=''><b>${notAnswered} not answered</b></span>`);
+				`<span class='correctChoice'>${nCorrect} correct answer(s)</span><br/>` +
+				`<span class='wrongChoice'>${nWrong} wrong answer(s)</span><br/>` +
+				`<span class=''><b>${nNotAnswered} not answered</b></span>`);
 		}
 
 		// show the question
@@ -458,9 +419,15 @@ $(document).ready(function () {
 		oString += "</div>";
 		$qnaArea.find('[name="eqChoices"]').append(oString);
 
-		// enable/disable prev & next btns
-		$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);
-		$('#eqMain button.w3-right').prop('disabled', (qIdx + 1) >= ExamSession.totalCount);
+		// move to the top of the question
+		//window.location.hash = "eqMain";
+		$('body').animate({
+			scrollTop: $("#eqCandidateId").offset().top
+		}, 2000);
+
+	//	// enable/disable prev & next btns
+	//	$('#eqMain button.w3-left').prop('disabled', qIdx <= 0);
+	//	$('#eqMain button.w3-right').prop('disabled', (qIdx + 1) >= ExamSession.totalCount);
 	}
 
 	/**
@@ -475,6 +442,7 @@ $(document).ready(function () {
 
 		$('#btnShowHideSession').prop('disabled', examEnded);
 		$('#btnEndSession').prop('disabled', examEnded);
+		$('#btnEndAndSaveSession').prop('disabled', (ExamSession.totalCount <= 0) || (examEnded && ExamSessionResults.isSubmitted));
 		$('#btnRestartSession').prop('disabled', (ExamSession.totalCount <= 0));
 
 		$('#btnShowHideSession').html(examEnded ? "Hide solutions" : "Show solutions");
@@ -487,26 +455,75 @@ $(document).ready(function () {
 	//	$('#btnRestartSession').prop('disabled', !enabled);
 	}
 
+	function PingServer() {
+		try {
+			$.get('/api/Ping', null,
+				() => {
+				}).fail(function (jqXHR, textStatus) {
+					//let errorData = $.parseJSON(jqXHR.responseText);
+					//let errorJson = jqXHR.responseJSON;
+					let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
+					if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
+					ConsoleLogError(errorJson, textStatus, jqXHR.status);
+				});
+		} catch (e) {
+			Console.error(e);
+		}
+	}
+
 	/**
 	 * Fetch questions for a test session and print the first question
 	 * @param {any} examId
 	 */
 	function PrepareExamSession(input) {
-		$.get('/api/PrepareExamSession', input,
-			(data) => {
-				ExamSession = data;
-				ExamSessionResults = {
-					candidateId: $('#eqCandidateId').text(),
-					examId: data.examId,
-					answers: []
-				};
-				StartExamSession();
+		//$.get('/api/PrepareExamSession', input,
+		$.post('/api/PrepareExamSession', input,
+			(output) => {
+				if (output.isSuccess || false) {
+					ExamSession = output.data;
+					StartExamSession();
+				} else {
+					ShowErrorAlert(null, output.message);
+				}
 			}).fail(function (jqXHR, textStatus) {
 				//let errorData = $.parseJSON(jqXHR.responseText);
 				//let errorJson = jqXHR.responseJSON;
 				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
 				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
 				ShowErrorAlert(errorJson, textStatus, jqXHR.status);
+				//EndExamSession();
+			});
+	}
+
+	/**
+	 * Post current quiz session to the server
+	 */
+	function SubmitCurrentQuizSession() {
+		//alert(ExamSessionResults.answers.length);
+		$.post('/api/Score/', ExamSessionResults,
+			(output) => {
+				if (output.isSuccess || false) {
+					ExamSessionResults.isSubmitted = true;
+					$.alert({
+						type: 'green',
+						title: 'Success !',
+						content: 'Please check the score: ' + output.message,
+						boxWidth: '60%',
+						useBootstrap: false,
+						closeIcon: true,
+						closeIconClass: 'fa fa-close'
+					});
+				} else {
+					ShowErrorAlert(null, output.message);
+				}
+				UISetSessionControlsStatus();
+			}).fail(function (jqXHR, textStatus) {
+				//let errorData = $.parseJSON(jqXHR.responseText);
+				//let errorJson = jqXHR.responseJSON;
+				let errorJson = jqXHR.responseJSON || { error: 'Server error', exception: jqXHR.responseText };
+				if (errorJson.exception) console.error(errorJson.exception | errorJson.error);
+				ShowErrorAlert(errorJson, textStatus, jqXHR.status);
+				//EndExamSession();
 			});
 	}
 
@@ -549,7 +566,14 @@ $(document).ready(function () {
 			let hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 			let minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
 			let seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
-			document.getElementById("timer").innerHTML = "Time : " + hours + ":" + minutes + ":" + seconds;
+			try {
+				document.getElementById("timer").innerHTML = `Time: ${('' + hours).padStart(2, "0")}:${('' + minutes).padStart(2, "0")}:${('' + seconds).padStart(2, "0")}`;
+			} catch {
+				document.getElementById("timer").innerHTML = `Time: ${hours}:${minutes}:${seconds}`;
+			}
+
+
+			//document.getElementById("timer").innerHTML = "Time : " + ('' + hours).padStart(2, "0") + ":" + minutes + ":" + seconds;
 			if (deltaT < 0) {
 				StopTimer();
 				document.getElementById("timer").innerHTML = "Time : 00:00:00";
@@ -678,9 +702,16 @@ $(document).ready(function () {
 			   }
 			},
 			error: function (result) {
-				console.log(result);
+				console.error(result);
 			}
 		});
+	}
+
+	function ConsoleLogError(errorJson, messageText, statusCode) {
+		console.error(
+			errorJson?.error,
+			"Error",
+			`Error: ${messageText} (${errorJson?.error})<br/>Status: ${(statusCode || "n/a")}`);
 	}
 
 	function ShowErrorAlert(errorJson, messageText, statusCode) {
@@ -688,8 +719,8 @@ $(document).ready(function () {
 			icon: 'fa fa-error',
 			type: 'red',
 			title: errorJson?.error || "Error",
-			content: "Error: " + messageText + " (" + errorJson?.error + ")<br/>Status: " + statusCode,
-			boxWidth: '40%',
+			content: `Error: ${messageText} (${errorJson?.error})<br/>Status: ${(statusCode || "n/a")}`,
+			boxWidth: '60%',
 			useBootstrap: false,
 			closeIcon: true,
 			closeIconClass: 'fa fa-close'

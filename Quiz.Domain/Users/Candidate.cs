@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Quiz.Domain.Users {
 
-    public class Candidate : BaseEntity<Guid> {
+    public class Candidate : Entity<Guid> {
 
         //public Candidate()
         //    : this(Guid.Empty) {

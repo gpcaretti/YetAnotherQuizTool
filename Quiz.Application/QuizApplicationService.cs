@@ -1,23 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Quiz.Application.Guids;
 using Quiz.Domain;
 
 namespace Quiz.Application {
     public class QuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
         : IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey> {
+        where TEntity : Entity<TPrimaryKey> {
+
+        protected readonly ILogger _logger;
+        protected readonly IGuidGenerator GuidGenerator;
 
         protected readonly QuizDBContext _dbContext;
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly IMapper _mapper;
 
-        public QuizApplicationService(QuizDBContext dbContext, IMapper mapper) {
+        public QuizApplicationService(ILogger logger, IGuidGenerator guidGenerator, QuizDBContext dbContext, IMapper mapper) {
+            _logger = logger;
+            GuidGenerator = guidGenerator;
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();
             _mapper = mapper;
