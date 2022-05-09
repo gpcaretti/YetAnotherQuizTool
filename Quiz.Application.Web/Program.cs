@@ -84,7 +84,7 @@ namespace Quiz.Application.Web {
         }
 
         private static void PreConfigureMiddleware(IConfiguration configuration, IServiceCollection services, IWebHostEnvironment env) {
-            // see https://aka.ms/aspnetcore-hsts.
+            // HSTS and automatic forward to HTTPS (see https://aka.ms/aspnetcore-hsts).
             if (!env.IsDevelopment()) {
                 services.AddHsts(options => {
                     var section = configuration.GetSection("Hsts");

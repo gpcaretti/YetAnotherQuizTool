@@ -12,25 +12,24 @@ using Quiz.Domain;
 namespace Quiz.Domain.Migrations
 {
     [DbContext(typeof(QuizDBContext))]
-    [Migration("20220404101234_Initial-Migration")]
-    partial class InitialMigration
+    [Migration("20220423055448_Add-RandomChoices")]
+    partial class AddRandomChoices
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "6.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("Quiz.Domain.Exams.Answer", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.CandidateNote", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("CandidateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ChoiceId")
+                    b.Property<Guid>("QuestionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -40,7 +39,16 @@ namespace Quiz.Domain.Migrations
                     b.Property<DateTimeOffset?>("CreatedOn")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMarkedAsDoubt")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMarkedAsHidden")
                         .HasColumnType("bit");
 
                     b.Property<string>("ModifiedBy")
@@ -50,16 +58,19 @@ namespace Quiz.Domain.Migrations
                     b.Property<DateTimeOffset?>("ModifiedOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("QuestionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Statement")
-                        .IsRequired()
+                    b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("NumOfWrongAnswers")
+                        .HasColumnType("int");
 
-                    b.ToTable("qzAnswers");
+                    b.HasKey("CandidateId", "QuestionId");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("qzCandidateNotes");
                 });
 
             modelBuilder.Entity("Quiz.Domain.Exams.Choice", b =>
@@ -95,7 +106,6 @@ namespace Quiz.Domain.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Statement")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -142,9 +152,11 @@ namespace Quiz.Domain.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
+
+                    b.Property<bool>("RandomChoicesAllowed")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -187,82 +199,25 @@ namespace Quiz.Domain.Migrations
                     b.Property<DateTimeOffset?>("ModifiedOn")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("Position")
+                        .HasColumnType("int");
+
                     b.Property<string>("Statement")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ExamId");
 
+                    b.HasIndex("Position");
+
                     b.ToTable("qzQuestions");
                 });
 
-            modelBuilder.Entity("Quiz.Domain.Exams.QuizAttempt", b =>
-                {
-                    b.Property<string>("Date")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Exam")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ExamId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Score")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SessionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToView(null);
-                });
-
-            modelBuilder.Entity("Quiz.Domain.Exams.QuizReport", b =>
-                {
-                    b.Property<Guid>("CandidateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Date")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Exam")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ExamId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SessionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToView(null);
-                });
-
-            modelBuilder.Entity("Quiz.Domain.Exams.Result", b =>
+            modelBuilder.Entity("Quiz.Domain.Exams.Sessions.ExamSession", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AnswerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CandidateId")
@@ -278,10 +233,73 @@ namespace Quiz.Domain.Migrations
                     b.Property<Guid>("ExamId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsCorrent")
+                    b.Property<string>("ExamName")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<DateTimeOffset>("ExecutedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("FullMarks")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("Marks")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset?>("ModifiedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("NumOfCorrectAnswers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumOfQuestions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumOfWrongAnswers")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QSequence")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("CandidateId", "ExamId");
+
+                    b.ToTable("qzExamSessions");
+                });
+
+            modelBuilder.Entity("Quiz.Domain.Exams.Sessions.ExamSessionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset?>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMarkedAsDoubt")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMarkedAsHidden")
                         .HasColumnType("bit");
 
                     b.Property<string>("ModifiedBy")
@@ -294,17 +312,14 @@ namespace Quiz.Domain.Migrations
                     b.Property<Guid>("QuestionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("SelectedOptionId")
+                    b.Property<Guid>("SessionId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SessionId")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("qzQuizResults");
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("qzExamSessionItems");
                 });
 
             modelBuilder.Entity("Quiz.Domain.Users.Candidate", b =>
@@ -321,7 +336,6 @@ namespace Quiz.Domain.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -340,12 +354,10 @@ namespace Quiz.Domain.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -354,13 +366,31 @@ namespace Quiz.Domain.Migrations
                         .HasColumnType("nvarchar(24)");
 
                     b.Property<string>("Roles")
-                        .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
                     b.ToTable("qzCandidates");
+                });
+
+            modelBuilder.Entity("Quiz.Domain.Exams.CandidateNote", b =>
+                {
+                    b.HasOne("Quiz.Domain.Users.Candidate", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Quiz.Domain.Exams.Question", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("Question");
                 });
 
             modelBuilder.Entity("Quiz.Domain.Exams.Choice", b =>
@@ -392,6 +422,28 @@ namespace Quiz.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Exam");
+                });
+
+            modelBuilder.Entity("Quiz.Domain.Exams.Sessions.ExamSession", b =>
+                {
+                    b.HasOne("Quiz.Domain.Exams.Exam", "Exam")
+                        .WithMany()
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+                });
+
+            modelBuilder.Entity("Quiz.Domain.Exams.Sessions.ExamSessionItem", b =>
+                {
+                    b.HasOne("Quiz.Domain.Exams.Sessions.ExamSession", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("Quiz.Domain.Exams.Question", b =>

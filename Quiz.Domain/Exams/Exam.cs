@@ -24,6 +24,9 @@ namespace Quiz.Domain.Exams {
         [MaxLength(16)]
         public string? Code { get; set; }
 
+        /// <summary>True if choices for questions will be randomized when presented to the candidate</summary>
+        public bool RandomChoicesAllowed { get; set; } = false;
+
         /// <summary>Duration of the exam (0 = no duration specifie </summary>
         [Range(0, 1440)]
         public int Duration { get; set; } = 0;

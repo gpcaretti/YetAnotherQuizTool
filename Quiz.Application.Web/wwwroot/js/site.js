@@ -161,29 +161,29 @@ $(document).ready(function () {
 	});
 
 	$('#btnMoveToStart').click(function () {
-		SaveUserAnswerAndMoveTo(0);
+		RecordUserAnswerAndMoveTo(0);
 	});
 
 	/**
 	 * Click previous question button
 	 */
 	$('#btnPrev').click(function () {
-		SaveUserAnswerAndMoveTo(CurrentQidx - 1);
+		RecordUserAnswerAndMoveTo(CurrentQidx - 1);
 	});
 
 	/**
 	 * Click next question button
 	 */
 	$('#btnNext').click(function () {
-		SaveUserAnswerAndMoveTo(CurrentQidx + 1);
+		RecordUserAnswerAndMoveTo(CurrentQidx + 1);
 	});
 
 	$('#btnMoveToEnd').click(function () {
-		SaveUserAnswerAndMoveTo(ExamSession.totalCount - 1);
+		RecordUserAnswerAndMoveTo(ExamSession.totalCount - 1);
 	});
 
 	$('#btnShowHideSession').click(() => {
-		SaveUserAnswer();
+		RecordUserAnswer();
 		ExamSessionStopStartToggle();
 		$('#btnShowHideSession').html(ExamSessionResults.isEnded ? "Hide solutions" : "Show solutions");
 	});
@@ -210,7 +210,7 @@ $(document).ready(function () {
 					btnClass: 'btn-red',
 					action: function () {
 						// save current choice of the user and POST the results of current quiz session
-						SaveUserAnswer();
+						RecordUserAnswer();
 						SubmitCurrentQuizSession();
 					}
 				},
@@ -292,7 +292,7 @@ $(document).ready(function () {
 	/**
 	 * Locally save current user answer of the current question
 	 */
-	function SaveUserAnswer() {
+	function RecordUserAnswer() {
 		let userChoiceId = $('div#eqMain').find('input[name="option"]:checked').val() || null;
 		let idx = ExamSessionResults.answers.findIndex(item => item.questionId === CurrentQId);
 		ExamSessionResults.answers[idx].userChoiceId = userChoiceId;
@@ -346,9 +346,9 @@ $(document).ready(function () {
 		StopRecord();
 	}
 
-	function SaveUserAnswerAndMoveTo(idx) {
+	function RecordUserAnswerAndMoveTo(idx) {
 		// save current choice of the user
-		SaveUserAnswer();
+		RecordUserAnswer();
 		// ping the server to refresh the http session
 		PingServer();
 		//idx = idx % ExamSession.totalCount;
@@ -397,7 +397,7 @@ $(document).ready(function () {
 
 		if (!!question.imageUri) {
 			$qnaArea.find('[name="eqQuestionImage"]')
-				.html(`<img src="${((question.imageUri.charAt(0) === '~') ? question.imageUri.slice(1) : question.imageUri)}" class="" style="max-width:100%" alt="Immagine">`);
+				.html(`<img src="${((question.imageUri.charAt(0) === '~') ? question.imageUri.slice(1) : question.imageUri)}" class="" style="max-width:100%" alt="Question's image">`);
 		}
 
 		// print the possible choices. If the user previously selected one of them, check it

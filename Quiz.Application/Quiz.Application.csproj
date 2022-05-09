@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
-    <ProjectReference Include="..\Quiz.Domain\Quiz.Domain.csproj" />
   </ItemGroup>
 
 </Project>

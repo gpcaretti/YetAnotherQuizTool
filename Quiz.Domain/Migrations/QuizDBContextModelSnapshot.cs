@@ -153,6 +153,9 @@ namespace Quiz.Domain.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
+                    b.Property<bool>("RandomChoicesAllowed")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AncestorId");
