@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Quiz.Application.Dtos;
 using Quiz.Application.Guids;
 using Quiz.Domain;
 
@@ -37,14 +38,24 @@ namespace Quiz.Application {
             return (entity != null) ? _mapper.Map<TEntityDto>(entity) : default(TEntityDto);
         }
 
-        public async Task<ICollection<TEntityDto>> Search(Expression<Func<TEntity, bool>> predicate = null, string orderBy = null) {
-            IQueryable<TEntity> query = _dbSet;
-            if (predicate != null) query = query.Where(predicate);
-            if (orderBy != null) query = query.OrderBy(orderBy);
+        public async Task<ICollection<TEntityDto>> GetAll(PagedAndSortedResultRequestDto input) {
+            IQueryable<TEntity> query = string.IsNullOrEmpty(input.Sorting)
+                ? _dbSet.OrderBy(e => e.Id)
+                : _dbSet.OrderBy(input.Sorting);
+            query = query.Skip(input.SkipCount).Take(input.MaxResultCount);
 
             var entities = await query.ToListAsync();
             return _mapper.Map<TEntityDto[]>(entities);
         }
+
+        //protected async Task<ICollection<TEntityDto>> Search(Expression<Func<TEntity, bool>> predicate = null, string orderBy = null) {
+        //    IQueryable<TEntity> query = _dbSet;
+        //    if (predicate != null) query = query.Where(predicate);
+        //    if (orderBy != null) query = query.OrderBy(orderBy);
+
+        //    var entities = await query.ToListAsync();
+        //    return _mapper.Map<TEntityDto[]>(entities);
+        //}
 
         public virtual Task<bool> Any(Expression<Func<TEntity, bool>> search = null) {
             IQueryable<TEntity> query = _dbSet;
@@ -73,5 +84,6 @@ namespace Quiz.Application {
             _dbSet.Remove(entity);
             return await _dbContext.SaveChangesAsync();
         }
+
     }
 }

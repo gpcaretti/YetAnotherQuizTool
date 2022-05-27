@@ -1,0 +1,20 @@
+﻿<AuthorizeView>
+	<Authorized>
+		<ul class="list-inline">
+			<li class="list-inline-item">
+				<a href="Identity/Account/Manage">@context.User.Identity?.Name!</a>
+			</li>
+			<li class="list-inline-item">
+				<form method="post" action="Identity/Account/LogOut">
+					<button type="submit" class="nav-link btn btn-link">Log out</button>
+				</form>
+			</li>
+		</ul>
+	</Authorized>
+	<NotAuthorized>
+		<ul class="list-inline">
+			<li class="list-inline-item"><a href="Identity/Account/Register">Register</a></li>
+			<li class="list-inline-item"><a href="Identity/Account/Login">Log in</a></li>
+		</ul>
+	</NotAuthorized>
+</AuthorizeView>

@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Quiz.Application.Exams;
-using Quiz.Application.Exams.Sessions;
+using Quiz.Application.Sessions;
 using Quiz.Application.Users;
 using Quiz.Domain.Exams;
 using Quiz.Domain.Exams.Sessions;
-using Quiz.Domain.Users;
+
 
 namespace Quiz.Application {
 
@@ -31,10 +32,10 @@ namespace Quiz.Application {
         /// 
         /// </summary>
         private void CandidateMaps() {
-            CreateMap<Candidate, CandidateDto>()
+            CreateMap<IdentityUser<Guid>, CandidateDto>()
                 ;
 
-            CreateMap<CandidateDto, Candidate>()
+            CreateMap<CandidateDto, IdentityUser<Guid>>()
                 //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
                 ;
         }
@@ -68,6 +69,12 @@ namespace Quiz.Application {
         private void ExamSessionMaps() {
             CreateMap<ExamSessionResultsRequestDto, ExamSession>()
                 ;
+
+            CreateMap<Exam, PrepareExamSessionResponseDto>()
+                 .ForMember(outp => outp.ExamId, opt => opt.MapFrom(ex => ex.Id))
+                 .ForMember(outp => outp.Code, opt => opt.MapFrom(ex => ex.Code))
+                 .ForMember(outp => outp.RandomizeChoices, opt => opt.MapFrom(ex => ex.RandomChoicesAllowed))
+            ;
 
             CreateMap<AnswerDetailsDto, ExamSessionItem>()
                 ;

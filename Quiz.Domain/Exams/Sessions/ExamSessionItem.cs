@@ -23,8 +23,9 @@ namespace Quiz.Domain.Exams.Sessions {
         /// <summary>Original question Id</summary>
         public Guid QuestionId { get; set; }
 
-        /// <summary>True if answer was correct</summary>
+        /// <summary>True if answer was correct, false in any other case</summary>
         public bool IsCorrect { get; set; }
+        public bool IsAnswered { get; set; }
         public bool IsMarkedAsDoubt { get; set; } = false;
         public bool IsMarkedAsHidden { get; set; } = false;
     }

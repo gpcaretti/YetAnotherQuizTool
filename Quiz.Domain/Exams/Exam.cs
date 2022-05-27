@@ -10,13 +10,14 @@ namespace Quiz.Domain.Exams {
         private Exam() {
         }
 
-        public Exam(Guid id)
+        public Exam(Guid id, Guid? ancestorId = null)
             : base(id) {
+            AncestorId = ancestorId;
         }
 
         [ForeignKey(nameof(Ancestor))]
-        public Guid? AncestorId { get; set; }
-        public Exam? Ancestor { get; set; }
+        public Guid? AncestorId { get; private set; }
+        public Exam? Ancestor { get; private set; }
 
         [MaxLength(1024)]
         public string Name { get; set; }
@@ -27,12 +28,12 @@ namespace Quiz.Domain.Exams {
         /// <summary>True if choices for questions will be randomized when presented to the candidate</summary>
         public bool RandomChoicesAllowed { get; set; } = false;
 
-        /// <summary>Duration of the exam (0 = no duration specifie </summary>
+        /// <summary>Duration of the exam (0 = duration undefined)</summary>
         [Range(0, 1440)]
         public int Duration { get; set; } = 0;
 
         [Column(TypeName = "decimal(18,2)")]
-        [DefaultValue(false)]
+        //[DefaultValue(false)]
         public decimal FullMarks { get; set; } = 100;
     }
 }

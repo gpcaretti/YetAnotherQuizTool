@@ -1,0 +1,36 @@
+﻿@inject NavigationManager NavigationManager
+
+@inherits LayoutComponentBase
+
+<PageTitle>YAQT by GP software</PageTitle>
+
+<div class="page">
+	<div class="sidebar">
+		<NavMenu />
+	</div>
+
+	<main>
+		<div class="top-row container-fluid auth">
+			@*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
+			<LoginDisplay />
+		</div>
+
+		<article class="container-fluid content">
+			@Body
+		</article>
+	</main>
+</div>
+
+@code {
+	// Gp - added by me to force logn
+
+	//[CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+	//protected async override Task OnInitializedAsync() {
+	//	base.OnInitialized();
+	//	var user = (await AuthStat).User;
+	//	if (!(user?.Identity?.IsAuthenticated ?? false)) {
+	//		NavigationManager.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+	//	}
+	//}
+}

@@ -9,14 +9,15 @@ namespace Quiz.Domain.Exams {
         private Question() {
         }
 
-        public Question(Guid id)
+        public Question(Guid id, Guid examId)
             : base(id) {
             Choices = new HashSet<Choice>();
+            ExamId = examId;
         }
 
         [ForeignKey(nameof(Exam))]
-        public Guid ExamId { get; set; }
-        public Exam Exam { get; set; }
+        public Guid ExamId { get; private set; }
+        public Exam Exam { get; private set; }
 
         [MaxLength(16)]
         public string? Code { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace Quiz.Domain.Exams.Sessions {
 
@@ -17,17 +18,23 @@ namespace Quiz.Domain.Exams.Sessions {
             : base(id) {
         }
 
+        [ForeignKey(nameof(Candidate))]
         public Guid CandidateId { get; set; }
+        public IdentityUser<Guid> Candidate { get; set; }
 
         [ForeignKey(nameof(Exam))]
         public Guid ExamId { get; set; }
         public Exam? Exam { get; set; }
+
+        /// <summary>When true, the session should be read-only</summary>
+        public bool IsEnded { get; set; } = false;
 
         [MaxLength(1024)]
         public string ExamName { get; set; }
 
         public DateTimeOffset ExecutedOn { get; set; }
 
+        /// <summary>A CSV string of the sequence of questions for this exam session</summary>
         public string QSequence { get; set; }
 
         public int NumOfQuestions { get; set; }

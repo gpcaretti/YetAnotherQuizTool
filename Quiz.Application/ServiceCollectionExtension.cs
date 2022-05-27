@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Quiz.Application.Blazor.Data;
 using Quiz.Application.Exams;
 using Quiz.Application.Guids;
-using Quiz.Application.Users;
+using Quiz.Application.Sessions;
 
 namespace Quiz.Application {
 
@@ -16,11 +16,13 @@ namespace Quiz.Application {
                 .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies())
                 .AddSingleton<IGuidGenerator>(new SequentialGuidGenerator(SequentialGuidType.SequentialAtEnd))
 
-                .AddScoped<ICandidateAppService, CandidateAppService>()
+                //.AddScoped<ICandidateAppService, CandidateAppService>()
                 .AddScoped<IExamAppService, ExamAppService>()
                 .AddScoped<IQuestionAppService, QuestionAppService>()
-                //.AddScoped<IResultAppService, ResultAppService>()
-                ;
+                .AddScoped<IExamSessionAppService, ExamSessionAppService>()
+
+                .AddSingleton<WeatherForecastService>();
+            ;
         }
     }
 }

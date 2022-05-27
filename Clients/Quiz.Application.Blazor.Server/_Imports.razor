@@ -1,0 +1,21 @@
+﻿@using System.Net.Http
+@using System.Text.Json
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using Quiz.Application
+@using Quiz.Application.Blazor
+@using Quiz.Application.Blazor.Shared
+
+@*
+	Gp - Global redirect to login if user is not authenticated
+	see https://stackoverflow.com/questions/60840986/blazor-redirect-to-login-if-user-is-not-authenticated
+*@
+
+@*@attribute [Authorize]*@
