@@ -1,0 +1,74 @@
+﻿@* see https://stackoverflow.com/a/66863993/752004 *@
+@page "/QuizEdit/{SearchKey}/Edit"
+
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@using Quiz.Application.Exams
+@using Quiz.Application.Sessions
+
+@attribute [Authorize(Roles = $"{QuizConstants.Roles.Admin}")]
+
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager UriHelper
+@inject IQuestionAppService _questionAppService
+@inject ILogger<QuizViewer> _logger
+@inject IJSRuntime JsRuntime
+
+<h1>Edit Question @SearchKey</h1>
+
+@if (WaitingCnt > 0) {
+	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
+}
+
+@if (Question == null) {
+	return;
+}
+
+<div class="row">
+	<div class="card full-space-col col-lg-9">
+		<div class="card-body"> @{
+				<section>
+					<header class="clearfix">
+						<h3>@($"{Question!.Code}: {Question!.Statement}")</h3>
+					</header>
+					@if (!string.IsNullOrEmpty(Question!.ImageUri)) {
+						var imgUrl = (Question!.ImageUri.StartsWith("~")) ? Question!.ImageUri.Substring(1) : Question!.ImageUri;
+						<img src="@imgUrl" class="mx-auto d-block" style="max-width:100%" alt="Image for q. @Question!.Code" />
+					}
+					<ul class="list-group">
+						@foreach (var choice in Question!.Choices.OrderBy(c => c.Position)) {
+							var colorMark = choice.IsCorrect ? "fw-bold text-success border border-danger" : "";
+							 <li class="list-group-item list-group-item-action @colorMark"
+								@onclick="@(() => RegisterUserAnswer(choice.Id))" >
+								<div class="form-group form-check">
+									<label class="my-1">
+										<input type="radio" name="choice"
+											class="form-check-input" 
+											checked="@choice.IsCorrect"
+											value="@choice.Id"
+											@onchange="@(() => RegisterUserAnswer(choice.Id))" />
+										@choice.Statement
+									</label>
+									@*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
+								</div>
+							</li>
+						}
+					</ul>
+
+					<!-- ctrl buttons for questions (next, prev, start, end...) -->
+					<div class="row my-3">
+						<div class="col-12 text-center clearfix">
+							<button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
+								name="PrevBtn">Prev
+							</button>
+							<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
+								name="NextBtn">Next
+							</button>
+						</div>
+					</div>
+				</section>
+			}
+		</div>
+	</div>
+</div>

@@ -16,8 +16,4 @@
     <NoWarn>1701;1702;8632</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Quiz.Domain\Quiz.Domain.csproj" />
-  </ItemGroup>
-
 </Project>

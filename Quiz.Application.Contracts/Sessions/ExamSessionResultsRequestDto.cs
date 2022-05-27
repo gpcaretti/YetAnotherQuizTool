@@ -6,8 +6,12 @@ namespace Quiz.Application.Sessions {
     /// 
     /// </summary>
     public class ExamSessionResultsRequestDto {
-        public Guid CandidateId { get; set; }
-        public Guid ExamId { get; set; }
+        [Required]
+        public Guid? CandidateId { get; set; }
+
+        [Required]
+        public Guid? ExamId { get; set; }
+
         public bool IsEnded { get; set; }
         public bool SkipUnanswered { get; set; } = true;
         public IList<AnswerDetailsDto> Answers { get; set; }
@@ -21,10 +25,10 @@ namespace Quiz.Application.Sessions {
     /// </summary>
     public class AnswerDetailsDto {
         [Required]
-        public Guid ExamId { get; set; }
+        public Guid? ExamId { get; set; }
 
         [Required]
-        public Guid QuestionId { get; set; }
+        public Guid? QuestionId { get; set; }
 
         [Required]
         public Guid CorrectChoiceId { get; set; }

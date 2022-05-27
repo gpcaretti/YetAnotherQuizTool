@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Quiz.Application.Blazor.Data;
 using Quiz.Application.Exams;
 using Quiz.Application.Guids;
 using Quiz.Application.Sessions;
@@ -20,8 +19,6 @@ namespace Quiz.Application {
                 .AddScoped<IExamAppService, ExamAppService>()
                 .AddScoped<IQuestionAppService, QuestionAppService>()
                 .AddScoped<IExamSessionAppService, ExamSessionAppService>()
-
-                .AddSingleton<WeatherForecastService>();
             ;
         }
     }

@@ -32,7 +32,6 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-Clients/Quiz.Application.Blazor.Host
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

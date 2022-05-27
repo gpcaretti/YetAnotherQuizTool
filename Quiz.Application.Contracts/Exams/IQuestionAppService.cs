@@ -1,9 +1,7 @@
-﻿using Quiz.Domain.Exams;
-
-namespace Quiz.Application.Exams {
-    public interface IQuestionAppService : IQuizApplicationService<Question, QuestionDto, Guid> {
+﻿namespace Quiz.Application.Exams {
+    public interface IQuestionAppService : IQuizApplicationService<QuestionDto, Guid> {
         Task<IList<QuestionAndChoicesDto>> GetQuestionsByExam(ExamQuestionsRequestDto input);
-        Task<int> UpdateQuestion(Question entity);
+        //Task<int> UpdateQuestion(Question entity);
         Task<QuestionAndChoicesDto> FindBySearchKey(string searchKey);
     }
 }

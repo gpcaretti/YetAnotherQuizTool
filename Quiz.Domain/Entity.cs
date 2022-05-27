@@ -26,12 +26,12 @@ namespace Quiz.Domain {
         public bool? IsDeleted { get; set; } = false;
     }
 
-    public abstract class Entity<TPrimaryKey> : Entity {
+    public abstract class Entity<TPrimaryKey> : Entity where TPrimaryKey : IEquatable<TPrimaryKey> {
 
-        protected Entity() {
+        protected Entity()  {
         }
 
-        public Entity(TPrimaryKey id) {
+        public Entity(TPrimaryKey id) : this() {
             Id = id;
         }
 

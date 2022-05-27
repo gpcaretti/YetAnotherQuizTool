@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
 
 namespace Quiz.Domain.Exams.Sessions {
 
@@ -13,14 +12,14 @@ namespace Quiz.Domain.Exams.Sessions {
         }
 
         public CandidateNote(Guid candidateId, Guid questionId, Guid examId) {
-            this.CandidateId = candidateId;
+            this.CandidateId = candidateId.ToString();
             this.QuestionId = questionId;
             this.ExamId = examId;
         }
 
-        [ForeignKey(nameof(Candidate))]
-        public Guid CandidateId { get; set; }
-        public IdentityUser<Guid> Candidate { get; set; }
+        //[ForeignKey(nameof(Candidate))]   // <= commented out as not working using 2 separated DbContext
+        public string CandidateId { get; private set; }
+        //public ApplicationUser Candidate { get; private set; }    // <= commented out as not working using 2 separated DbContext
 
         [ForeignKey(nameof(Question))]
         public Guid QuestionId { get; private set; }

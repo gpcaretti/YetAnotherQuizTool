@@ -17,8 +17,9 @@ namespace Quiz.Application.Exams {
             ILogger<ExamAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
+            QuizIdentityDBContext dbIdentityContext,
             IMapper mapper,
-            IQuestionAppService questionAppService) : base(logger, guidGenerator, dbContext, mapper) {
+            IQuestionAppService questionAppService) : base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
             _questionAppService = questionAppService;
         }
 

@@ -1,24 +1,20 @@
-﻿using System.Linq.Expressions;
-using Quiz.Application.Dtos;
-using Quiz.Application.Sessions;
-using Quiz.Domain;
+﻿using Quiz.Application.Dtos;
 
 namespace Quiz.Application {
 
-    public interface IQuizApplicationService<TEntity, TEntityDto, TPrimaryKey>
-        : IQuizApplicationBaseService<TEntity, TEntityDto, TPrimaryKey>
-        where TEntity : Entity<TPrimaryKey> {
+    public interface IQuizApplicationService<TEntityDto, TPrimaryKey>
+        where TEntityDto : BaseEntityDto<TPrimaryKey>
+        where TPrimaryKey : IEquatable<TPrimaryKey> {
 
-        // Change the other one below
-    }
-
-    public interface IQuizApplicationBaseService<TEntity, TEntityDto, TPrimaryKey> {
+        /// <summary>
+        ///     If no entity is found, then null is returned
+        /// </summary>
         Task<TEntityDto> FindById(TPrimaryKey id);
-        Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> predicate = null);
 
         Task<ICollection<TEntityDto>> GetAll(PagedAndSortedResultRequestDto input);
-        Task<bool> Any(Expression<Func<TEntity, bool>> predicate = null);
-        Task<int> Count(Expression<Func<TEntity, bool>> predicate = null);
+        //Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> predicate = null);
+        //Task<bool> Any(Expression<Func<TEntity, bool>> predicate = null);
+        //Task<int> Count(Expression<Func<TEntity, bool>> predicate = null);
 
         Task<int> Create(TEntityDto dto);
         Task<int> Delete(TPrimaryKey id);
