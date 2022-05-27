@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿namespace Quiz.Application.Users {
 
-namespace Quiz.Application.Users {
-
-    public interface ICandidateAppService : IQuizApplicationBaseService<IdentityUser<Guid>, CandidateDto, Guid> {
+    public interface ICandidateAppService : IQuizApplicationService<CandidateDto, Guid> {
         Task<int> UpdateCandidate(CandidateDto dto);
     }
 }

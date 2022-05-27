@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Identity;
 using Quiz.Application.Exams;
-
+using Quiz.Domain.Identity;
 
 namespace Quiz.Application.Blazor.Pages {
     public partial class QuizEdit : Microsoft.AspNetCore.Components.ComponentBase {
@@ -13,7 +12,7 @@ namespace Quiz.Application.Blazor.Pages {
 
         protected QuestionAndChoicesDto? Question { get; set; }
 
-        protected IdentityUser<Guid> User;
+        protected ApplicationUser User;
 
         protected int WaitingCnt;
 

@@ -1,6 +1,6 @@
 ﻿namespace Quiz.Application {
 
-    public abstract class BaseEntityDto<TPrimaryKey> {
+    public abstract class BaseEntityDto<TPrimaryKey> where TPrimaryKey : IEquatable<TPrimaryKey> {
         public TPrimaryKey? Id { get; set; }
 
         public DateTimeOffset? CreatedOn { get; set; }

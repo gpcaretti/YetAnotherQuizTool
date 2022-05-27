@@ -6,8 +6,8 @@
 @attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]
 
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
-@inject SignInManager<IdentityUser<Guid>> SignInManager
-@inject UserManager<IdentityUser<Guid>> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager UriHelper
 @inject IExamAppService _examAppService
 @inject IExamSessionAppService _examSessionAppService
@@ -20,7 +20,13 @@
 	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
 }
 
-@if ((AvailableExams?.Count ?? -1) < 0) {
+@if ((AvailableExams?.Count ?? -1) <= 0) {
+	if (WaitingCnt <= 0) {
+		<div class="alert alert-danger" role="alert">
+			<b>Ops!</b> You do not have access to any exam type. -( <br>
+			Contact our helpdesk for support
+		</div>
+	}
 	return;
 }
 
@@ -44,10 +50,10 @@
 				@*<h4 class="card-title">Select your test and start it. Good luck!</h4>*@
 				<EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
 					<DataAnnotationsValidator />
-					<input type="hidden" @bind="ExamSession!.CandidateId" name="CandidateId" id="CandidateId" />
+					@*<input type="hidden" @bind="ExamSession!.CandidateId" name="CandidateId" id="CandidateId" />*@
 					<div class="row my-3">
 						<div class="form-group col-12">
-							<InputSelect @bind-Value="NewQuizModel.ExamId" id="ExamId" class="form-control">
+							<InputSelect @bind-Value="NewQuizModel!.ExamId" id="ExamId" class="form-control">
 								<option value="">Select exam type...</option>
 								@foreach (ExamDto item in AvailableExams!) {
 									<option value="@item.Id">@(item.Name.Length <= 60 ? item.Name : (item.Name.Substring(0, 60) + "..."))</option>

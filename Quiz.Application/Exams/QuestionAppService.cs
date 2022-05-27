@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Quiz.Application.Guids;
 using Quiz.Domain;
 using Quiz.Domain.Exams;
+using Quiz.Domain.Extensions;
 
 namespace Quiz.Application.Exams {
     public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
@@ -15,8 +15,9 @@ namespace Quiz.Application.Exams {
             ILogger<QuestionAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
+            QuizIdentityDBContext dbIdentityContext,
             IMapper mapper) :
-            base(logger, guidGenerator, dbContext, mapper) {
+            base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
         }
 
         /// <summary>
@@ -117,8 +118,8 @@ namespace Quiz.Application.Exams {
                     // if old doubt exists get their question id
                     var qry = _dbContext.CandidateNotes
                         .Where(cnote => newQuestionsDto.Select(q => q.Id).Contains(cnote.QuestionId))
-                        .Where(item => !item.IsMarkedAsHidden && item.IsMarkedAsDoubt);
-                    if (input.CandidateId.HasValue) qry = qry.Where(item => item.CandidateId == input.CandidateId.Value);
+                        .Where(item => !item.IsMarkedAsHidden && item.IsMarkedAsDoubt)
+                        .WhereIf(input.CandidateId.HasValue, item => item.CandidateId == input.CandidateId.ToString());
                     var doubts = await qry
                                     .Select(item => new { item.QuestionId, item.IsMarkedAsDoubt })
                                     .Distinct()
@@ -186,8 +187,10 @@ namespace Quiz.Application.Exams {
             if (maxResultCount <= 0) throw new ArgumentOutOfRangeException(nameof(maxResultCount), $"{nameof(maxResultCount)} must be greater than 0");
 
             // get Questions Ids already used
-            var qrySessionsIds = _dbContext.ExamSessions.Where(session => (candidateId == session.CandidateId) && session.IsEnded)
-                        .Select(session => session.Id);
+            var qrySessionsIds = _dbContext.ExamSessions
+                                        .WhereIf(candidateId.HasValue, session => session.CandidateId == candidateId.ToString())
+                                        .Where(session => session.IsEnded)
+                                        .Select(session => session.Id);
             var oldQuestionsIds = await _dbContext.ExamSessionItems
                         .Where(item => qrySessionsIds.Contains(item.SessionId) && item.IsAnswered)
                         .Select(item => item.QuestionId)
@@ -220,8 +223,8 @@ namespace Quiz.Application.Exams {
             // if old errors or doubts exists get their ids
             var qry = _dbContext.CandidateNotes
                 .Where(item => examIds.Contains(item.ExamId))
-                .Where(item => !item.IsMarkedAsHidden && (item.NumOfWrongAnswers > 0 || item.IsMarkedAsDoubt));
-            if (candidateId.HasValue) qry = qry.Where(item => item.CandidateId == candidateId.Value);
+                .Where(item => !item.IsMarkedAsHidden && (item.NumOfWrongAnswers > 0 || item.IsMarkedAsDoubt))
+                .WhereIf(candidateId.HasValue, item => item.CandidateId == candidateId.ToString());
             var errorsOrDoubtsIds = await
                 qry
                 .Select(item => new { item.QuestionId, item.IsMarkedAsDoubt })

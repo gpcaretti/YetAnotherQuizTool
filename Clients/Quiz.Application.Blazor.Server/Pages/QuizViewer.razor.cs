@@ -3,12 +3,11 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.JSInterop;
 using Quiz.Application.Dtos;
 using Quiz.Application.Exams;
 using Quiz.Application.Sessions;
-
+using Quiz.Domain.Identity;
 
 namespace Quiz.Application.Blazor.Pages {
     public partial class QuizViewer : Microsoft.AspNetCore.Components.ComponentBase {
@@ -17,13 +16,14 @@ namespace Quiz.Application.Blazor.Pages {
 
             private IList<QuestionAndChoicesDto> _questions;
 
-            public QuizSession() {
+            public QuizSession(Guid candidateId) {
+                CandidateId = candidateId;
                 _questions = new List<QuestionAndChoicesDto>(0);
                 Answers = new List<AnswerDetailsDto>();
             }
 
             [Required]
-            public Guid? CandidateId { get; set; }
+            public Guid CandidateId { get; private set; }
 
             [Required]
             public Guid? ExamId { get; private set; }
@@ -105,30 +105,29 @@ namespace Quiz.Application.Blazor.Pages {
             public AnswerDetailsDto? GetAnswer(int index) => Answers[index];
         }
 
-        protected IdentityUser<Guid> User;
-        protected QuizSession ExamSession;
+        protected ApplicationUser? User;
+        protected QuizSession? ExamSession;
 
-        protected PrepareExamSessionRequestDto NewQuizModel;
+        protected PrepareExamSessionRequestDto? NewQuizModel;
         protected ICollection<ExamDto>? AvailableExams;
 
         protected int WaitingCnt;
 
-        private EditContext editContext;
+        private EditContext? editContext;
 
 
         protected override async Task OnInitializedAsync() {
             WaitingCnt = 1;
             try {
-                HandleReset();
-
                 // get the current user
                 AuthenticationState authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
                 User = await UserManager.GetUserAsync(authState.User);
-                ExamSession.CandidateId = NewQuizModel.CandidateId = ExamSession.CandidateId = User.Id;
+
+                HandleReset();
 
                 // get available exams
                 AvailableExams = await _examAppService.GetAll(new PagedAndSortedResultRequestDto { MaxResultCount = 100, Sorting = nameof(ExamDto.Code) });
-                NewQuizModel.ExamId = AvailableExams.FirstOrDefault()?.Id;
+                NewQuizModel!.ExamId = AvailableExams.FirstOrDefault()?.Id;
                 //editContext.OnValidationRequested += HandleValidationRequested;
             } finally {
                 if (WaitingCnt > 0) WaitingCnt--;
@@ -137,7 +136,7 @@ namespace Quiz.Application.Blazor.Pages {
 
         // request for a new session
         private async Task StartExamSession() {
-            if (!NewQuizModel.ExamId.HasValue) {
+            if (!NewQuizModel!.ExamId.HasValue) {
                 await JsRuntime.InvokeVoidAsync("alert", "Please, select an exam"); // Alert
                 return;
             }
@@ -152,14 +151,11 @@ namespace Quiz.Application.Blazor.Pages {
                     return;
                 }
 
-                ExamSession = new QuizSession() {
-                    CandidateId = User?.Id,
-                };
+                ExamSession = new QuizSession(Guid.Parse(User!.Id));
                 ExamSession.SetExam(output);
 
                 // move to first question and return
                 MoveToQuestion(0);
-                await Task.Delay(5000);
             } finally {
                 if (WaitingCnt > 0) WaitingCnt--;
             }
@@ -261,8 +257,8 @@ namespace Quiz.Application.Blazor.Pages {
                 EndExamSession(e);
                 var sessionId = await _examSessionAppService.SaveUserSession(
                     new ExamSessionResultsRequestDto {
-                        ExamId = ExamSession.ExamId.Value,
-                        CandidateId = ExamSession.CandidateId.Value,
+                        CandidateId = ExamSession.CandidateId,
+                        ExamId = ExamSession.ExamId,
                         IsEnded = ExamSession.IsEnded,
                         Answers = ExamSession.Answers
                     });
@@ -293,13 +289,10 @@ namespace Quiz.Application.Blazor.Pages {
 
         private void HandleReset() {
             try {
-                // TODO
-                ExamSession = new QuizSession() {
-                    CandidateId = User?.Id,
-                };
+                ExamSession = new QuizSession(Guid.Parse(User.Id));
 
                 NewQuizModel = new PrepareExamSessionRequestDto {
-                    CandidateId = User?.Id,
+                    CandidateId = ExamSession.CandidateId,
                     IsRandom = true,
                     MaxResultCount = 20,    // FIXME: how to define the default num of questions per exam?
                 };

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>Quiz.Application.Blazor.Host.Server-4C055C01-1564-4629-B3D1-C7AFF2C90769</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clients\Quiz.Application.Blazor.Host.Client\Quiz.Application.Blazor.Host.Client.csproj" />
+    <ProjectReference Include="..\Quiz.Application.Blazor.Host.Shared\Quiz.Application.Blazor.Host.Shared.csproj" />
+    <ProjectReference Include="..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
+    <ProjectReference Include="..\Quiz.Application\Quiz.Application.csproj" />
+    <ProjectReference Include="..\Quiz.Domain\Quiz.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -6,6 +6,7 @@ using Quiz.Application.Exams;
 using Quiz.Application.Guids;
 using Quiz.Domain;
 using Quiz.Domain.Exams.Sessions;
+using Quiz.Domain.Extensions;
 
 namespace Quiz.Application.Sessions {
 
@@ -19,10 +20,11 @@ namespace Quiz.Application.Sessions {
             ILogger<ExamAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
+            QuizIdentityDBContext dbIdentityContext,
             IMapper mapper,
             IQuestionAppService questionAppService,
             IExamAppService examAppService) :
-            base(logger, guidGenerator, dbContext, mapper) {
+            base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
             _questionAppService = questionAppService;
             _examAppService = examAppService;
         }
@@ -53,16 +55,22 @@ namespace Quiz.Application.Sessions {
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
         public async Task<Guid> SaveUserSession(ExamSessionResultsRequestDto input) {
-            // create an exam session
-            var session = new ExamSession(GuidGenerator.Create());
+            // validate input params
+            if (!await _dbIdentityContext.Users.AnyAsync(u => u.Id == input.CandidateId.ToString()))
+                throw new ArgumentException("Cannot find the indicated candidate", nameof(input.CandidateId));
+            if (!await _dbContext.Exams.AnyAsync(ex => ex.Id == input.ExamId))
+                throw new ArgumentException("Cannot find the indicated exam", nameof(input.ExamId));
+
+            // create the exam session
+            var session = new ExamSession(GuidGenerator.Create(), input.CandidateId.Value, input.ExamId);
             _mapper.Map(input, session);
             session.ExecutedOn = DateTimeOffset.Now;
-            session.CandidateId = await _dbContext.Users.Where(u => u.Id == input.CandidateId).Select(u => u.Id).SingleAsync();
-            session.ExamName = await _dbContext.Exams.Where(ex => ex.Id == input.ExamId).Select(ex => ex.Name).SingleAsync();
             session.NumOfQuestions = input.Answers.Count;
             session.NumOfCorrectAnswers = input.Answers.Count(ans => ans.IsCorrect);
             session.NumOfWrongAnswers = input.Answers.Count(ans => !ans.IsCorrect && ans.UserChoiceId.HasValue);
-            session.QSequence = String.Join(',', input.Answers.Select(ans => ans.QuestionId.ToString("D")).ToArray());
+            session.QSequence = String.Join(',', input.Answers.Select(ans => ans.QuestionId.Value.ToString("D")).ToArray());
+            session.ExamName = await _dbContext.Exams.Where(ex => ex.Id == input.ExamId).Select(ex => ex.Name).SingleAsync();
+
             _dbContext.ExamSessions.Add(session);
 
             // add the user's answers
@@ -73,13 +81,13 @@ namespace Quiz.Application.Sessions {
             }
 
             // add the user's errors, doubts, etc
-            var candidateNotes = await _dbContext.CandidateNotes.Where(cn => cn.CandidateId == input.CandidateId).ToListAsync();
+            var candidateNotes = await _dbContext.CandidateNotes.Where(cn => cn.CandidateId == input.CandidateId.ToString()).ToListAsync();
             foreach (var answDto in input.Answers) {
                 // skip unanswered, if requested
                 if (input.SkipUnanswered && !answDto.IsAnswered) continue;
 
                 var cn = candidateNotes.FirstOrDefault(cn => cn.QuestionId == answDto.QuestionId)
-                            ?? new CandidateNote(input.CandidateId, answDto.QuestionId, answDto.ExamId);
+                            ?? new CandidateNote(input.CandidateId.Value, answDto.QuestionId.Value, answDto.ExamId.Value);
                 cn.ModifiedOn = DateTimeOffset.Now;
                 cn.IsMarkedAsDoubt = answDto.IsMarkedAsDoubt;
                 cn.IsMarkedAsHidden = answDto.IsMarkedAsHidden;
@@ -95,6 +103,7 @@ namespace Quiz.Application.Sessions {
                 } else if (isNewCn && (cn.NumOfWrongAnswers > 0 || cn.IsMarkedAsDoubt || cn.IsMarkedAsHidden)) {
                     // add it
                     _dbContext.CandidateNotes.Add(cn);
+                    candidateNotes.Add(cn);
                 }
             }
 
@@ -109,19 +118,22 @@ namespace Quiz.Application.Sessions {
 
         public async Task<IList<SessionsStatisticsDto>> GetUserStats(UserSessionsRequestDto input) {
             var rootExams = input.ExamId.HasValue
-                ? (new ExamDto[] { await _examAppService.FirstOrDefault(ex => ex.Id == input.ExamId.Value) })
+                ? (new ExamDto[] { await _examAppService.FindById(input.ExamId.Value) })
                 : await _examAppService.GetAllRootExams();
             if (rootExams.Count <= 0) return new List<SessionsStatisticsDto>();
 
             var candidateName = input.CandidateId.HasValue
-                ? await _dbContext.Users
-                            .Where(u => u.Id == input.CandidateId)
+                ? await _dbIdentityContext.Users
+                            .Where(u => u.Id == input.CandidateId.ToString())
                             .Select(u => u.UserName)
                             .FirstOrDefaultAsync()
                 : null;
 
             // FIXME too much results (mainly if CandidateId is null)
-            var candidateSessions = await _dbContext.ExamSessions.Where(cd => (cd.CandidateId == input.CandidateId) && cd.IsEnded).ToListAsync();
+            var candidateSessions = await _dbContext.ExamSessions
+                                                .WhereIf(input.CandidateId.HasValue, cd => cd.CandidateId == input.CandidateId.ToString())
+                                                .Where(cd => cd.IsEnded)
+                                                .ToListAsync();
 
             var output = new List<SessionsStatisticsDto>(rootExams.Count);
             foreach (var exam in rootExams) {
@@ -132,8 +144,8 @@ namespace Quiz.Application.Sessions {
                     ExamName = exam.Name,
                     NumOfAvailableQuestions = await _dbContext.Questions.CountAsync(q => allExamIds.Contains(q.ExamId)),
                     NumOfCarriedOutSessions = candidateSessions.Count(cs => allExamIds.Contains(cs.ExamId)),
-                    NumOfWrongAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId) && (cn.NumOfWrongAnswers > 0)),
-                    NumOfDoubtAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId) && cn.IsMarkedAsDoubt),
+                    NumOfWrongAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId.ToString()) && (cn.NumOfWrongAnswers > 0)),
+                    NumOfDoubtAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId.ToString()) && cn.IsMarkedAsDoubt),
                 };
                 stat.NumOfNeverAnswered =
                     stat.NumOfAvailableQuestions -
@@ -149,36 +161,50 @@ namespace Quiz.Application.Sessions {
             return output;
         }
 
-        public Task<int> CountUserSessions(UserSessionsRequestDto input) {
-            return _dbContext.ExamSessions.CountAsync(s => (s.CandidateId == input.CandidateId) && (s.IsEnded));
-        }
-
         public async Task<int> DeleteUserSessions(UserSessionsRequestDto input) {
             _dbContext.ExamSessions.RemoveRange(
-               await _dbContext.ExamSessions.Where(s => (s.CandidateId == input.CandidateId)).ToListAsync());
+               await _dbContext.ExamSessions.Where(s => (s.CandidateId == input.CandidateId.ToString())).ToListAsync());
             return await _dbContext.SaveChangesAsync();
-        }
-
-        public Task<int> CountCandidateNotes(UserSessionsRequestDto input) {
-            return _dbContext.CandidateNotes.CountAsync(s => (s.CandidateId == input.CandidateId));
-        }
-
-        public Task<int> CountCandidateErrors(UserSessionsRequestDto input) {
-            return _dbContext.CandidateNotes.CountAsync(s => (s.CandidateId == input.CandidateId) && (s.NumOfWrongAnswers > 0));
         }
 
         public async Task<int> DeleteCandidateNotes(UserSessionsRequestDto input) {
             _dbContext.CandidateNotes.RemoveRange(
-                await _dbContext.CandidateNotes.Where(s => (s.CandidateId == input.CandidateId)).ToListAsync());
+                await _dbContext.CandidateNotes.Where(s => (s.CandidateId == input.CandidateId.ToString())).ToListAsync());
             return await _dbContext.SaveChangesAsync();
+        }
+
+        public Task<int> CountUserSessions(UserSessionsRequestDto input) {
+            return _dbContext.ExamSessions
+                        .WhereIf((input.CandidateId ?? Guid.Empty) != Guid.Empty, s => s.CandidateId == input.CandidateId.ToString())
+                        .Where(s => s.IsEnded)
+                        .CountAsync();
+        }
+
+        public Task<int> CountCandidateNotes(UserSessionsRequestDto input) {
+            return _dbContext.CandidateNotes
+                        .WhereIf((input.CandidateId ?? Guid.Empty) != Guid.Empty, s => s.CandidateId == input.CandidateId.ToString())
+                        .CountAsync();
+        }
+
+        public Task<int> CountCandidateErrors(UserSessionsRequestDto input) {
+            return _dbContext.CandidateNotes
+                        .WhereIf((input.CandidateId ?? Guid.Empty) != Guid.Empty, s => s.CandidateId == input.CandidateId.ToString())
+                        .Where(s => s.NumOfWrongAnswers > 0)
+                        .CountAsync();
         }
 
         public async Task<int> CountQuestionNeverAnswered(UserSessionsRequestDto input) {
             var examIds = await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto { ExamId = input.ExamId, MaxDeep = 10 });
             var totalQ = await _dbContext.Questions.CountAsync(q => examIds.Contains(q.ExamId));
 
-            var qrySessionIds = _dbContext.ExamSessions.Where(es => es.CandidateId == input.CandidateId).Select(es => es.Id);
-            var totalAnswers = await _dbContext.ExamSessionItems.Where(item => qrySessionIds.Contains(item.SessionId)).Select(item => item.QuestionId).Distinct().CountAsync();
+            var qrySessionIds = _dbContext.ExamSessions
+                                        .WhereIf((input.CandidateId ?? Guid.Empty) != Guid.Empty, s => s.CandidateId == input.CandidateId.ToString())
+                                        .Select(es => es.Id);
+            var totalAnswers = await _dbContext.ExamSessionItems
+                                        .Where(item => qrySessionIds.Contains(item.SessionId))
+                                        .Select(item => item.QuestionId)
+                                        .Distinct()
+                                        .CountAsync();
 
             return totalQ - totalAnswers;
         }

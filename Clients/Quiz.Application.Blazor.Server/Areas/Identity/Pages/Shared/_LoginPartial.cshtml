@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser<Guid>> SignInManager
-@inject UserManager<IdentityUser<Guid>> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <ul class="navbar-nav">
