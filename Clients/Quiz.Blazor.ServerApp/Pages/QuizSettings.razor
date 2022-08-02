@@ -73,16 +73,28 @@
 						<span class="badge bg-secondary rounded-pill">@exam.NumOfNeverAnswered</span>
 					</div>
 				</div>
+				<div class="d-grid mt-3 gap-2 d-flex justify-content-center">
+					<button type="button" class="btn btn-danger"
+						@onclick="@(() => DeleteClosedSessions(exam.ExamId))">
+						Delete closed sessions
+					</button>
+					<button type="button" class="btn btn-danger"
+						@onclick="@(() => DeleteOldNotes(exam.ExamId))">
+						Delete old errors
+					</button>
+				</div>
 			}
+
+			<hr />
 
 			<div class="d-grid mt-3 gap-2 d-flex justify-content-center">
 				<button type="button" class="btn btn-danger"
-					@onclick="@DeleteClosedSessions">
-					Delete closed sessions
+						@onclick="@(() => DeleteClosedSessions(null))">
+					Delete all closed sessions
 				</button>
 				<button type="button" class="btn btn-danger"
-					@onclick="@DeleteOldNotes">
-					Delete old errors
+						@onclick="@(() => DeleteOldNotes(null))">
+					Delete all old errors
 				</button>
 			</div>
 		</div>
@@ -121,37 +133,57 @@
 	//	}
 	//}
 
-	protected async Task DeleteClosedSessions() {
+	protected async Task DeleteClosedSessions(Guid? rootExamId) {
 		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to delete old exam sessions?"); // Confirm
 		if (!confirmed) return;
 
-		//WaitingCnt++;
-		//try {
-		//	var total = await _examSessionAppService.DeleteUserSessions(new UserSessionsRequestDto { CandidateId = User.Id });
-		//	if (total > 0) await GetUserStats();
-		//	_ = JsRuntime.InvokeVoidAsync("alert", $"{total} user's sessions deleted"); // Alert
-		//} catch(Exception ex) {
-		//	_logger.LogError(ex, ex.Message);
-		//	_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
-		//} finally {
-		//	if (WaitingCnt > 0) WaitingCnt--;
-		//}
+		WaitingCnt++;
+		try {
+			var total = await _examSessionAppService.DeleteUserSessions(
+									new UserSessionsRequestDto {
+										CandidateId = Guid.Parse(User!.Id),
+										ExamId = rootExamId,
+										MaxDeep = 10,
+									});
+			if (total > 0) {
+				Stats = await _examSessionAppService.GetUserStats(
+					new UserSessionsRequestDto {
+						CandidateId = Guid.Parse(User.Id),
+					});
+			}
+			_ = JsRuntime.InvokeVoidAsync("alert", $"{total} user's sessions deleted"); // Alert
+		} catch(Exception ex) {
+			_logger.LogError(ex, ex.Message);
+			_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+		}
 	}
 
-	protected async Task DeleteOldNotes() {
+	protected async Task DeleteOldNotes(Guid? rootExamId) {
 		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to delete old notes and errors?"); // Confirm
 		if (!confirmed) return;
 
-		//WaitingCnt++;
-		//try {
-		//	var total = await _examSessionAppService.DeleteCandidateNotes(new UserSessionsRequestDto { CandidateId = User.Id });
-		//	if (total > 0) await GetUserStats();
-		//	_ = JsRuntime.InvokeVoidAsync("alert", $"{total} notes deleted"); // Alert
-		//} catch(Exception ex) {
-		//	_logger.LogError(ex, ex.Message);
-		//	_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
-		//} finally {
-		//	if (WaitingCnt > 0) WaitingCnt--;
-		//}
+		WaitingCnt++;
+		try {
+			var total = await _examSessionAppService.DeleteCandidateNotes(
+									new UserSessionsRequestDto {
+										CandidateId = Guid.Parse(User!.Id),
+										ExamId = rootExamId,
+										MaxDeep = 10,
+									});
+			if (total > 0) {
+				Stats = await _examSessionAppService.GetUserStats(
+					new UserSessionsRequestDto {
+						CandidateId = Guid.Parse(User.Id),
+					});
+			}
+			_ = JsRuntime.InvokeVoidAsync("alert", $"{total} user's notes and error deleted"); // Alert
+		} catch(Exception ex) {
+			_logger.LogError(ex, ex.Message);
+			_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+		}
 	}
 }

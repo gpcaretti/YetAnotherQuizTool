@@ -16,4 +16,61 @@
     <NoWarn>1701;1702;8632</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Update="NTypewriter\BaseEntityDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\BasicCandidateDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\CandidateDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\ChoiceDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\DdtoGenerator.nt">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\ExamDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\ExamQuestionsRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\ExamSessionDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\ExamSessionResultsRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\PagedAndSortedResultRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\PrepareExamSessionRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\PrepareExamSessionResponseDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\QuestionAndChoicesDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\QuestionDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\RecursiveExamsRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\SessionsStatisticsDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\Stica.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+    <None Update="NTypewriter\UserSessionsRequestDto.ts">
+      <CustomToolNamespace>495e6896-af51-4d20-ad35-c7acbbc3b8fa</CustomToolNamespace>
+    </None>
+  </ItemGroup>
+
 </Project>

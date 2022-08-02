@@ -14,6 +14,10 @@ namespace Quiz.Blazor.Host.Client {
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
+            if (builder.HostEnvironment.IsDevelopment()) {
+                builder.Logging.SetMinimumLevel(LogLevel.Debug);
+            }
+
             // This is the standard http client requiring access tokens
             builder.Services.AddHttpClient(QuizConstants.ClientNames.Standard, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();

@@ -49,6 +49,11 @@
 			</div>
 		} else {
 			// show form for choosing an exam
+			<style>
+				.optl0 {
+					font-weight: bold;
+				}
+			</style>
 			<div class="card-header">
 				@*<h4 class="card-title">Select your test and start it. Good luck!</h4>*@
 				<EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
@@ -56,10 +61,18 @@
 					@*<input type="hidden" @bind="ExamSession!.CandidateId" name="CandidateId" id="CandidateId" />*@
 					<div class="row my-3">
 						<div class="form-group col-12">
+							<div class="form-group form-check form-check-inline mx-2">
+								<InputCheckbox @bind-Value="ShowExamsSubSection" id="ShowExamsSubSection" name="ShowExamsSubSection" class="form-check-input" />
+								<label for="ShowExamsSubSection" class="form-check-label">Show sub sections</label>
+							</div>
+
 							<InputSelect @bind-Value="NewQuizModel!.ExamId" id="ExamId" class="form-control">
 								<option value="">Select exam type...</option>
-								@foreach (ExamDto item in AvailableExams!) {
-									<option value="@item.Id">@(item.Name.Length <= 60 ? item.Name : (item.Name.Substring(0, 60) + "..."))</option>
+								@foreach (ExamDto item in AvailableExams!.OrderBy(e => e.Code).ToList()) {
+									if (!ShowExamsSubSection && item.AncestorId != null) continue;
+									int nDots = item.Code.Count(ch => (ch == '.'));
+									var strOption = (nDots > 0) ? (string.Concat(Enumerable.Repeat("---", nDots)) + ' ' + item.Name) : item.Name;
+									<option class="optl@(nDots)" value="@item.Id">@(strOption.Length <= 60 ? strOption : (strOption.Substring(0, 60) + "..."))</option>
 								}
 							</InputSelect>
 							<div class="invalid-feedback"><ValidationMessage For="@(() => NewQuizModel.ExamId)" /></div>
@@ -129,7 +142,7 @@
 					<div class="row my-3">
 						<div class="col text-center">
 							<button type="button" class="btn btn-primary" style="width: 6rem;"
-								disabled="@(!NewQuizModel.ExamId.HasValue || !ExamSession.IsEnded)"
+								disabled="@(!NewQuizModel.ExamId.HasValue || !ExamSession!.IsEnded)"
 								@onclick="@StartExamSession">Start</button>
 						</div>
 					</div>
@@ -138,7 +151,7 @@
 		}
 
 		<div class="card-body">
-			@if (!NewQuizModel.ExamId.HasValue || ExamSession == null) {
+			@if (!NewQuizModel!.ExamId.HasValue || ExamSession == null) {
 				// invitation for a new test
 				<h4 class="text-center">Select your test</h4>
 
@@ -270,7 +283,7 @@
 							</button>
 							<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
 								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@(() => MoveToQuestion(ExamSession.TotalQuestions))">
+								@onclick="@(() => MoveToQuestion(ExamSession!.TotalQuestions))">
 									End
 							</button>
 						</div>

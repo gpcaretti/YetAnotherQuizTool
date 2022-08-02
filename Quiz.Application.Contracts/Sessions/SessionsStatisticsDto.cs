@@ -2,6 +2,7 @@
     public class SessionsStatisticsDto {
         public Guid? CandidateId { get; set; }
         public string? CandidateName { get; set; }
+        public Guid ExamId { get; set; }
         public string ExamName { get; set; }
         public int NumOfCarriedOutSessions { get; set; }
         public int NumOfWrongAnswers { get; set; }

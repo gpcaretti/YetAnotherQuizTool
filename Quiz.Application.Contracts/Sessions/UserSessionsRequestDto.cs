@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿    using System.ComponentModel.DataAnnotations;
 
 namespace Quiz.Application.Sessions {
     public class UserSessionsRequestDto {
@@ -6,5 +6,8 @@ namespace Quiz.Application.Sessions {
         [Required]
         public Guid? CandidateId { get; set; }
         public Guid? ExamId { get; set; }
+
+        [Range(1, 20)]
+        public int MaxDeep { get; set; } = 1;
     }
 }

@@ -1,0 +1,14 @@
+﻿﻿{{
+capture output -}}
+module Models {
+    {{ for class in data.Classes | Symbols.WhereNameEndsWith "Dto" }}
+        export interface {{ class.Name }} { {{
+            for property in class.Properties | Symbols.ThatArePublic }}
+                {{ property.Name | String.ToCamelCase }}: {{ property.Type | Type.ToTypeScriptType }};
+            {{- end}}
+        }
+        {{ "\n" }}
+  {{- end
+end -}}
+}
+{{- Save output "Stica" + ".ts" }}

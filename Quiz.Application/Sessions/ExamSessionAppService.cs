@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Quiz.Application.Exams;
 using Quiz.Application.Guids;
 using Quiz.Domain;
+using Quiz.Domain.Exams;
 using Quiz.Domain.Exams.Sessions;
 using Quiz.Domain.Extensions;
 
@@ -141,16 +142,27 @@ namespace Quiz.Application.Sessions {
                 var stat = new SessionsStatisticsDto {
                     CandidateId = input.CandidateId,
                     CandidateName = candidateName,
+                    ExamId = exam.Id,
                     ExamName = exam.Name,
                     NumOfAvailableQuestions = await _dbContext.Questions.CountAsync(q => allExamIds.Contains(q.ExamId)),
                     NumOfCarriedOutSessions = candidateSessions.Count(cs => allExamIds.Contains(cs.ExamId)),
                     NumOfWrongAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId.ToString()) && (cn.NumOfWrongAnswers > 0)),
                     NumOfDoubtAnswers = await _dbContext.CandidateNotes.CountAsync(cn => allExamIds.Contains(cn.ExamId) &&  (cn.CandidateId == input.CandidateId.ToString()) && cn.IsMarkedAsDoubt),
                 };
+
+                //var v1 = await _dbContext.ExamSessionItems
+                //        .Where(item => candidateSessions.Select(cs => cs.Id).Contains(item.SessionId) && allExamIds.Contains(item.ExamId) && item.IsAnswered)
+                //        .Select(item => item.QuestionId)
+                //        .Distinct()
+                //        .CountAsync();
+
+                // get all session of this root exam
+                var sessionIds = _dbContext.ExamSessions.Where(es => allExamIds.Contains(es.ExamId)).Select(es => es.Id);
+                // now calc the question never answered
                 stat.NumOfNeverAnswered =
                     stat.NumOfAvailableQuestions -
                     await _dbContext.ExamSessionItems
-                            .Where(item => candidateSessions.Select(cs => cs.Id).Contains(item.SessionId) && item.IsAnswered)
+                            .Where(item => candidateSessions.Select(cs => cs.Id).Contains(item.SessionId) && sessionIds.Contains(item.SessionId) && item.IsAnswered)
                             .Select(item => item.QuestionId)
                             .Distinct()
                             .CountAsync();
@@ -162,14 +174,52 @@ namespace Quiz.Application.Sessions {
         }
 
         public async Task<int> DeleteUserSessions(UserSessionsRequestDto input) {
+            IList<Guid> allExamIds = (input.ExamId != null)
+                ? await _examAppService.GetRecursiveExamIds(
+                                                    new RecursiveExamsRequestDto {
+                                                        ExamId = input.ExamId,
+                                                        MaxDeep = input.MaxDeep
+                                                    })
+                : null;
             _dbContext.ExamSessions.RemoveRange(
-               await _dbContext.ExamSessions.Where(s => (s.CandidateId == input.CandidateId.ToString())).ToListAsync());
+               await _dbContext.ExamSessions
+                        .Where(s => s.CandidateId == input.CandidateId.ToString())
+                        .Where(s => (input.ExamId == null) || (allExamIds == null) || allExamIds.Contains(s.ExamId))
+                        .ToListAsync()
+                        );
+
+            //if (input.ExamId != null) {
+            //    IList<Guid> allExamIds = await _examAppService.GetRecursiveExamIds(
+            //                                        new RecursiveExamsRequestDto {
+            //                                            ExamId = input.ExamId,
+            //                                            MaxDeep = input.MaxDeep }
+            //                                        );
+            //    _dbContext.ExamSessions.RemoveRange(
+            //       await _dbContext.ExamSessions.Where(s => (s.CandidateId == input.CandidateId.ToString()) && allExamIds.Contains(s.ExamId)).ToListAsync());
+            //} else {
+            //    _dbContext.ExamSessions.RemoveRange(
+            //       await _dbContext.ExamSessions.Where(s => (s.CandidateId == input.CandidateId.ToString())).ToListAsync());
+            //}
             return await _dbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        ///     Delete old notes and errors of the passed user on the passed exams
+        /// </summary>
         public async Task<int> DeleteCandidateNotes(UserSessionsRequestDto input) {
+            IList<Guid> allExamIds = (input.ExamId != null)
+                ? await _examAppService.GetRecursiveExamIds(
+                                                    new RecursiveExamsRequestDto {
+                                                        ExamId = input.ExamId,
+                                                        MaxDeep = input.MaxDeep
+                                                    })
+                : null;
+
             _dbContext.CandidateNotes.RemoveRange(
-                await _dbContext.CandidateNotes.Where(s => (s.CandidateId == input.CandidateId.ToString())).ToListAsync());
+                await _dbContext.CandidateNotes
+                .Where(s => s.CandidateId == input.CandidateId.ToString())
+                .Where(s => (input.ExamId == null) || (allExamIds == null) || allExamIds.Contains(s.ExamId))
+                .ToListAsync());
             return await _dbContext.SaveChangesAsync();
         }
 

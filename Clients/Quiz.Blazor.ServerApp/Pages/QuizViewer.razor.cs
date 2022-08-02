@@ -19,6 +19,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
 
         protected PrepareExamSessionRequestDto? NewQuizModel;
         protected ICollection<ExamDto>? AvailableExams;
+        protected bool ShowExamsSubSection = false;
 
         protected int WaitingCnt;
 
