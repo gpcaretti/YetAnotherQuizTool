@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,10 +32,9 @@ namespace Quiz.Application.Sessions {
         }
 
         /// <summary>
-        /// 
+        ///		Prepare a new exam session by getting the requested exam's info and a subset of questions for the exam
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+        /// <exception cref="Exception">In case of error</exception>
         public async Task<PrepareExamSessionResponseDto> PrepareExamSession(PrepareExamSessionRequestDto input) {
             try {
                 // get the exam title/name
@@ -52,10 +52,32 @@ namespace Quiz.Application.Sessions {
         }
 
         /// <summary>
+        ///		Prepare a new exam session by getting the requested exam's info and a subset of questions from an old exam session
+        /// </summary>
+        /// <exception cref="Exception">In case of error</exception>
+        public async Task<PrepareExamSessionResponseDto> PrepareExamSession(Guid oldSessionId) {
+            // FIXME: only sessions owing to the current candidate should be accessible 
+            try {
+                // get the exam title/name
+                var oldSession = await _dbContext.ExamSessions.Include(es => es.Exam).FirstOrDefaultAsync(es => es.Id == oldSessionId);
+                if (oldSession == null) throw new Exception($"Exam session not found (id: ${oldSessionId})");
+                var output = _mapper.Map<PrepareExamSessionResponseDto>(oldSession);
+
+                // get the questions and return
+                var guids = oldSession.QSequence.Split(',').Select(guid => Guid.Parse(guid)).ToArray();
+                output.Questions = await _questionAppService.GetQuestionsByIds(guids);
+                return output;
+            }
+            catch (Exception ex) {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
         ///     Save a user Session
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
-        public async Task<Guid> SaveUserSession(ExamSessionResultsRequestDto input) {
+        public async Task<Guid> SaveUserSession(ExamSessionRequestDto input) {
             // validate input params
             if (!await _dbIdentityContext.Users.AnyAsync(u => u.Id == input.CandidateId.ToString()))
                 throw new ArgumentException("Cannot find the indicated candidate", nameof(input.CandidateId));
@@ -117,10 +139,45 @@ namespace Quiz.Application.Sessions {
             return session.Id;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task<IList<ExamSessionDto>> GetUserSessions(UserSessionsRequestDto input) {
+            // if examId is passed, get it, else get all root exams
+            var rootExams = input.ExamId.HasValue
+                ? await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto(input.ExamId.Value, input.MaxDeep))
+                : (await _examAppService.GetAllRootExams()).Select(ex => ex.Id).ToList();
+
+            // if not root exams return
+            if (rootExams.Count <= 0) return new List<ExamSessionDto>();
+
+            var cadidateId = input.CandidateId?.ToString();
+            var query = _dbContext.ExamSessions
+                            .WhereIf(!string.IsNullOrEmpty(cadidateId), es => cadidateId == es.CandidateId)
+                            .Where(es => rootExams.Contains(es.ExamId))
+                            .OrderByDescending(es => es.ModifiedOn)
+                            .ThenByDescending(es => es.CreatedBy)
+                            .ProjectTo<ExamSessionDto>(this._mapper.ConfigurationProvider);
+            return await query.ToListAsync();
+        }
+
+        public Task<IList<ExamSessionWithAnswersDto>> GetUserSessionsWithAnswers(UserSessionsRequestDto input) {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public async Task<IList<SessionsStatisticsDto>> GetUserStats(UserSessionsRequestDto input) {
+            // if examId is passed, get it, else get all root exams
             var rootExams = input.ExamId.HasValue
                 ? (new ExamDto[] { await _examAppService.FindById(input.ExamId.Value) })
                 : await _examAppService.GetAllRootExams();
+
+            // if not root exams return
             if (rootExams.Count <= 0) return new List<SessionsStatisticsDto>();
 
             var candidateName = input.CandidateId.HasValue
@@ -138,7 +195,7 @@ namespace Quiz.Application.Sessions {
 
             var output = new List<SessionsStatisticsDto>(rootExams.Count);
             foreach (var exam in rootExams) {
-                var allExamIds = await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto { ExamId = exam.Id, MaxDeep = 10 });
+                var allExamIds = await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto(exam.Id, maxDeep: input.MaxDeep));
                 var stat = new SessionsStatisticsDto {
                     CandidateId = input.CandidateId,
                     CandidateName = candidateName,
@@ -176,10 +233,7 @@ namespace Quiz.Application.Sessions {
         public async Task<int> DeleteUserSessions(UserSessionsRequestDto input) {
             IList<Guid> allExamIds = (input.ExamId != null)
                 ? await _examAppService.GetRecursiveExamIds(
-                                                    new RecursiveExamsRequestDto {
-                                                        ExamId = input.ExamId,
-                                                        MaxDeep = input.MaxDeep
-                                                    })
+                            new RecursiveExamsRequestDto(input.ExamId.Value,input.MaxDeep))
                 : null;
             _dbContext.ExamSessions.RemoveRange(
                await _dbContext.ExamSessions
@@ -209,10 +263,7 @@ namespace Quiz.Application.Sessions {
         public async Task<int> DeleteCandidateNotes(UserSessionsRequestDto input) {
             IList<Guid> allExamIds = (input.ExamId != null)
                 ? await _examAppService.GetRecursiveExamIds(
-                                                    new RecursiveExamsRequestDto {
-                                                        ExamId = input.ExamId,
-                                                        MaxDeep = input.MaxDeep
-                                                    })
+                            new RecursiveExamsRequestDto(input.ExamId.Value, input.MaxDeep))
                 : null;
 
             _dbContext.CandidateNotes.RemoveRange(
@@ -244,7 +295,7 @@ namespace Quiz.Application.Sessions {
         }
 
         public async Task<int> CountQuestionNeverAnswered(UserSessionsRequestDto input) {
-            var examIds = await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto { ExamId = input.ExamId, MaxDeep = 10 });
+            var examIds = await _examAppService.GetRecursiveExamIds(new RecursiveExamsRequestDto(input.ExamId, input.MaxDeep));
             var totalQ = await _dbContext.Questions.CountAsync(q => examIds.Contains(q.ExamId));
 
             var qrySessionIds = _dbContext.ExamSessions

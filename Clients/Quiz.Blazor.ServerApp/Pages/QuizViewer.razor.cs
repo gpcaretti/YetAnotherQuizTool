@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,6 +14,13 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 namespace Quiz.Blazor.ServerApp.Pages {
 
     public partial class QuizViewer : Microsoft.AspNetCore.Components.ComponentBase {
+
+        [Parameter]
+        [SupplyParameterFromQuery(Name = "sessionId")]
+        public Guid OldSessionId { get; set; } = Guid.Empty;
+
+        //[Parameter]
+        //public string? SessionId { get; set; } = null;
 
         protected ApplicationUser? User;
         protected QuizSession? ExamSession;
@@ -28,23 +36,45 @@ namespace Quiz.Blazor.ServerApp.Pages {
         protected override async Task OnInitializedAsync() {
             WaitingCnt = 1;
             try {
+                await base.OnInitializedAsync();
+
                 // get the current user
                 AuthenticationState authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
                 User = await UserManager.GetUserAsync(authState.User);
 
+                //NavManager.TryGetQueryString<int>("initialCount", out currentCount);
                 HandleReset();
 
                 // get available exams
                 AvailableExams = await _examAppService.GetAll(new PagedAndSortedResultRequestDto { MaxResultCount = 100, Sorting = nameof(ExamDto.Code) });
                 NewQuizModel!.ExamId = AvailableExams.FirstOrDefault()?.Id;
                 //editContext.OnValidationRequested += HandleValidationRequested;
+
+                if (OldSessionId != Guid.Empty) {
+                    // get a set of quiz according to user selections/options
+                    PrepareExamSessionResponseDto output = await _examSessionAppService.PrepareExamSession(OldSessionId);
+                    if (output.TotalCount <= 0) {
+                        //await JsRuntime.InvokeVoidAsync("alert", "No available question for the selected exam and options"); // Alert
+                        return;
+                    }
+                    ExamSession.SetExam(output);
+
+                    NewQuizModel!.ExamId = AvailableExams.FirstOrDefault(ex => ex.Id == output.ExamId)?.Id ?? AvailableExams.FirstOrDefault()?.Id;
+                    NewQuizModel!.MaxResultCount = output.TotalCount;
+
+                    // move to first question and return
+                    MoveToQuestion(0);
+                }
             } finally {
                 if (WaitingCnt > 0) WaitingCnt--;
             }
         }
 
-        // request for a new session
-        private async Task StartExamSession() {
+        /// <summary>
+        ///		UI request for a new session
+        /// </summary>
+        private async Task StartExamSessionClick(MouseEventArgs evt) {
+            // if no exam selected, warn and return
             if (!NewQuizModel!.ExamId.HasValue) {
                 await JsRuntime.InvokeVoidAsync("alert", "Please, select an exam"); // Alert
                 return;
@@ -60,13 +90,42 @@ namespace Quiz.Blazor.ServerApp.Pages {
                     return;
                 }
 
-                ExamSession = new QuizSession(Guid.Parse(User!.Id));
                 ExamSession.SetExam(output);
 
                 // move to first question and return
                 MoveToQuestion(0);
             } finally {
                 if (WaitingCnt > 0) WaitingCnt--;
+            }
+        }
+
+        /// <summary>
+        ///		UI request for restarting the current session
+        /// </summary>
+        private async Task RestartExamSessionClick(MouseEventArgs evt) {
+            if ((ExamSession == null) || (ExamSession.TotalAnswers <= 0)) {
+                await JsRuntime.InvokeVoidAsync("alert", "Oops! There is no user session to restart."); // Alert
+                return;
+            }
+
+            bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to restart current exam session?"); // Confirm
+            if (!confirmed) return;
+
+            ExamSession.ResetCurrentExam();
+        }
+
+        private void HandleReset() {
+            try {
+                ExamSession = new QuizSession(Guid.Parse(User.Id));
+
+                NewQuizModel = new PrepareExamSessionRequestDto {
+                    CandidateId = ExamSession.CandidateId,
+                    IsRandom = true,
+                    MaxResultCount = 20,    // FIXME: how to define the default num of questions per exam?
+                };
+                editContext = new EditContext(NewQuizModel);
+            }
+            finally {
             }
         }
 
@@ -137,7 +196,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
             }
         }
 
-        private void ShowHideAnswers(MouseEventArgs e) {
+        private void ShowHideAnswers(MouseEventArgs evt) {
             if (ExamSession != null) ExamSession.ShowRightChoice = !ExamSession.ShowRightChoice;
         }
 
@@ -148,12 +207,12 @@ namespace Quiz.Blazor.ServerApp.Pages {
             }
         }
 
-        private void EndExamSession(MouseEventArgs e) {
+        private void EndExamSession(MouseEventArgs evt) {
             if (ExamSession != null) ExamSession.IsEnded = true;
             MoveToQuestion(0);
         }
 
-        private async Task EndAndSubmitExamSession(MouseEventArgs e) {
+        private async Task EndAndSubmitExamSession(MouseEventArgs evt) {
             if ((ExamSession == null) || (ExamSession.TotalAnswers <= 0)) {
                 await JsRuntime.InvokeVoidAsync("alert", "Oops! There is no user session to save."); // Alert
                 return;
@@ -167,9 +226,9 @@ namespace Quiz.Blazor.ServerApp.Pages {
 
             WaitingCnt++;
             try {
-                EndExamSession(e);
+                EndExamSession(evt);
                 var sessionId = await _examSessionAppService.SaveUserSession(
-                    new ExamSessionResultsRequestDto {
+                    new ExamSessionRequestDto {
                         CandidateId = ExamSession.CandidateId,
                         ExamId = ExamSession.ExamId,
                         IsEnded = ExamSession.IsEnded,
@@ -186,32 +245,6 @@ namespace Quiz.Blazor.ServerApp.Pages {
             } finally {
             }
 
-        }
-
-        private async Task RestartExamSession(MouseEventArgs e) {
-            if ((ExamSession == null) || (ExamSession.TotalAnswers <= 0)) {
-                await JsRuntime.InvokeVoidAsync("alert", "Oops! There is no user session to restart."); // Alert
-                return;
-            }
-
-            bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to restart current exam session?"); // Confirm
-            if (!confirmed) return;
-
-            ExamSession.ResetCurrentExam();
-        }
-
-        private void HandleReset() {
-            try {
-                ExamSession = new QuizSession(Guid.Parse(User.Id));
-
-                NewQuizModel = new PrepareExamSessionRequestDto {
-                    CandidateId = ExamSession.CandidateId,
-                    IsRandom = true,
-                    MaxResultCount = 20,    // FIXME: how to define the default num of questions per exam?
-                };
-                editContext = new EditContext(NewQuizModel);
-            } finally {
-            }
         }
 
         private void HandleValidSubmit() {
@@ -272,7 +305,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
             // create a new user quiz session 
             public void SetExam(PrepareExamSessionResponseDto input) {
                 ExamId = input.ExamId;
-                ExamName = input.Name;
+                ExamName = input.ExamName;
                 ExamDuration = input.Duration;
                 Questions = input.Questions;
 

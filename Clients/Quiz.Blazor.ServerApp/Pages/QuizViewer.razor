@@ -1,4 +1,5 @@
 ﻿@page "/QuizViewer"
+@*@page "/QuizViewer/{sessionId:string?}"*@
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
 @using Quiz.Application.Exams
 @using Quiz.Application.Sessions
@@ -143,7 +144,7 @@
 						<div class="col text-center">
 							<button type="button" class="btn btn-primary" style="width: 6rem;"
 								disabled="@(!NewQuizModel.ExamId.HasValue || !ExamSession!.IsEnded)"
-								@onclick="@StartExamSession">Start</button>
+								@onclick="@StartExamSessionClick">Start</button>
 						</div>
 					</div>
 				</EditForm>
@@ -317,7 +318,7 @@
 			</button>
 			<button type="button" class="btn btn-outline-primary"
 				disabled="@(ExamSession == null || ExamSession.TotalQuestions <= 0)"
-				@onclick="@RestartExamSession">Restart Exam Session
+				@onclick="@RestartExamSessionClick">Restart Exam Session
 			</button>
 		</div>
 	</div>

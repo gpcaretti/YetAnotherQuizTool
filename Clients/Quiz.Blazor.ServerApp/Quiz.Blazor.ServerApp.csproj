@@ -7,6 +7,10 @@
     <UserSecretsId>aspnet-Quiz.Blazor.ServerApp-2511951C-E778-4837-A947-E80DB66E02AC</UserSecretsId>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <Authors>gpcaretti</Authors>
+    <Version>$(VersionPrefix)</Version>
+    <AssemblyVersion>1.2.1</AssemblyVersion>
+    <FileVersion>1.2.1</FileVersion>
     <!--<RootNamespace>$(MSBuildProjectName.SubString(0, $(MSBuildProjectName.LastIndexOf("."))).Replace(" ", "_"))</RootNamespace>-->
   </PropertyGroup>
 

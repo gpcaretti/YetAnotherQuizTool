@@ -1,7 +1,7 @@
 ﻿namespace Quiz.Application.Exams {
 
     // FIXME!
-    public class ExamSessionDto : BaseEntityDto<Guid> {
+    public class ExamSessionDtoZZZ : BaseEntityDto<Guid> {
         public Guid? AncestorId { get; private set; }
 
         public string Name { get; set; }

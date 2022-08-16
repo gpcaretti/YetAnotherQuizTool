@@ -1,0 +1,39 @@
+﻿@page "/OldQuizSessions"
+@using Quiz.Application.Sessions
+
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject UserManager<ApplicationUser> _userManager
+@inject IExamSessionAppService _examSessionAppService
+@inject ILogger<OldQuizSessions> _logger
+@inject NavigationManager UriHelper
+
+<h2>This is "oldQuizSessions"</h2>
+
+@if (WaitingCnt > 0) {
+	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
+}
+
+
+@if ((UserSessions?.Count ?? 0) <= 0) {
+	<p>No user's sessions</p>
+	return;
+}
+
+<div class="row">
+	@foreach (var key in UserSessions!.Keys) {
+		<div class="card full-space-col col-lg-9">
+			<div class="card-header">
+				<h4 class="card-title">@key</h4>
+			</div>
+			<div class="card-body">
+				@foreach (var session in UserSessions[key]) {
+					<span class="d-block">Executed on: @session.ExecutedOn</span>
+					<span class="d-block">Tot: @session.NumOfQuestions</span>
+					<span class="d-block">Wrong: @session.NumOfWrongAnswers</span>
+					<button type="button" class="" @onclick="@(() => UriHelper.NavigateTo("/QuizViewer/?sessionId=" + session.Id))">Restore it!</button>
+					<hr />
+				}
+			</div>
+		</div>
+	}
+</div>

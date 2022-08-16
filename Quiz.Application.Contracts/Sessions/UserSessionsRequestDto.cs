@@ -8,6 +8,6 @@ namespace Quiz.Application.Sessions {
         public Guid? ExamId { get; set; }
 
         [Range(1, 20)]
-        public int MaxDeep { get; set; } = 1;
+        public int MaxDeep { get; set; } = 10;
     }
 }

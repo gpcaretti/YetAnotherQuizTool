@@ -6,6 +6,7 @@
     <Nullable>disable</Nullable>
       <RootNamespace>$(MSBuildProjectName)</RootNamespace>
       <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+      <Version>$(VersionPrefix)</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

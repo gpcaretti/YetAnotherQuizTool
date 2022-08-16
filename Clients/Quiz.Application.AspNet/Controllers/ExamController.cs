@@ -103,7 +103,7 @@ namespace Quiz.Application.Web.Controllers {
         [Route("~/api/Score")]
         //[AllowAnonymous]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Score(ExamSessionResultsRequestDto input) {
+        public async Task<IActionResult> Score(ExamSessionRequestDto input) {
             try {
                 if (!ModelState.IsValid) return Ok(new { IsSuccess = false, Message = "Invalid posted data (too much large?)" });
 

@@ -1,26 +1,17 @@
 ﻿@page "/QuizSettings"
 
-@using System.ComponentModel.DataAnnotations;
-@using System.Text.Json;
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization;
 @using Microsoft.AspNetCore.Components.Forms;
 @using Microsoft.AspNetCore.Components.Web;
 @using Microsoft.AspNetCore.Identity;
-@using Microsoft.JSInterop;
 @using Quiz.Application.Dtos;
-@using Quiz.Application.Exams
 @using Quiz.Application.Sessions;
 
-@inject AuthenticationStateProvider GetAuthenticationStateAsync
-@inject SignInManager<ApplicationUser> SignInManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager UriHelper
-
-@inject IExamAppService _examAppService
 @inject IExamSessionAppService _examSessionAppService
-
 @inject ILogger<QuizSettings> _logger
-@inject IJSRuntime JsRuntime
 
 @attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]
 
@@ -29,7 +20,6 @@
 @if (WaitingCnt > 0) {
 	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
 }
-
 
 <div class="row">
 	<div class="card full-space-col col-lg-9">
@@ -45,63 +35,36 @@
 					<span class="ms-2 me-auto">Closed exam sessions</span>
 					<span class="badge bg-success rounded-pill">@(Stats.Sum(s => s.NumOfCarriedOutSessions))</span>
 				</div>
+				<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+					<span class="ms-2 me-auto">Errors still open</span>
+					<span class="badge bg-danger rounded-pill">@(Stats.Sum(s => s.NumOfWrongAnswers))</span>
+				</div>
 			</div>
+			<SessionStatsButtons User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
 
-			@foreach (var exam in Stats) {
-				<div class="list-group list-group-numbered mt-3">
-					<div class="list-group-item d-flex justify-content-between align-items-start bg-secondary text-white">
-						<span class="ms-2 me-auto">@exam.ExamName</span>
-					</div>
-					<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-						<span class="ms-2 me-auto">Total questions</span>
-						<span class="badge bg-primary rounded-pill">@exam.NumOfAvailableQuestions</span>
-					</div>
-					<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-						<span class="ms-2 me-auto">Carried out sessions</span>
-						<span class="badge bg-success rounded-pill">@exam.NumOfCarriedOutSessions</span>
-					</div>
-					<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-						<span class="ms-2 me-auto">Errors still open</span>
-						<span class="badge bg-danger rounded-pill">@exam.NumOfWrongAnswers</span>
-					</div>
-					<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-						<span class="ms-2 me-auto">Marked as doubt</span>
-						<span class="badge bg-warning rounded-pill">@exam.NumOfDoubtAnswers</span>
-					</div>
-					<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-						<span class="ms-2 me-auto">Missing questions</span>
-						<span class="badge bg-secondary rounded-pill">@exam.NumOfNeverAnswered</span>
-					</div>
-				</div>
-				<div class="d-grid mt-3 gap-2 d-flex justify-content-center">
-					<button type="button" class="btn btn-danger"
-						@onclick="@(() => DeleteClosedSessions(exam.ExamId))">
-						Delete closed sessions
-					</button>
-					<button type="button" class="btn btn-danger"
-						@onclick="@(() => DeleteOldNotes(exam.ExamId))">
-						Delete old errors
-					</button>
-				</div>
+			@foreach (var examStats in Stats!) {
+				<SessionStats Stats="@examStats" />
+				<SessionStatsButtons RootExamId="@examStats.ExamId" User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
 			}
-
-			<hr />
-
-			<div class="d-grid mt-3 gap-2 d-flex justify-content-center">
-				<button type="button" class="btn btn-danger"
-						@onclick="@(() => DeleteClosedSessions(null))">
-					Delete all closed sessions
-				</button>
-				<button type="button" class="btn btn-danger"
-						@onclick="@(() => DeleteOldNotes(null))">
-					Delete all old errors
-				</button>
-			</div>
 		</div>
 	</div>
 </div>
 @code {
-	protected ApplicationUser? User;
+
+	private bool _refreshStats;
+
+	public bool RefreshStats {
+		get => _refreshStats;
+		set {
+			if (value != _refreshStats) {
+				_refreshStats = value;
+				InvokeAsync(() => RefreshUserStats());
+
+			}
+		}
+	}
+
+	protected ApplicationUser? ApplicationUser;
 
 	protected int WaitingCnt;
 
@@ -111,79 +74,29 @@
 		WaitingCnt = 1;
 		try {
 			// get the current user
-			AuthenticationState authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
-			User = await UserManager.GetUserAsync(authState.User);
+			AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			ApplicationUser = await UserManager.GetUserAsync(authState.User);
+			Stats = await GetUserStats();
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+		}
+	}
 
-			Stats = await _examSessionAppService.GetUserStats(
+
+	private async Task RefreshUserStats() {
+		WaitingCnt++;
+		try {
+			Stats = await GetUserStats();
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+			StateHasChanged();
+		}
+	}
+
+	private Task<IList<SessionsStatisticsDto>> GetUserStats() {
+		return  _examSessionAppService.GetUserStats(
 				new UserSessionsRequestDto {
-					CandidateId = Guid.Parse(User.Id),
+					CandidateId = Guid.Parse(ApplicationUser!.Id),
 				});
-		} finally {
-			if (WaitingCnt > 0) WaitingCnt--;
-		}
-	}
-
-	//protected async Task GetUserStats() {
-	//	WaitingCnt++;
-	//	try {
-	//		NumOfClosedSessions  = await _examSessionAppService.CountUserSessions(new UserSessionsRequestDto { CandidateId = User.Id });
-	//		NumOfRecordedNotes  = await _examSessionAppService.CountCandidateErrors(new UserSessionsRequestDto { CandidateId = User.Id });
-	//	} finally {
-	//		if (WaitingCnt > 0) WaitingCnt--;
-	//	}
-	//}
-
-	protected async Task DeleteClosedSessions(Guid? rootExamId) {
-		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to delete old exam sessions?"); // Confirm
-		if (!confirmed) return;
-
-		WaitingCnt++;
-		try {
-			var total = await _examSessionAppService.DeleteUserSessions(
-									new UserSessionsRequestDto {
-										CandidateId = Guid.Parse(User!.Id),
-										ExamId = rootExamId,
-										MaxDeep = 10,
-									});
-			if (total > 0) {
-				Stats = await _examSessionAppService.GetUserStats(
-					new UserSessionsRequestDto {
-						CandidateId = Guid.Parse(User.Id),
-					});
-			}
-			_ = JsRuntime.InvokeVoidAsync("alert", $"{total} user's sessions deleted"); // Alert
-		} catch(Exception ex) {
-			_logger.LogError(ex, ex.Message);
-			_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
-		} finally {
-			if (WaitingCnt > 0) WaitingCnt--;
-		}
-	}
-
-	protected async Task DeleteOldNotes(Guid? rootExamId) {
-		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to delete old notes and errors?"); // Confirm
-		if (!confirmed) return;
-
-		WaitingCnt++;
-		try {
-			var total = await _examSessionAppService.DeleteCandidateNotes(
-									new UserSessionsRequestDto {
-										CandidateId = Guid.Parse(User!.Id),
-										ExamId = rootExamId,
-										MaxDeep = 10,
-									});
-			if (total > 0) {
-				Stats = await _examSessionAppService.GetUserStats(
-					new UserSessionsRequestDto {
-						CandidateId = Guid.Parse(User.Id),
-					});
-			}
-			_ = JsRuntime.InvokeVoidAsync("alert", $"{total} user's notes and error deleted"); // Alert
-		} catch(Exception ex) {
-			_logger.LogError(ex, ex.Message);
-			_ = JsRuntime.InvokeVoidAsync("alert", "Oops! An error occurred trying to execute the requested operation: " + ex.Message);
-		} finally {
-			if (WaitingCnt > 0) WaitingCnt--;
-		}
 	}
 }

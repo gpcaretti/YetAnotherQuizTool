@@ -1,4 +1,5 @@
-﻿using System.Linq.Dynamic.Core;
+﻿using System;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,19 @@ namespace Quiz.Application.Exams {
                                     .Include(q => q.Choices)
                                     .FirstOrDefaultAsync();
             return (entity != null) ? _mapper.Map<QuestionAndChoicesDto>(entity) : null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        public async Task<IList<QuestionAndChoicesDto>> GetQuestionsByIds(params Guid[] input) {
+            var query = _dbSet //.Set<Question>()
+                .Include(q => q.Choices)
+                .Where(q => input.Contains(q.Id))
+                //.OrderBy(sorting)
+                ;
+            return _mapper.Map<IList<QuestionAndChoicesDto>>(await query.ToListAsync());
         }
 
         /// <summary>

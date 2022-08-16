@@ -1,0 +1,33 @@
+﻿@using Quiz.Application.Sessions;
+
+<div class="list-group list-group-numbered mt-3">
+	<div class="list-group-item d-flex justify-content-between align-items-start bg-secondary text-white">
+		<span class="ms-2 me-auto">@Stats.ExamName</span>
+	</div>
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Total questions</span>
+		<span class="badge bg-primary rounded-pill">@Stats.NumOfAvailableQuestions</span>
+	</div>
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Carried out sessions</span>
+		<span class="badge bg-success rounded-pill">@Stats.NumOfCarriedOutSessions</span>
+	</div>
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Errors still open</span>
+		<span class="badge bg-danger rounded-pill">@Stats.NumOfWrongAnswers</span>
+	</div>
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Marked as doubt</span>
+		<span class="badge bg-warning rounded-pill">@Stats.NumOfDoubtAnswers</span>
+	</div>
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Missing questions</span>
+		<span class="badge bg-secondary rounded-pill">@Stats.NumOfNeverAnswered</span>
+	</div>
+</div>
+
+@code {
+	// Demonstrates how a parent component can supply parameters
+	[Parameter]
+	public SessionsStatisticsDto Stats { get; set; } = default!;
+}

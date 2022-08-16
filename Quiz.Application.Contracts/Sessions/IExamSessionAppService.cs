@@ -7,7 +7,10 @@
         Task<int> DeleteCandidateNotes(UserSessionsRequestDto input);
         Task<int> DeleteUserSessions(UserSessionsRequestDto input);
         Task<PrepareExamSessionResponseDto> PrepareExamSession(PrepareExamSessionRequestDto input);
-        Task<Guid> SaveUserSession(ExamSessionResultsRequestDto input);
+        Task<Guid> SaveUserSession(ExamSessionRequestDto input);
         Task<IList<SessionsStatisticsDto>> GetUserStats(UserSessionsRequestDto input);
-    }
+        Task<IList<ExamSessionDto>> GetUserSessions(UserSessionsRequestDto userSessionsRequestDto);
+        Task<IList<ExamSessionWithAnswersDto>> GetUserSessionsWithAnswers(UserSessionsRequestDto userSessionsRequestDto);
+		Task<PrepareExamSessionResponseDto> PrepareExamSession(Guid oldSessionId);
+	}
 }
