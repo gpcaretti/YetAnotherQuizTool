@@ -9,7 +9,7 @@ using Quiz.Domain.Exams.Sessions;
 
 namespace Quiz.Application {
 
-    internal class AutomapperProfile : Profile {
+    public class AutomapperProfile : Profile {
 
         public AutomapperProfile() {
             DefaultMaps();

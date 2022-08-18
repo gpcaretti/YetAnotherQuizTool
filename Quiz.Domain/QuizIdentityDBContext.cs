@@ -29,10 +29,10 @@ namespace Quiz.Domain {
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
-            DoFeedData(modelBuilder);
+            DoSeedData(modelBuilder);
         }
 
-        private void DoFeedData(ModelBuilder modelBuilder) {
+        private void DoSeedData(ModelBuilder modelBuilder) {
             // roles
             modelBuilder.Entity<ApplicationRole>()
                 .HasData(

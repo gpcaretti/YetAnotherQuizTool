@@ -34,11 +34,11 @@ namespace Quiz.Domain {
                 entity.SetTableName("qz" + entity.GetTableName());
             }
 
-            DoModelCreating(modelBuilder);
-            DoFeedData(modelBuilder);
+            DoCreateFKsAndIndexes(modelBuilder);
+            DoSeedData(modelBuilder);
         }
 
-        private void DoModelCreating(ModelBuilder modelBuilder) {
+        private void DoCreateFKsAndIndexes(ModelBuilder modelBuilder) {
             // index Code for Question
             modelBuilder.Entity<Exam>()
                 .HasIndex(u => u.Code)
@@ -84,7 +84,7 @@ namespace Quiz.Domain {
             //});
         }
 
-        private void DoFeedData(ModelBuilder modelBuilder) {
+        private void DoSeedData(ModelBuilder modelBuilder) {
         }
 
     }
