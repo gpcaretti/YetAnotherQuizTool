@@ -1,11 +1,8 @@
-
 using Quiz.Domain.Exams;
 
-namespace Quiz.Tests.Domain {
+namespace Quiz.Domain.Test {
 
-    public class QuizContext_Tests {
-
-        private readonly DbHelper _dbHelper = new DbHelper();
+    public class QuizContext_Tests : XUnitBaseTest {
 
         public QuizContext_Tests() {
             //SETUP
@@ -13,23 +10,23 @@ namespace Quiz.Tests.Domain {
 
         [Fact]
         public void IsCreated() {
-            _dbHelper.QuizDbContext.Exams.Count().ShouldBe(0);
-            _dbHelper.QuizIdentityDbContext.Users.Count().ShouldBeGreaterThan(0);
+            QuizDbContext.Exams.Count().ShouldBe(0);
+            QuizIdentityDbContext.Users.Count().ShouldBeGreaterThan(0);
         }
 
         [Fact]
         public async Task CreateExam() {
             // prepare
-            var nExamsBefore = _dbHelper.QuizDbContext.Exams.Count();
+            var nExamsBefore = QuizDbContext.Exams.Count();
 
             // act
-            Exam exam = DbHelper.CreateRootExamInstance();
-            _dbHelper.QuizDbContext.Exams.Add(exam);
-            await _dbHelper.QuizDbContext.SaveChangesAsync();
+            Exam root = await CreateAndInsertRootExam();
+            Exam child = await CreateAndInsertChildExam(root);
 
             // assert
-            _dbHelper.QuizDbContext.Exams.Count().ShouldBe(nExamsBefore + 1);
-            _dbHelper.QuizDbContext.Exams.Count(ex => ex.Id == exam.Id).ShouldBe(1);
+            QuizDbContext.Exams.Count().ShouldBe(nExamsBefore + 2);
+            QuizDbContext.Exams.Count(ex => ex.Id == root.Id).ShouldBe(1);
+            QuizDbContext.Exams.Count(ex => ex.Id == child.Id).ShouldBe(1);
         }
 
     }

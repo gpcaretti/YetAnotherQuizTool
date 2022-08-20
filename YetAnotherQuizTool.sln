@@ -34,11 +34,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.Host.Server", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{001B53AC-87A2-464C-8B81-CF4BE1434F7C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Tests.Application", "Tests\Quiz.Tests.Application\Quiz.Tests.Application.csproj", "{52FCA3A6-479C-4084-B742-E7CDB3937B3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Application.Test", "Tests\Quiz.Tests.Application\Quiz.Application.Test.csproj", "{52FCA3A6-479C-4084-B742-E7CDB3937B3E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Tests.Domain", "Tests\Quiz.Tests.Domain\Quiz.Tests.Domain.csproj", "{3E2A4EB7-9E20-4E7C-9127-688C75FB1EA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Domain.Test", "Tests\Quiz.Tests.Domain\Quiz.Domain.Test.csproj", "{3E2A4EB7-9E20-4E7C-9127-688C75FB1EA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quiz.Test.Base", "Tests\Quiz.Test.Base\Quiz.Test.Base.csproj", "{697F8B15-E2CA-4D31-BD1D-0F1B8357F665}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Base.Test", "Tests\Quiz.Test.Base\Quiz.Base.Test.csproj", "{697F8B15-E2CA-4D31-BD1D-0F1B8357F665}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

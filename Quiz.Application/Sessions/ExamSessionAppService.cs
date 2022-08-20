@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Quiz.Application.Exams;
 using Quiz.Application.Guids;
 using Quiz.Domain;
-using Quiz.Domain.Exams;
 using Quiz.Domain.Exams.Sessions;
 using Quiz.Domain.Extensions;
 
@@ -19,13 +18,13 @@ namespace Quiz.Application.Sessions {
         private readonly IQuestionAppService _questionAppService;
 
         public ExamSessionAppService(
-            ILogger<ExamAppService> logger,
+            ILogger<ExamSessionAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
             QuizIdentityDBContext dbIdentityContext,
             IMapper mapper,
-            IQuestionAppService questionAppService,
-            IExamAppService examAppService) :
+            IExamAppService examAppService,
+            IQuestionAppService questionAppService) :
             base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
             _questionAppService = questionAppService;
             _examAppService = examAppService;
@@ -230,6 +229,11 @@ namespace Quiz.Application.Sessions {
             return output;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<int> DeleteUserSessions(UserSessionsRequestDto input) {
             IList<Guid> allExamIds = (input.ExamId != null)
                 ? await _examAppService.GetRecursiveExamIds(

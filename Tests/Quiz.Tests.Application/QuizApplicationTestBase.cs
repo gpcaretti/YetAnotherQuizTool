@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Quiz.Application.Guids;
-using Quiz.Tests.Base;
+using Quiz.Base.Test;
 
-namespace Quiz.Tests.Application {
-    public abstract class QuizApplicationTestBase : QuizTestBase {
+namespace Quiz.Domain.Application {
+    public abstract class QuizApplicationTestBase : XUnitBaseTest {
 
         protected static readonly IGuidGenerator _guidGenerator = new SequentialGuidGenerator();
         protected readonly IMapper _mapper;

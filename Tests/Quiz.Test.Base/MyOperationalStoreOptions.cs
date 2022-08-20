@@ -1,7 +1,7 @@
 ﻿using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.Extensions.Options;
 
-namespace Quiz.Test.Base {
+namespace Quiz.Base.Test {
     internal class MyOperationalStoreOptions : IOptions<OperationalStoreOptions> {
         public OperationalStoreOptions Value => new OperationalStoreOptions() {
             DeviceFlowCodes = new TableConfiguration("DeviceCodes"),

@@ -47,7 +47,10 @@ namespace Quiz.Application {
             CreateMap<Exam, ExamDto>()
                 ;
 
-            CreateMap<ExamDto, Exam>()
+            CreateMap<CreateExamDto, Exam>()
+                //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
+                ;
+            CreateMap<UpdateExamDto, Exam>()
                 //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
                 ;
 

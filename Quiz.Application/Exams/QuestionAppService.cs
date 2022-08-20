@@ -59,7 +59,7 @@ namespace Quiz.Application.Exams {
 
             // take the group of exams from which to retrieve the questions
             IList<Guid> examIds = input.IsRecursive
-                ? await GetRecursiveExamIds(_dbContext.Exams.Where(ex => ex.Id == input.ExamId), 10)
+                ? await DoGetRecursiveExamIds(_dbContext.Exams.Where(ex => ex.Id == input.ExamId), 10)
                 : new List<Guid>() { input.ExamId.Value };
 
             // if there are no exam ids to select, return an empty list
@@ -158,10 +158,20 @@ namespace Quiz.Application.Exams {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<int> UpdateQuestion(Question entity) {
+        public Task<int> CreateQuestion(CreateQuestionDto input) {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<int> UpdateQuestion(UpdateQuestionDto input) {
+            // TODO
             throw new NotImplementedException();
         }
 
@@ -171,12 +181,12 @@ namespace Quiz.Application.Exams {
         /// <param name="exams"></param>
         /// <param name="maxDeep"></param>
         /// <returns></returns>
-        private async Task<IList<Guid>> GetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 100) {
+        private async Task<IList<Guid>> DoGetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 10) {
             var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
             if (maxDeep > 0) {
                 var qry = _dbContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
                 if (qry.Any()) {
-                    result.AddRange(await GetRecursiveExamIds(qry, --maxDeep));
+                    result.AddRange(await DoGetRecursiveExamIds(qry, --maxDeep));
                 }
             }
             return result.Distinct().ToList();
