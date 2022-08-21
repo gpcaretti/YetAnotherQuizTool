@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using Blazored.Modal;
+using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -8,8 +10,8 @@ using Microsoft.JSInterop;
 using Quiz.Application.Dtos;
 using Quiz.Application.Exams;
 using Quiz.Application.Sessions;
+using Quiz.Blazor.ServerApp.Shared;
 using Quiz.Domain.Identity;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Quiz.Blazor.ServerApp.Pages {
 
@@ -18,6 +20,10 @@ namespace Quiz.Blazor.ServerApp.Pages {
         [Parameter]
         [SupplyParameterFromQuery(Name = "sessionId")]
         public Guid OldSessionId { get; set; } = Guid.Empty;
+
+        [CascadingParameter]
+        public IModalService Modal { get; set; } = default!;
+
 
         //[Parameter]
         //public string? SessionId { get; set; } = null;
@@ -76,7 +82,8 @@ namespace Quiz.Blazor.ServerApp.Pages {
         private async Task StartExamSessionClick(MouseEventArgs evt) {
             // if no exam selected, warn and return
             if (!NewQuizModel!.ExamId.HasValue) {
-                await JsRuntime.InvokeVoidAsync("alert", "Please, select an exam"); // Alert
+                //await JsRuntime.InvokeVoidAsync("alert", "Please, select an exam"); // Alert
+                Modal.Show<DisplayMessage>("Please, select an exam");
                 return;
             }
 
@@ -86,7 +93,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
                 NewQuizModel.IsRecursive = true;
                 var output = await _examSessionAppService.PrepareExamSession(NewQuizModel);
                 if (output.TotalCount <= 0) {
-                    //await JsRuntime.InvokeVoidAsync("alert", "No available question for the selected exam and options"); // Alert
+                    Modal.Show<DisplayMessage>("No available question for the selected exam and options");
                     return;
                 }
 
@@ -104,12 +111,15 @@ namespace Quiz.Blazor.ServerApp.Pages {
         /// </summary>
         private async Task RestartExamSessionClick(MouseEventArgs evt) {
             if ((ExamSession == null) || (ExamSession.TotalAnswers <= 0)) {
-                await JsRuntime.InvokeVoidAsync("alert", "Oops! There is no user session to restart."); // Alert
+                Modal.Show<DisplayMessage>("Oops! There is no user session to restart");
                 return;
             }
 
-            bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to restart current exam session?"); // Confirm
-            if (!confirmed) return;
+            var confirm = await Modal.Show<Confirm>(
+                "Do you want to restart current exam session?",
+                new ModalOptions { Position = ModalPosition.Middle, AnimationType = ModalAnimationType.FadeInOut }
+                ).Result;
+            if (!confirm.Confirmed) return;
 
             ExamSession.ResetCurrentExam();
         }
@@ -221,8 +231,11 @@ namespace Quiz.Blazor.ServerApp.Pages {
                 return;
             }
 
-            bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you want to terminate and register your quiz session?"); // Confirm
-            if (!confirmed) return;
+            var confirm = await Modal.Show<Confirm>(
+                "Do you want to terminate and register your quiz session?",
+                new ModalOptions { Position = ModalPosition.Middle, AnimationType = ModalAnimationType.FadeInOut }
+                ).Result;
+            if (!confirm.Confirmed) return;
 
             WaitingCnt++;
             try {

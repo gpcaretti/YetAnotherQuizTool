@@ -10,8 +10,8 @@
 	<base href="~/" />
 	<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
 	<link href="css/site.css" rel="stylesheet" />
-	@*<link href="Quiz.Blazor.ServerApp.styles.css" rel="stylesheet" />*@
 	<link href="Quiz.Blazor.ServerApp.styles.css" rel="stylesheet" />
+	<link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
 	<component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
@@ -29,6 +29,7 @@
 	</div>
 
 	<script src="_framework/blazor.server.js"></script>
+	<script src="_content/Blazored.Modal/blazored.modal.js"></script>
 	<script>
 		// Gp - see https://stackoverflow.com/questions/60031791/how-to-deploy-blazor-server-in-production-and-overcome-signalr-re-connection-pro
 		Blazor.start({

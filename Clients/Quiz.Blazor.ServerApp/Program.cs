@@ -1,4 +1,5 @@
 using System.Net;
+using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Application;
@@ -60,10 +61,11 @@ namespace Quiz.Blazor.ServerApp {
             })
                 .AddRoles<ApplicationRole>() // Add roles.
                 .AddEntityFrameworkStores<QuizIdentityDBContext>();
+            builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
 
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
+            builder.Services.AddBlazoredModal();
 
             builder.Services.AddMyServices();
 

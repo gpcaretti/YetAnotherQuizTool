@@ -1,4 +1,7 @@
-﻿namespace Quiz.Application.Exams.Tests {
+﻿using Microsoft.EntityFrameworkCore;
+using Quiz.Domain.Exams;
+
+namespace Quiz.Application.Exams.Tests {
     public class QuestionAppService_Tests : QuizApplicationTestBase {
 
         private readonly IQuestionAppService _questionService;
@@ -13,27 +16,50 @@
         }
 
         [Fact()]
-        public void FindBySearchKey() {
+        public async Task FindById() {
+            // prepare
+            await SeedDatabase();
+            var entity = await GetRandomQuestion();
+
+            // act
+            var output = await _questionService.FindById(entity.Id);
+
+            // assert
+            output.ShouldNotBeNull();
+            output.Id.ShouldBe(entity.Id);
+            output.Statement.ShouldBe(entity.Statement);
+            output.Code.ShouldBe(entity.Code);
+            output.ExamId.ShouldBe(entity.ExamId);
+            output.ImageUri.ShouldBe(entity.ImageUri);
+            output.Position.ShouldBe(entity.Position ?? -1);
+
+            // act and assert
+            output = await _questionService.FindById(Guid.Empty);
+            output.ShouldBeNull();
+        }
+
+        [Fact()]
+        public async Task FindBySearchKey() {
             throw new NotImplementedException();
         }
 
         [Fact()]
-        public void GetQuestionsByIds() {
+        public async Task GetQuestionsByIds() {
             throw new NotImplementedException();
         }
 
         [Fact()]
-        public void GetQuestionsByExam() {
+        public async Task GetQuestionsByExam() {
             throw new NotImplementedException();
         }
 
         [Fact()]
-        public void CreateQuestion() {
+        public async Task CreateQuestion() {
             throw new NotImplementedException();
         }
 
         [Fact()]
-        public void UpdateQuestion() {
+        public async Task UpdateQuestion() {
             throw new NotImplementedException();
         }
     }

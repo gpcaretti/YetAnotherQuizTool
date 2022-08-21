@@ -1,6 +1,4 @@
-﻿using Xunit;
-using Quiz.Application.Sessions;
-using Quiz.Application.Exams;
+﻿using Quiz.Application.Exams;
 
 namespace Quiz.Application.Sessions.Tests {
 
@@ -40,6 +38,56 @@ namespace Quiz.Application.Sessions.Tests {
 
         [Fact()]
         public void PrepareExamSession1() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void GetUserSessions() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void GetUserSessionsWithAnswers() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void GetUserStats() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void SaveUserSession() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void DeleteUserSessions() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void DeleteCandidateNotes() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void CountUserSessions() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void CountCandidateNotes() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void CountCandidateErrors() {
+            throw new NotImplementedException();
+        }
+
+        [Fact()]
+        public void CountQuestionNeverAnswered() {
             throw new NotImplementedException();
         }
     }

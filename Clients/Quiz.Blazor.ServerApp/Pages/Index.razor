@@ -52,3 +52,22 @@
 </div>
 
 @*<SurveyPrompt Title="How is Blazor working for you?" />*@
+
+@code {
+
+	[CascadingParameter] public IModalService Modal { get; set; } = default!;
+
+	string? _message;
+
+	async Task ShowModal() {
+		var result = await Modal.Show<Confirm>("Welcome to Blazored Modal").Result;
+
+		_message = result.Confirmed
+			? "you pressed confirmed!"
+			: result.Cancelled
+				? "you pressed cancelled :-("
+				: "you pressed something else: " + result.Data;
+
+	}
+
+}

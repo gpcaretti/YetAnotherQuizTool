@@ -21,15 +21,20 @@ namespace Quiz.Application.Exams.Tests {
             Exam entity = await CreateAndInsertRootExam();
 
             // act
-            var dto = await _examService.FindById(entity.Id);
+            var output = await _examService.FindById(entity.Id);
 
             // assert
-            dto.ShouldNotBeNull();
-            dto.Id.ShouldBe(entity.Id);
+            output.ShouldNotBeNull();
+            output.Id.ShouldBe(entity.Id);
+            output.AncestorId.ShouldBe(entity.AncestorId);
+            output.Name.ShouldBe(entity.Name);
+            output.Code.ShouldBe(entity.Code);
+            output.Duration.ShouldBe(entity.Duration);
+            output.FullMarks.ShouldBe(entity.FullMarks);
 
             // act
-            dto = await _examService.FindById(Guid.Empty);
-            dto.ShouldBeNull();
+            output = await _examService.FindById(Guid.Empty);
+            output.ShouldBeNull();
         }
 
         [Fact]

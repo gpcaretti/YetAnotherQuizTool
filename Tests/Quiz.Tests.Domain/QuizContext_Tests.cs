@@ -2,7 +2,7 @@ using Quiz.Domain.Exams;
 
 namespace Quiz.Domain.Test {
 
-    public class QuizContext_Tests : XUnitBaseTest {
+    public class QuizContext_Tests : MyXUnitBaseTest {
 
         public QuizContext_Tests() {
             //SETUP

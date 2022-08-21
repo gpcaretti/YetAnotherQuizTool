@@ -1,0 +1,15 @@
+﻿<div>
+	<p>@Message</p>
+
+	<button @onclick="Cancel" class="btn btn-primary">Close</button>
+</div>
+
+@code {
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+	[Parameter] public string? Message { get; set; }
+
+	async Task Cancel() => await BlazoredModal.CancelAsync();
+
+}
+
