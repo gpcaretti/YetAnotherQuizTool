@@ -1,6 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<div class="top-row navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Quiz.Blazor.Host</a>
+        <a class="navbar-brand" href="">YAQT</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -15,6 +15,22 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
+            <NavLink class="nav-link" href="QuizViewer">
+                <span class="oi oi-plus" aria-hidden="true"></span> Take a quiz
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="OldQuizSessions">
+                <span class="oi oi-plus" aria-hidden="true"></span> Old session (new!)
+            </NavLink>
+        </div>
+        <div class="dropdown-divider px-3"></div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="QuizSettings">
+                <span class="oi oi-plus" aria-hidden="true"></span> Quiz statistics
+            </NavLink>
+        </div>
+@*        <div class="nav-item px-3">
             <NavLink class="nav-link" href="counter">
                 <span class="oi oi-plus" aria-hidden="true"></span> Counter
             </NavLink>
@@ -24,16 +40,14 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
             </NavLink>
         </div>
-    </nav>
+*@    </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
-
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
-    {
+    private void ToggleNavMenu() {
         collapseNavMenu = !collapseNavMenu;
     }
 }

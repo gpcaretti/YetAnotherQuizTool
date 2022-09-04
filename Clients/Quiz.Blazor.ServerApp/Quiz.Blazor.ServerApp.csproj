@@ -9,12 +9,13 @@
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <Authors>gpcaretti</Authors>
     <Version>$(VersionPrefix)</Version>
-    <AssemblyVersion>1.2.1</AssemblyVersion>
-    <FileVersion>1.2.1</FileVersion>
+    <AssemblyVersion>1.3.0</AssemblyVersion>
+    <FileVersion>1.3.0</FileVersion>
     <!--<RootNamespace>$(MSBuildProjectName.SubString(0, $(MSBuildProjectName.LastIndexOf("."))).Replace(" ", "_"))</RootNamespace>-->
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.3.0-preview.1" />
     <PackageReference Include="Blazored.Modal" Version="7.0.0-preiew.4" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
@@ -32,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\Quiz.Application\Quiz.Application.csproj" />
+    <ProjectReference Include="..\Quiz.Blazor.Shared\Quiz.Blazor.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

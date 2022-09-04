@@ -28,7 +28,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
         //[Parameter]
         //public string? SessionId { get; set; } = null;
 
-        protected ApplicationUser? User;
+        protected ApplicationUser User;
         protected QuizSession? ExamSession;
 
         protected PrepareExamSessionRequestDto? NewQuizModel;
@@ -83,7 +83,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
             // if no exam selected, warn and return
             if (!NewQuizModel!.ExamId.HasValue) {
                 //await JsRuntime.InvokeVoidAsync("alert", "Please, select an exam"); // Alert
-                Modal.Show<DisplayMessage>("Please, select an exam");
+                Modal.Show<Quiz.Blazor.Shared.Shared.DisplayMessage>("Please, select an exam");
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
                 NewQuizModel.IsRecursive = true;
                 var output = await _examSessionAppService.PrepareExamSession(NewQuizModel);
                 if (output.TotalCount <= 0) {
-                    Modal.Show<DisplayMessage>("No available question for the selected exam and options");
+                    Modal.Show<Quiz.Blazor.Shared.Shared.DisplayMessage>("No available question for the selected exam and options");
                     return;
                 }
 
@@ -111,11 +111,11 @@ namespace Quiz.Blazor.ServerApp.Pages {
         /// </summary>
         private async Task RestartExamSessionClick(MouseEventArgs evt) {
             if ((ExamSession == null) || (ExamSession.TotalAnswers <= 0)) {
-                Modal.Show<DisplayMessage>("Oops! There is no user session to restart");
+                Modal.Show<Quiz.Blazor.Shared.Shared.DisplayMessage>("Oops! There is no user session to restart");
                 return;
             }
 
-            var confirm = await Modal.Show<Confirm>(
+            var confirm = await Modal.Show<Quiz.Blazor.Shared.Shared.Confirm>(
                 "Do you want to restart current exam session?",
                 new ModalOptions { Position = ModalPosition.Middle, AnimationType = ModalAnimationType.FadeInOut }
                 ).Result;
@@ -231,7 +231,7 @@ namespace Quiz.Blazor.ServerApp.Pages {
                 return;
             }
 
-            var confirm = await Modal.Show<Confirm>(
+            var confirm = await Modal.Show<Quiz.Blazor.Shared.Shared.Confirm>(
                 "Do you want to terminate and register your quiz session?",
                 new ModalOptions { Position = ModalPosition.Middle, AnimationType = ModalAnimationType.FadeInOut }
                 ).Result;

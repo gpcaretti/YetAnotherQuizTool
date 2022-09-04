@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Text.Json
+@using Microsoft.Extensions.Logging
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components
@@ -15,11 +16,8 @@
 
 @using Quiz.Domain.Identity
 @using Quiz.Application
-
 @using Quiz.Blazor.Shared
 @using Quiz.Blazor.Shared.Shared
-@using Quiz.Blazor.ServerApp
-@using Quiz.Blazor.ServerApp.Shared
 
 @*
 	Gp - Global redirect to login if user is not authenticated

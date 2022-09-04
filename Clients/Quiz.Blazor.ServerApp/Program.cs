@@ -10,7 +10,7 @@ using Serilog;
 
 namespace Quiz.Blazor.ServerApp {
 
-    public class Program {
+    public static class Program {
 
         public static void Main(string[] args) {
             try {
@@ -47,9 +47,9 @@ namespace Quiz.Blazor.ServerApp {
             var connectionString = builder.Configuration.GetConnectionString("QuizDBConnection")
                                         ?? throw new InvalidOperationException("Connection string 'QuizDBConnection' not found.");
 
-            // To access Identity tables
+            // SqlServer to access Identity tables
             builder.Services.AddDbContext<QuizIdentityDBContext>(options => options.UseSqlServer(connectionString));
-            // To access Application tables
+            // SqlServer to access Application tables
             builder.Services.AddDbContext<QuizDBContext>(options => options.UseSqlServer(connectionString));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -63,7 +63,10 @@ namespace Quiz.Blazor.ServerApp {
                 .AddEntityFrameworkStores<QuizIdentityDBContext>();
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
 
-            builder.Services.AddRazorPages();
+            builder.Services.AddRazorPages(options => {
+                //options.Conventions.Add()
+                //RootDirectory
+            });
             builder.Services.AddServerSideBlazor();
             builder.Services.AddBlazoredModal();
 

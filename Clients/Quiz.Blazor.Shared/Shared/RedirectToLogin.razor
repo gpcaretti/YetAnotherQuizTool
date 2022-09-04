@@ -1,0 +1,12 @@
+﻿@inject NavigationManager Navigation
+<a href="Identity/Account/Login">Log in</a> required
+
+@code {
+	protected override void OnInitialized() {
+		// Wasm
+		//Navigation.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+
+		// Server app
+		//Navigation.NavigateTo($"Identity/Account/Login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}", true, false);
+	}
+}

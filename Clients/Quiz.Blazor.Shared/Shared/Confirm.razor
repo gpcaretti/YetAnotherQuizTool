@@ -1,0 +1,17 @@
+﻿<div>
+	<p class="small d-none d-md-block"><i>Please make your choice or cancel this pop-up by clicking the 'x'</i></p>
+
+	<div class="d-grid gap-2 d-flex justify-content-end">
+		<button type="button" @onclick="Close" class="btn btn-primary me-2" style="width: 5em;">Yes</button>
+		<button type="button" @onclick="Cancel" class="btn btn-secondary" style="width: 5em;">No</button>
+	</div>
+</div>
+
+@code {
+
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+	async Task Close() => await BlazoredModal.CloseAsync(ModalResult.Ok(true));
+	async Task Cancel() => await BlazoredModal.CancelAsync();
+
+}
