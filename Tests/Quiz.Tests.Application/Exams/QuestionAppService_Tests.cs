@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Quiz.Domain.Exams;
-
-namespace Quiz.Application.Exams.Tests {
+﻿namespace Quiz.Application.Exams.Tests {
     public class QuestionAppService_Tests : QuizApplicationTestBase {
 
         private readonly IQuestionAppService _questionService;
@@ -11,7 +8,6 @@ namespace Quiz.Application.Exams.Tests {
                 Mock.Of<ILogger<QuestionAppService>>(),
                 _guidGenerator,
                 QuizDbContext,
-                QuizIdentityDbContext,
                 _mapper);
         }
 

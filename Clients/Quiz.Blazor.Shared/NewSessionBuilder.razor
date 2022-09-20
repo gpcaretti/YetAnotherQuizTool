@@ -1,0 +1,112 @@
+﻿@using Quiz.Application.Exams
+
+@if ((AvailableExams?.Count ?? -1) <= 0) {
+	if (WaitingCnt <= 0) {
+		<div class="alert alert-danger" role="alert">
+			<b>Ops!</b> You do not have access to any exam type. -( <br>
+			Contact our helpdesk for support
+		</div>
+	}
+	return;
+}
+
+@*<h4 class="card-title">Select your test and start it. Good luck!</h4>*@
+<EditForm Model="NewSessionRequest" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
+	<DataAnnotationsValidator />
+	@*<input type="hidden" @bind="ExamSession!.CandidateId" name="CandidateId" id="CandidateId" />*@
+	<div class="row my-3">
+		<div class="form-group col-12">
+			<div class="form-group form-check form-check-inline mx-2">
+				<InputCheckbox @bind-Value="NewSessionRequest!.ShowExamsSubSections" id="ShowExamsSubSections" name="ShowExamsSubSections" class="form-check-input" />
+				<label for="ShowExamsSubSections" class="form-check-label">Show sub sections</label>
+			</div>
+
+			<ul>
+				<li>watch1: @(watch1?.ElapsedMilliseconds)</li>
+				<li>watch2: @(watch2?.ElapsedMilliseconds)</li>
+			</ul>
+
+			<InputSelect @bind-Value="NewSessionRequest!.ExamId" id="ExamId" class="form-control">
+					<option value="@Guid.Empty">Select exam type...</option>
+				@foreach (ExamDto item in AvailableExams!) {
+					if (!NewSessionRequest.ShowExamsSubSections && item.AncestorId != null) continue;
+					int nDots = item.Code.Count(ch => (ch == '.'));
+					var strOption = (nDots > 0) ? (string.Concat(Enumerable.Repeat("---", nDots)) + ' ' + item.Name) : item.Name;
+					<option class="optl@(nDots)"
+						value="@item.Id">@(strOption.Length <= 60 ? strOption : (strOption.Substring(0, 60) + "..."))</option>
+				}
+			</InputSelect>
+			<div class="invalid-feedback"><ValidationMessage For="@(() => NewSessionRequest.ExamId)" /></div>
+			<small class="form-text mx-2">
+				@(NewSessionRequest.OnlyNew
+					? "The exam will only have questions never answered before"
+					: NewSessionRequest.OnlyErrorOrDoubt
+						? "The exam will only have your previous errors"
+						: NewSessionRequest.IsRandom
+							? "The exam will still have 20% of your previous errors"
+							: "Good luck!")
+			</small>
+		</div>
+	</div>
+	<div class="row my-3 justify-content-start form-inline">
+		@*<div class="col-sm-6 col-lg-8" style="background-color: red;">*@
+		<div class="col-12">
+			<div class="form-group form-check form-check-inline mx-2">
+				<label class="">
+					<input type="radio" name="IsRandom"
+						class="form-check-input" 
+						checked="@NewSessionRequest.IsRandom"
+						value="true"
+						@onchange="@(() => NewSessionRequest.IsRandom = true)" />
+					Randomize
+				</label>
+			</div>
+			<div class="form-group form-check form-check-inline mx-2">
+				<label class="">
+					<input type="radio" name="IsRandom"
+						class="form-check-input" 
+						checked="@(!NewSessionRequest.IsRandom)"
+						value="false"
+						@onchange="@(() => NewSessionRequest.IsRandom = false)" />
+					Sequential
+				</label>
+			</div>
+		</div>
+	</div>
+	<div class="row my-3 justify-content-start form-inline">
+		<div class="col-sm-6 col-lg-auto">
+			<div class="form-group form-check form-check-inline mx-2">
+				<InputCheckbox @bind-Value="NewSessionRequest.OnlyErrorOrDoubt" id="OnlyErrorOrDoubt" name="OnlyErrorOrDoubt" class="form-check-input" />
+				<label for="OnlyErrorOrDoubt" class="form-check-label">Only previous errors or doubts</label>
+				<ValidationMessage For="@(() => NewSessionRequest.OnlyErrorOrDoubt)" />
+			</div>
+			<div class="form-group form-check form-check-inline mx-2">
+				<InputCheckbox @bind-Value="NewSessionRequest.OnlyNew" id="OnlyNew" name="OnlyNew" class="form-check-input" />
+				<label for="OnlyNew" class="form-check-label">Only new questions</label>
+				<ValidationMessage For="@(() => NewSessionRequest.OnlyNew)" />
+			</div>
+		</div>
+		<div class="form-group col-sm-6 col-lg-auto mx-2">
+			<label>Num. of questions</label>
+			<InputSelect @bind-Value="NewSessionRequest.MaxResultCount" id="MaxResultCount"
+				class="form-select form-select-sm" style="width: 6rem; display: inline-block;">
+				<option value="5">5</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+				<option value="50">50</option>
+				<option value="75">75</option>
+				<option value="100">100</option>
+				<option value="1000">All</option>
+			</InputSelect>
+			<ValidationMessage For="@(() => NewSessionRequest.MaxResultCount)" />
+		</div>
+	</div>
+	<div class="row my-3">
+		<div class="col text-center">
+			<button type="button" class="btn btn-primary" style="width: 6rem;"
+				disabled="@(!NewSessionRequest.ExamId.HasValue)"
+				@onclick="@StartExamSessionClick">Start</button>
+		</div>
+	</div>
+</EditForm>
+

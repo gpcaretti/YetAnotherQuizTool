@@ -3,7 +3,10 @@ using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Application;
+using Quiz.Application.Maintenance;
+using Quiz.Application.Users;
 using Quiz.Blazor.ServerApp.Areas.Identity;
+using Quiz.Blazor.ServerApp.Services;
 using Quiz.Domain;
 using Quiz.Domain.Identity;
 using Serilog;
@@ -44,13 +47,49 @@ namespace Quiz.Blazor.ServerApp {
 
         // Add services to the container.
         private static void ConfigureServices(WebApplicationBuilder builder) {
-            var connectionString = builder.Configuration.GetConnectionString("QuizDBConnection")
-                                        ?? throw new InvalidOperationException("Connection string 'QuizDBConnection' not found.");
 
-            // SqlServer to access Identity tables
-            builder.Services.AddDbContext<QuizIdentityDBContext>(options => options.UseSqlServer(connectionString));
-            // SqlServer to access Application tables
-            builder.Services.AddDbContext<QuizDBContext>(options => options.UseSqlServer(connectionString));
+            ///
+            static WebApplicationBuilder UseSqlServer(WebApplicationBuilder builder) {
+                var connectionString = builder.Configuration.GetConnectionString("QuizDBConnection")
+                                            ?? throw new InvalidOperationException("Connection string 'QuizDBConnection' not found.");
+
+                // SqlServer to access Identity tables
+                builder.Services.AddDbContext<QuizIdentityDBContext>(options => options.UseSqlServer(connectionString));
+
+                // SqlServer to access Application tables
+                builder.Services.AddDbContext<QuizDBContext>(
+                    options => options.UseSqlServer(
+                                    connectionString,
+                                    // see https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/projects?tabs=dotnet-core-cli
+                                    builder => builder.MigrationsAssembly("Quiz.Domain.Migration.SQLServer")));
+
+                return builder;
+            }
+
+            ///
+            //static WebApplicationBuilder UseSqlite(WebApplicationBuilder builder) {
+            //    var connectionString = builder.Configuration.GetConnectionString("QuizDBConnection")
+            //                                //?? "QuizBlazor.sqlite";
+            //                                ?? throw new InvalidOperationException("Connection string 'QuizDBConnection' not found.");
+            //    connectionString = "Filename=" + Path.Combine(
+            //                                            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            //                                            connectionString);
+
+            //    // SqlServer to access Identity tables
+            //    builder.Services.AddDbContext<QuizIdentityDBContext>(options => options.UseSqlite(connectionString));
+
+            //    // SqlServer to access Application tables
+            //    builder.Services.AddDbContext<QuizDBContext>(
+            //        options => options.UseSqlite(
+            //                        connectionString,
+            //                        // see https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/projects?tabs=dotnet-core-cli
+            //                        builder => builder.MigrationsAssembly("Quiz.Domain.Migration.SQLite")));
+
+            //    return builder;
+            //}
+
+            UseSqlServer(builder);
+            //UseSqlite(builder);
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -70,7 +109,9 @@ namespace Quiz.Blazor.ServerApp {
             builder.Services.AddServerSideBlazor();
             builder.Services.AddBlazoredModal();
 
-            builder.Services.AddMyServices();
+            builder.Services.AddQuizStandardServices();
+            builder.Services.AddOrReplace<ICandidateAppService, IdentityCandidateAppService>();
+            builder.Services.AddOrReplace<IDataExportAppService, ExportAppService>();
 
             // TODO: configure form post size
             //builder.Services.Configure<FormOptions>(options => {

@@ -1,0 +1,84 @@
+﻿@page "/"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Configuration
+@using Quiz.Application.Exams
+@using Quiz.Domain
+@using System.Diagnostics
+@using static Microsoft.Maui.ApplicationModel.Permissions
+
+@inject NavigationManager _navManager
+@inject IServiceProvider _serviceProvider
+@inject IConfiguration _configuration
+
+<h1>Welcome!</h1>
+
+@*@if (!_signInManager.IsSignedIn(User)) {
+	<h3 class="text-danger">Please, loggin to use following commands</h3>
+	}
+*@
+
+<div class="my-3">
+	<div class="list-group">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizRunner/"))">
+			<div class="fw-bold text-primary">Run a quiz session</div>
+		</button>
+
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/OldQuizSessions"))">
+			<div class="fw-bold text-primary">Restore old or not finished quiz session</div>
+		</button>
+
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizStatistics"))">
+			<div class="fw-bold text-primary">Quiz statistics</div>
+		</button>
+	</div>
+
+	<div class="mt-5">
+	</div>
+
+	<p>
+	</p>
+</div>
+
+@*<SurveyPrompt Title="How is Blazor working for you?" />*@
+
+@code {
+
+	private static bool _firstTimeOnAfterRender = true;
+
+	//
+	// I invoke it only for performance reason (activate the SQlite cache for exams)
+	//
+	protected override Task OnAfterRenderAsync(bool firstRender) {
+		if (_firstTimeOnAfterRender) {
+			_firstTimeOnAfterRender = false;
+			_ = Task.Run(async () => { await LocalCacheExams(); });
+		}
+		return Task.CompletedTask;
+
+		async Task LocalCacheExams() {
+			using var scope = _serviceProvider.CreateScope();
+			await using var dbContext = scope.ServiceProvider.GetRequiredService<QuizDBContext>();
+			_ = await dbContext.Exams.Select(e => e.Id).ToListAsync();
+		}
+	}
+
+	private async Task<PermissionStatus> ChecPermission<TPermission>(bool request = false)
+	where TPermission : BasePermission, new() {
+		PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
+
+		if ((status == PermissionStatus.Granted) || !request) return status;
+
+		if (status == PermissionStatus.Denied && DeviceInfo.Platform == DevicePlatform.iOS) {
+			// Prompt the user to turn on in settings
+			// On iOS once a permission has been denied it may not be requested again from the application
+			return status;
+		}
+
+		if (Permissions.ShouldShowRationale<TPermission>()) {
+			// Prompt the user with additional information as to why the permission is needed
+		}
+
+		status = await Permissions.RequestAsync<TPermission>();
+		return status;
+	}
+}

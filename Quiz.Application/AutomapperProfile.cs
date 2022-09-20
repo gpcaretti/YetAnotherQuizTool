@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using Quiz.Application.Exams;
 using Quiz.Application.Sessions;
 using Quiz.Application.Users;
 using Quiz.Domain.Exams;
 using Quiz.Domain.Exams.Sessions;
-
+using Quiz.Domain.Identity;
 
 namespace Quiz.Application {
 
+    /// <summary>
+    ///     Automatically invoked by IServiceCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies())
+    /// </summary>
     public class AutomapperProfile : Profile {
 
         public AutomapperProfile() {
@@ -32,10 +34,10 @@ namespace Quiz.Application {
         /// 
         /// </summary>
         private void CandidateMaps() {
-            CreateMap<IdentityUser<Guid>, CandidateDto>()
+            CreateMap<Candidate, CandidateDto>()
                 ;
 
-            CreateMap<CandidateDto, IdentityUser<Guid>>()
+            CreateMap<CandidateDto, Candidate>()
                 //.ForMember(dst => dst.CreatedOn, src => src.Ignore())
                 ;
         }

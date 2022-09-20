@@ -1,0 +1,19 @@
+{
+  "//1": "***Gp*** Usa npm per installare i file type definition .d.ts per il progetto. Es. npm install @types/jquery -D",
+  "//2": "***Gp*** see http://www.geekabyte.io/2017/10/understanding-declaration-files-in.html#where_to_find_declaration_files",
+  "name": "it.gpsoftware.yaqt",
+  "version": "1.0.0",
+  "description": "Yet Another Quiz Tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "GP software engineering",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^5.2.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.12"
+  }
+}

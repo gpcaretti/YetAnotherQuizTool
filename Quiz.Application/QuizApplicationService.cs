@@ -16,24 +16,28 @@ namespace Quiz.Application {
         protected readonly ILogger _logger;
         protected readonly IGuidGenerator GuidGenerator;
 
-        protected readonly QuizDBContext _dbContext;
-        protected readonly QuizIdentityDBContext _dbIdentityContext;
+        protected readonly DbContext _dbContext;
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly IMapper _mapper;
 
         public QuizApplicationService(ILogger logger,
             IGuidGenerator guidGenerator,
-            QuizDBContext dbContext,
-            QuizIdentityDBContext dbIdentityContext,
+            DbContext dbContext,
             IMapper mapper) {
             GuidGenerator = guidGenerator;
 
             _logger = logger;
             _dbContext = dbContext;
-            _dbIdentityContext = dbIdentityContext;
             _mapper = mapper;
 
             _dbSet = dbContext.Set<TEntity>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual Task<bool> Any(TPrimaryKey Id) {
+            return _dbSet.AnyAsync(q => q.Id.Equals(Id));
         }
 
         /// <summary>
@@ -67,14 +71,6 @@ namespace Quiz.Application {
         //    IQueryable<TEntity> query = _dbSet;
         //    var entity = await query.FirstOrDefaultAsync(predicate);
         //    return (entity != null) ? _mapper.Map<TEntityDto>(entity) : default(TEntityDto);
-        //}
-
-        //public virtual Task<bool> Any(Expression<Func<TEntity, bool>> search = null) {
-        //    IQueryable<TEntity> query = _dbSet;
-        //    if (search != null) {
-        //        query = query.Where(search);
-        //    }
-        //    return query.AnyAsync();
         //}
 
         //public virtual Task<int> Count(Expression<Func<TEntity, bool>> search = null) {

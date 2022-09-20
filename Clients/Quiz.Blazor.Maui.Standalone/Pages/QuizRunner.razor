@@ -1,0 +1,94 @@
+﻿@page "/QuizRunner"
+
+@using Quiz.Application.Exams
+@using Quiz.Application.Sessions
+
+@*@attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]*@
+
+<PageTitle>YAQT - Take your quiz</PageTitle>
+<h1>Take your quiz!</h1>
+
+@if (WaitingCnt > 0) {
+	<div class="spinner" />
+@*	<div class="d-flex justify-content-center">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+	</div>*@
+}
+
+<div class="row">
+@*	@if (WaitingCnt > 0) {
+		<div class="col">
+			<div class="spinner col mx-auto align-middle" style="z-index: 1000;"></div>
+		</div>
+	}*@
+
+	<div class="card full-space-col col-lg-9">
+		@if (ExamSession != null && !ExamSession.IsEnded) {
+			// hide the form for choosing an exam and show the title of the current session
+			<div class="card-header clearfix">
+				<h4 class="card-title text-primary ">@ExamSession.ExamName</h4>
+				<span class="float-end">@ExamSession.ExamDuration minutes</span>
+			</div>
+		} else {
+			// show form for choosing an exam
+			<div class="card-header">
+				<NewSessionBuilder
+					NewSessionRequest="ExamSessionRequest"
+					PrepareExamSessionSubmitted="PrepareExamSessionSubmittedHandler">
+				</NewSessionBuilder>
+			</div>
+		}
+
+		<div class="card-body">
+			@if (ExamSession == null) {
+				// invitation for a new test
+				<h4 class="text-center">Select your test</h4>
+
+			} else if ((ExamSession != null) && !ExamSession.IsEnded && (ExamSession.TotalQuestions <= 0)) {
+				// no questions available for the selected new test
+				<h4 class="text-center text-danger">No questions available for the selected test!</h4>
+
+			} else if ((ExamSession?.TotalQuestions ?? 0) > 0) {
+				if (ExamSession?.IsEnded ?? false) {
+					<!-- quiz session results -->
+					<section class="col-xl-6 mb-3">
+						<SessionResults ExamSession="ExamSession"></SessionResults>
+					</section>
+				}
+
+				<!-- test area (questions and answers) -->
+				<section>
+					<QuizView ExamSession="ExamSession"></QuizView>
+				</section>
+			}
+		</div>
+
+		@*<div class="card-footer">
+			@if (ExamSession?.GetCurrentAnswer() != null) {
+				<pre>
+					ExamSession.GetCurrentAnswer().IsMarkedAsDoubt: @(ExamSession.GetCurrentAnswer().IsMarkedAsDoubt)
+				</pre>
+			}
+		</div>*@
+	</div>
+
+	<!-- test session buttons -->
+	<div class="col-lg-3">
+		<div class="d-grid gap-3 py-3 mx-auto">
+			<button type="button" class="btn btn-outline-primary"
+				disabled="@(ExamSession == null || ExamSession.TotalQuestions <= 0 || ExamSession.IsEnded)"
+				@onclick="@EndExamSession">End Exam Session
+			</button>
+			<button type="button" class="btn btn-outline-primary"
+				disabled="@(ExamSession == null || ExamSession.TotalQuestions <= 0 || ExamSession.IsAlreadySubmitted)"
+				@onclick="@EndAndSubmitExamSession">End & Submit Exam Session
+			</button>
+			<button type="button" class="btn btn-outline-primary"
+				disabled="@(ExamSession == null || ExamSession.TotalQuestions <= 0)"
+				@onclick="@RestartExamSessionClick">Restart Exam Session
+			</button>
+		</div>
+	</div>
+</div>

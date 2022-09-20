@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
-    <ProjectReference Include="..\Quiz.Blazor.Shared\Quiz.Blazor.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

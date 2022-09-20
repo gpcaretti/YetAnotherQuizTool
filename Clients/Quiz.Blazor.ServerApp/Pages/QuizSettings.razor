@@ -7,9 +7,9 @@
 @using Microsoft.AspNetCore.Identity;
 @using Quiz.Application.Dtos;
 @using Quiz.Application.Sessions;
+@using Quiz.Application.Users
 
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<ApplicationUser> UserManager
+@inject ICandidateAppService _candidateAppService
 @inject IExamSessionAppService _examSessionAppService
 @inject ILogger<QuizSettings> _logger
 
@@ -40,11 +40,11 @@
 					<span class="badge bg-danger rounded-pill">@(Stats.Sum(s => s.NumOfWrongAnswers))</span>
 				</div>
 			</div>
-			<SessionStatsButtons User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
+			<OverallSessionStatsButtons User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
 
 			@foreach (var examStats in Stats!) {
-				<SessionStats Stats="@examStats" />
-				<SessionStatsButtons RootExamId="@examStats.ExamId" User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
+				<OverallSessionsStats Stats="@examStats" />
+				<OverallSessionStatsButtons RootExamId="@examStats.ExamId" User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
 			}
 		</div>
 	</div>
@@ -64,7 +64,7 @@
 		}
 	}
 
-	protected ApplicationUser? ApplicationUser;
+	protected CandidateDto? ApplicationUser;
 
 	protected int WaitingCnt;
 
@@ -74,8 +74,7 @@
 		WaitingCnt = 1;
 		try {
 			// get the current user
-			AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-			ApplicationUser = await UserManager.GetUserAsync(authState.User);
+			ApplicationUser = await _candidateAppService.GetCurrentUser();
 			Stats = await GetUserStats();
 		} finally {
 			if (WaitingCnt > 0) WaitingCnt--;
@@ -96,7 +95,7 @@
 	private Task<IList<SessionsStatisticsDto>> GetUserStats() {
 		return  _examSessionAppService.GetUserStats(
 				new UserSessionsRequestDto {
-					CandidateId = Guid.Parse(ApplicationUser!.Id),
+					CandidateId = ApplicationUser!.Id,
 				});
 	}
 }

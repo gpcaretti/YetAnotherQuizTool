@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Quiz.Domain;
 using Quiz.Domain.Exams;
+using Quiz.Domain.Identity;
 
 namespace Quiz.Base.Test {
 

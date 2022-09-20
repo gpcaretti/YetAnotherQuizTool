@@ -1,4 +1,8 @@
 ﻿namespace Quiz.Application.Weather {
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class WeatherForecast {
         public DateTime Date { get; set; }
         public int TemperatureC { get; set; }

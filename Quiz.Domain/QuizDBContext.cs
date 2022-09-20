@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 using Quiz.Domain.Exams;
 using Quiz.Domain.Exams.Sessions;
 
@@ -10,12 +11,29 @@ namespace Quiz.Domain {
         //: ApiAuthorizationDbContext<ApplicationUser> {
         : DbContext {
 
-        public QuizDBContext() {
+        private readonly IConfiguration _configuration;
+
+        //public QuizDBContext() {
+        //}
+
+        protected QuizDBContext(DbContextOptions options)
+            : base(options) {
+        }
+
+        protected QuizDBContext(
+            DbContextOptions options, IConfiguration configuration)
+            : this(options) {
+            _configuration = configuration;
+        }
+
+        public QuizDBContext(DbContextOptions<QuizDBContext> options)
+            : base(options) {
         }
 
         public QuizDBContext(
-            DbContextOptions<QuizDBContext> options)
-            : base(options) {
+            DbContextOptions<QuizDBContext> options, IConfiguration configuration)
+            : this(options) {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Exam> Exams { get; set; }
@@ -25,13 +43,19 @@ namespace Quiz.Domain {
         public virtual DbSet<ExamSessionItem> ExamSessionItems { get; set; }
         public virtual DbSet<CandidateNote> CandidateNotes { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+            base.OnConfiguring(optionsBuilder);
+            //var connString = _configuration.GetConnectionString("SQLiteConnection");
+            //optionsBuilder.UseSqlite(connString);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
             // tables prefix
-            foreach (IMutableEntityType entity in modelBuilder.Model.GetEntityTypes()) {
-                if (entity.GetTableName().StartsWith("AspNet", StringComparison.InvariantCultureIgnoreCase)) continue;
-                entity.SetTableName("qz" + entity.GetTableName());
+            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes()) {
+                if (entityType.GetTableName().StartsWith("AspNet", StringComparison.InvariantCultureIgnoreCase)) continue;
+                entityType.SetTableName("qz" + entityType.GetTableName());
             }
 
             DoCreateFKsAndIndexes(modelBuilder);

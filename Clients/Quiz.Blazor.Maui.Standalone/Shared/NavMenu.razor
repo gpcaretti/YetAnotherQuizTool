@@ -1,0 +1,53 @@
+﻿<div class="top-row navbar navbar-dark">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="">YAQT v. @AppInfo.Current.VersionString</a>
+		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+	<nav class="flex-column">
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> Home
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="QuizRunner">
+				<span class="oi oi-plus" aria-hidden="true"></span> Take a quiz
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="OldQuizSessions">
+				<span class="oi oi-plus" aria-hidden="true"></span> Old session (new!)
+			</NavLink>
+		</div>
+		<div class="dropdown-divider px-3"></div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="QuizStatistics">
+				<span class="oi oi-plus" aria-hidden="true"></span> Quiz statistics
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="counter">
+				<span class="oi oi-plus" aria-hidden="true"></span> Counter
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="fetchdata">
+				<span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+			</NavLink>
+		</div>
+	</nav>
+</div>
+
+@code {
+	private bool collapseNavMenu = true;
+	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+	private void ToggleNavMenu() {
+		collapseNavMenu = !collapseNavMenu;
+	}
+}

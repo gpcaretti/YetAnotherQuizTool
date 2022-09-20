@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Quiz.Application.Guids;
@@ -8,15 +7,17 @@ using Quiz.Domain.Exams;
 
 namespace Quiz.Application.Exams {
 
-    [Authorize(Roles = $"{QuizConstants.Roles.Candidate}, {QuizConstants.Roles.Manager}, {QuizConstants.Roles.Admin}")]
+    // TODO [Microsoft.AspNetCore.Authorization.Authorize(Roles = $"{QuizConstants.Roles.Candidate}, {QuizConstants.Roles.Manager}, {QuizConstants.Roles.Admin}")]
     public class ExamAppService : QuizApplicationService<Exam, ExamDto, Guid>, IExamAppService {
+
+        private readonly QuizDBContext _quizDBContext;
 
         public ExamAppService(
             ILogger<ExamAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
-            QuizIdentityDBContext dbIdentityContext,
-            IMapper mapper) : base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
+            IMapper mapper) : base(logger, guidGenerator, dbContext, mapper) {
+            _quizDBContext = dbContext;
         }
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace Quiz.Application.Exams {
 
             int output = 0;
             _dbSet.Update(entity);
-            output = await _dbContext.SaveChangesAsync();
+            output = await _quizDBContext.SaveChangesAsync();
             return output;
         }
 
@@ -53,7 +54,7 @@ namespace Quiz.Application.Exams {
         private async Task<IList<Guid>> DoGetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 100) {
             var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
             if (maxDeep > 0) {
-                var qry = _dbContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
+                var qry = _quizDBContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
                 if (qry.Any()) {
                     result.AddRange(await DoGetRecursiveExamIds(qry, --maxDeep));
                 }
@@ -64,7 +65,7 @@ namespace Quiz.Application.Exams {
         //private async Task<IList<Guid>> GetRecursiveExamIds2(IQueryable<Exam> exams, int maxDeep = 100) {
         //    var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
         //    if (maxDeep > 0) {
-        //        var qry = _dbContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
+        //        var qry = _quizDBContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
         //        if (qry.Any()) {
         //            result.AddRange(await GetRecursiveExamIds(qry, --maxDeep));
         //        }

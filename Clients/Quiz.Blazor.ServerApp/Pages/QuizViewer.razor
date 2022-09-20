@@ -1,37 +1,15 @@
 ﻿@page "/QuizViewer"
-@*@page "/QuizViewer/{sessionId:string?}"*@
-@using Microsoft.AspNetCore.Mvc.ViewFeatures
+
 @using Quiz.Application.Exams
 @using Quiz.Application.Sessions
 
 @attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]
-
-@inject AuthenticationStateProvider GetAuthenticationStateAsync
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager UriHelper
-@inject IExamAppService _examAppService
-@inject IExamSessionAppService _examSessionAppService
-@inject ILogger<QuizViewer> _logger
-@inject IJSRuntime JsRuntime
-
-@*<div class="spinner mx-autoZZZ align-middleZZZ" style="z-index: 1000;"></div>*@
 
 <PageTitle>YAQT - Take your quiz</PageTitle>
 <h1>Take your quiz!</h1>
 
 @if (WaitingCnt > 0) {
 	<div class="spinner" />
-}
-
-@if ((AvailableExams?.Count ?? -1) <= 0) {
-	if (WaitingCnt <= 0) {
-		<div class="alert alert-danger" role="alert">
-			<b>Ops!</b> You do not have access to any exam type. -( <br>
-			Contact our helpdesk for support
-		</div>
-	}
-	return;
 }
 
 <div class="row">
@@ -50,109 +28,16 @@
 			</div>
 		} else {
 			// show form for choosing an exam
-			<style>
-				.optl0 {
-					font-weight: bold;
-				}
-			</style>
 			<div class="card-header">
-				@*<h4 class="card-title">Select your test and start it. Good luck!</h4>*@
-				<EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
-					<DataAnnotationsValidator />
-					@*<input type="hidden" @bind="ExamSession!.CandidateId" name="CandidateId" id="CandidateId" />*@
-					<div class="row my-3">
-						<div class="form-group col-12">
-							<div class="form-group form-check form-check-inline mx-2">
-								<InputCheckbox @bind-Value="ShowExamsSubSection" id="ShowExamsSubSection" name="ShowExamsSubSection" class="form-check-input" />
-								<label for="ShowExamsSubSection" class="form-check-label">Show sub sections</label>
-							</div>
-
-							<InputSelect @bind-Value="NewQuizModel!.ExamId" id="ExamId" class="form-control">
-								<option value="">Select exam type...</option>
-								@foreach (ExamDto item in AvailableExams!.OrderBy(e => e.Code).ToList()) {
-									if (!ShowExamsSubSection && item.AncestorId != null) continue;
-									int nDots = item.Code.Count(ch => (ch == '.'));
-									var strOption = (nDots > 0) ? (string.Concat(Enumerable.Repeat("---", nDots)) + ' ' + item.Name) : item.Name;
-									<option class="optl@(nDots)" value="@item.Id">@(strOption.Length <= 60 ? strOption : (strOption.Substring(0, 60) + "..."))</option>
-								}
-							</InputSelect>
-							<div class="invalid-feedback"><ValidationMessage For="@(() => NewQuizModel.ExamId)" /></div>
-							<small class="form-text mx-2">
-								@(NewQuizModel.OnlyNew
-									? "The exam will only have questions never answered before"
-									: NewQuizModel.OnlyErrorOrDoubt
-										? "The exam will only have your previous errors"
-										: NewQuizModel.IsRandom
-											? "The exam will still have 20% of your previous errors"
-											: "Good luck!")
-							</small>
-						</div>
-					</div>
-					<div class="row my-3 justify-content-start form-inline">
-						@*<div class="col-sm-6 col-lg-8" style="background-color: red;">*@
-						<div class="col-12">
-							<div class="form-group form-check form-check-inline mx-2">
-								<label class="">
-									<input type="radio" name="IsRandom"
-										class="form-check-input" 
-										checked="@NewQuizModel.IsRandom"
-										value="true"
-										@onchange="@(() => NewQuizModel.IsRandom = true)" />
-									Randomize
-								</label>
-							</div>
-							<div class="form-group form-check form-check-inline mx-2">
-								<label class="">
-									<input type="radio" name="IsRandom"
-										class="form-check-input" 
-										checked="@(!NewQuizModel.IsRandom)"
-										value="false"
-										@onchange="@(() => NewQuizModel.IsRandom = false)" />
-									Sequential
-								</label>
-							</div>
-						</div>
-					</div>
-					<div class="row my-3 justify-content-start form-inline">
-						<div class="col-sm-6 col-lg-auto">
-							<div class="form-group form-check form-check-inline mx-2">
-								<InputCheckbox @bind-Value="NewQuizModel.OnlyErrorOrDoubt" id="OnlyErrorOrDoubt" name="OnlyErrorOrDoubt" class="form-check-input" />
-								<label for="OnlyErrorOrDoubt" class="form-check-label">Only previous errors or doubts</label>
-								<ValidationMessage For="@(() => NewQuizModel.OnlyErrorOrDoubt)" />
-							</div>
-							<div class="form-group form-check form-check-inline mx-2">
-								<InputCheckbox @bind-Value="NewQuizModel.OnlyNew" id="OnlyNew" name="OnlyNew" class="form-check-input" />
-								<label for="OnlyNew" class="form-check-label">Only new questions</label>
-								<ValidationMessage For="@(() => NewQuizModel.OnlyNew)" />
-							</div>
-						</div>
-						<div class="form-group col-sm-6 col-lg-auto mx-2">
-							<label>Num. of questions</label>
-							<InputSelect @bind-Value="NewQuizModel.MaxResultCount" id="MaxResultCount" class="form-select form-select-sm " style="width: 6rem; display: inline-block;">
-								<option value="5">5</option>
-								<option value="20">20</option>
-								<option value="30">30</option>
-								<option value="50">50</option>
-								<option value="75">75</option>
-								<option value="100">100</option>
-								<option value="1000">All</option>
-							</InputSelect>
-							<ValidationMessage For="@(() => NewQuizModel.MaxResultCount)" />
-						</div>
-					</div>
-					<div class="row my-3">
-						<div class="col text-center">
-							<button type="button" class="btn btn-primary" style="width: 6rem;"
-								disabled="@(!NewQuizModel.ExamId.HasValue || !ExamSession!.IsEnded)"
-								@onclick="@StartExamSessionClick">Start</button>
-						</div>
-					</div>
-				</EditForm>
+				<NewSessionBuilder
+					NewSessionRequest="ExamSessionRequest"
+					PrepareExamSessionSubmitted="PrepareExamSessionSubmittedHandler">
+				</NewSessionBuilder>
 			</div>
 		}
 
 		<div class="card-body">
-			@if (!NewQuizModel!.ExamId.HasValue || ExamSession == null) {
+			@if (ExamSession == null) {
 				// invitation for a new test
 				<h4 class="text-center">Select your test</h4>
 
@@ -161,148 +46,27 @@
 				<h4 class="text-center text-danger">No questions available for the selected test!</h4>
 
 			} else if ((ExamSession?.TotalQuestions ?? 0) > 0) {
-				// test area (questions and answers)
-				@if (ExamSession?.IsEnded ?? false) {
-					// show results
-					var nCorrect = ExamSession.Answers.Count(ans => ans.IsCorrect);
-					var nWrong = ExamSession.Answers.Count(ans => !ans.IsCorrect && ans.IsAnswered);
-					var nNotAnswered = ExamSession.TotalAnswers - nCorrect - nWrong;
-					<section class="col-xl-6">
-						<div class="list-group list-group-numbered">
-							<div class="list-group-item d-flex justify-content-between align-items-start text-success">
-								<span class="ms-2 me-auto">Correct answers</span>
-								<span class="badge bg-success rounded-pill">@nCorrect</span>
-							</div>
-							<button type="button" class="list-group-item list-group-item-action align-items-start @(ExamSession.ShowOnlyErrors ? "bg-danger text-white" : "")"
-								@onclick="@(() => ShowOnlyErrorsToggle())">
-								<div class="d-flex justify-content-between">
-									<span class="ms-2 me-auto">Wrong answers</span>
-									<span class="badge bg-danger rounded-pill">@nWrong</span>
-								</div>
-								<small class="ms-2 d-block">@(this.ExamSession.ShowOnlyErrors ? "(Click here to show all the answers)" : "(Click here to show only the errors)")</small>
-							</button>
-							<div class="list-group-item d-flex justify-content-between align-items-start">
-								<span class="ms-2 me-auto">Not answered</span>
-								<span class="badge bg-primary rounded-pill">@nNotAnswered</span>
-							</div>
-						</div>
+				if (ExamSession?.IsEnded ?? false) {
+					<!-- quiz session results -->
+					<section class="col-xl-6 mb-3">
+						<SessionResults ExamSession="ExamSession"></SessionResults>
 					</section>
-					<hr class="my-3">
 				}
 
-				var question = ExamSession!.GetCurrentQuestion();
-				var answer = ExamSession!.GetCurrentAnswer();
+				<!-- test area (questions and answers) -->
 				<section>
-					<header class="clearfix">
-						<h3>
-							@if (ExamSession.IsEnded || ExamSession.ShowRightChoice) {
-								if (!string.IsNullOrEmpty(question.Code)) {
-									<span class="d-block">@question.Code</span>
-								} else {
-									<span class="d-block">@(ExamSession.QuizIndex + 1)</span>
-								}
-							}
-							@question.Statement
-						</h3>
-						<small class="float-end">@(ExamSession.QuizIndex + 1) of @ExamSession.TotalQuestions</small>
-					</header>
-					@if (!string.IsNullOrEmpty(question.ImageUri)) {
-						var imgUrl = (question.ImageUri.StartsWith("~")) ? question.ImageUri.Substring(1) : question.ImageUri;
-						<img src="@imgUrl" class="mx-auto d-block" style="max-width:100%" alt="Image for q. @question.Code" />
-					}
-					<ul class="list-group">
-						@foreach (var choice in question.Choices.OrderBy(c => c.Position)) {
-							var isReadOnly = ExamSession.IsEnded;
-							var isChecked = answer?.UserChoiceId == choice.Id;
-							var colorMark = (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && !choice.IsCorrect
-								? "fw-bold text-danger"
-								: (ExamSession.IsEnded || ExamSession.ShowRightChoice) && !isChecked && choice.IsCorrect
-									? "fw-bold text-success border border-danger"
-									: (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && choice.IsCorrect
-										? "fw-bold text-success"
-										: "";
-							 <li class="list-group-item list-group-item-action @colorMark"
-								@onclick="@(() => RegisterUserAnswer(question.Id, choice.Id))" >
-								<div class="form-group form-check">
-									<label class="my-1">
-										<input type="radio" name="choice"
-											class="form-check-input" 
-											checked="@isChecked"
-											value="@choice.Id"
-											readonly="@isReadOnly"
-											disabled="@isReadOnly"
-											@onchange="@(() => RegisterUserAnswer(question.Id, choice.Id))" />
-										@choice.Statement
-									</label>
-									@*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
-								</div>
-							</li>
-						}
-					</ul>
-
-					<div class="form-group form-check">
-						<label class="my-2 mx-3">
-							<input type="checkbox" name="choice"
-								class="form-check-input" 
-								checked="@ExamSession.GetCurrentAnswer().IsMarkedAsDoubt"
-								readonly="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
-								disabled="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
-								@onchange="@((ChangeEventArgs e) => ExamSession.GetCurrentAnswer().IsMarkedAsDoubt = ((bool?)e.Value).GetValueOrDefault())" />
-							Markup the answer as doubt
-						</label>
-						@*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
-					</div>
-
-					<!-- ctrl buttons for questions (next, prev, start, end...) -->
-					<div class="row my-3">
-						<div class="col-12 text-center clearfix">
-							<button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
-								name="PrevBtn"
-								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@(() => ShiftQuestionsOf(-1))">Prev
-							</button>
-							<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
-								name="NextBtn"
-								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@(() => ShiftQuestionsOf(+1))">Next
-							</button>
-						</div>
-					</div>
-					<div class="row my-3">
-						<div class="col-12 text-center clearfix">
-							<button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
-								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@(() => MoveToQuestion(0))">
-									Start
-							</button>
-							<button type="button" class="btn btn-primary mx-auto"
-								name="ShowHideBtn"
-								title="Show/hide solution"
-								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@ShowHideAnswers">
-									Show/Hide
-							</button>
-							<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
-								disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-								@onclick="@(() => MoveToQuestion(ExamSession!.TotalQuestions))">
-									End
-							</button>
-						</div>
-					</div>
+					<QuizView ExamSession="ExamSession"></QuizView>
 				</section>
 			}
 		</div>
 
-		<!--
-		<div class="card-footer">
+		@*<div class="card-footer">
 			@if (ExamSession?.GetCurrentAnswer() != null) {
 				<pre>
 					ExamSession.GetCurrentAnswer().IsMarkedAsDoubt: @(ExamSession.GetCurrentAnswer().IsMarkedAsDoubt)
-				  @*@(JsonSerializer.Serialize(NewQuizModel, new JsonSerializerOptions { WriteIndented = true }))*@
 				</pre>
 			}
-		</div>
-		-->
+		</div>*@
 	</div>
 
 	<!-- test session buttons -->

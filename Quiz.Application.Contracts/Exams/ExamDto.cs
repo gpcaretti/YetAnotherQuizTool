@@ -6,7 +6,7 @@ namespace Quiz.Application.Exams {
         public string Name { get; set; }
         public string Code { get; set; }
 
-        /// <summary>Duration of the exam (0 = no duration specifie </summary>
+        /// <summary>Duration of the exam (0 = no duration specified)</summary>
         public int Duration { get; set; }
 
         public decimal FullMarks { get; set; }

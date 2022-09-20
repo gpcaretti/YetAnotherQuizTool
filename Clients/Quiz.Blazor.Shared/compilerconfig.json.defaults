@@ -1,0 +1,43 @@
+{
+  "compilers": {
+    "less": {
+      "autoPrefix": "",
+      "cssComb": "none",
+      "ieCompat": false,
+      "math": null,
+      "strictMath": false,
+      "strictUnits": false,
+      "relativeUrls": true,
+      "rootPath": "",
+      "sourceMapRoot": "",
+      "sourceMapBasePath": "",
+      "indentType": "tab",
+      "indentWidth": 2,
+      "outputStyle": "nested",
+      "sourceMap": false
+    },
+    "sass": {
+        "autoPrefix": "",
+        "ieCompat": false,
+        "loadPaths": "",
+        "style": "expanded",
+        "relativeUrls": false,
+        "indentType": "tab",
+        "indentWidth": 2,
+        "outputStyle": "nested",
+        "sourceMap": false
+    }
+  },
+  "minifiers": {
+    "css": {
+      "enabled": true,
+      "termSemicolons": true,
+      "gzip": false
+    },
+    "javascript": {
+      "enabled": true,
+      "termSemicolons": true,
+      "gzip": false
+    }
+  }
+}

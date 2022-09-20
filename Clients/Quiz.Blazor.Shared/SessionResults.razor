@@ -1,0 +1,54 @@
+﻿@using Quiz.Application.Sessions;
+@using Quiz.Blazor.Shared.ViewModels
+
+@if (ExamSession == null) {
+	<section class="col-xl-6">
+		Ops!
+	</section>
+	return;
+}
+
+<div class="list-group list-group-numbered">
+	<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+		<span class="ms-2 me-auto">Correct answers</span>
+		<span class="badge bg-success rounded-pill">@_nCorrect</span>
+	</div>
+	<button type="button" class="list-group-item list-group-item-action align-items-start @(ExamSession.ShowOnlyErrors ? "bg-danger text-white" : "")"
+		@onclick="@(() => ShowOnlyErrorsToggle())">
+		<div class="d-flex justify-content-between">
+			<span class="ms-2 me-auto">Wrong answers</span>
+			<span class="badge bg-danger rounded-pill">@_nWrong</span>
+		</div>
+		<small class="ms-2 d-block">@(ExamSession.ShowOnlyErrors ? "(Click here to show all the answers)" : "(Click here to show only the errors)")</small>
+	</button>
+	<div class="list-group-item d-flex justify-content-between align-items-start">
+		<span class="ms-2 me-auto">Not answered</span>
+		<span class="badge bg-primary rounded-pill">@_nNotAnswered</span>
+	</div>
+</div>
+
+@code {
+	[Parameter] public QuizSessionVM? ExamSession { get; set; }
+
+	protected int _nCorrect = -1;
+	protected int _nWrong = -1;
+	protected int _nNotAnswered = -1;
+
+	protected override void OnInitialized() {
+		if (ExamSession != null) {
+			// show results
+			_nCorrect = ExamSession.Answers.Count(ans => ans.IsCorrect);
+			_nWrong = ExamSession.Answers.Count(ans => !ans.IsCorrect && ans.IsAnswered);
+			_nNotAnswered = ExamSession.TotalAnswers - _nCorrect - _nWrong;
+		}
+	}
+
+	private void ShowOnlyErrorsToggle() {
+		if (ExamSession != null) {
+			ExamSession.ShowOnlyErrors = !ExamSession.ShowOnlyErrors;
+			if (ExamSession.ShowOnlyErrors) ExamSession.MoveToQuestion(0);
+		}
+	}
+
+
+}

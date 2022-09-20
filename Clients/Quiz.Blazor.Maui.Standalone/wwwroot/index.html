@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+	<title>Yet Another Quiz Tool</title>
+	<base href="/" />
+	<link rel="stylesheet" href="_content/Quiz.Blazor.Shared/css/bootstrap-theme.min.css" />
+	<!--	<link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />-->
+	<link href="css/app.css" rel="stylesheet" />
+	<link href="Quiz.Blazor.Maui.Standalone.styles.css" rel="stylesheet" />
+</head>
+
+<body class="dark dark-theme">
+
+	<div class="status-bar-safe-area"></div>
+
+	<div id="app">
+		<div class="border d-flex align-items-center justify-content-center" style="height: 350px;">
+			<span class="btn btn-primary" type="button" disabled>
+				<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+				Loading...
+			</span>
+		</div>
+	</div>
+
+	<div id="blazor-error-ui">
+		An unhandled error has occurred.
+		<a href="" class="reload">Reload</a>
+		<a class="dismiss">🗙</a>
+	</div>
+
+	<script src="_content/Quiz.Blazor.Shared/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="_framework/blazor.webview.js" autostart="false"></script>
+	<!--	<script src="_content/Blazored.Modal/blazored.modal.js"></script>-->
+</body>
+
+</html>

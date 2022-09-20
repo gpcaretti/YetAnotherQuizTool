@@ -1,0 +1,19 @@
+﻿// Variables
+
+$red: #b00b0f; // rosso PiP
+// $yellow: #edfb00;     // giallo PiP
+
+$danger: $red;
+//$warning: $yellow;
+
+
+$colors: ( "red": $red,
+//"yellow":   $yellow,
+);
+
+$theme-colors: ( "danger": $danger,
+//"warning":    $warning,
+);
+
+// The yiq lightness value that determines when the lightness of color changes from "dark" to "light". Acceptable values are between 0 and 255.
+//$yiq-contrasted-threshold: 254;

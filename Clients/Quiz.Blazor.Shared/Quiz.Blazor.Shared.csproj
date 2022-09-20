@@ -1,31 +1,86 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Blazored.Modal" Version="7.0.0-preiew.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.2.5" />
-  </ItemGroup>
+    <ItemGroup>
+      <Content Remove="compilerconfig.json" />
+      <Content Remove="wwwroot\css\_bootstrap-theme-variables.scss" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
-    <ProjectReference Include="..\..\Quiz.Application\Quiz.Application.csproj" />
-    <ProjectReference Include="..\..\Quiz.Domain\Quiz.Domain.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.rtl.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.rtl.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.rtl.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.rtl.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.rtl.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.rtl.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.min.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.css" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.min.css" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+    <ItemGroup>
+      <None Include="compilerconfig.json" />
+      <None Include="wwwroot\css\_bootstrap-theme-variables.scss" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.rtl.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.rtl.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.rtl.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.min.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.css.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.min.css.map" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.js.map" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.min.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.js.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.min.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.min.js.map" />
+      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.js.map" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.min.js" />
+      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.min.js.map" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.10" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="6.0.10" />
+        <PackageReference Include="Blazored.Modal" Version="7.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Quiz.Application.Contracts\Quiz.Application.Contracts.csproj" />
+        <ProjectReference Include="..\..\Quiz.Application\Quiz.Application.csproj" />
+    </ItemGroup>
 
 
+    <ItemGroup>
+        <!-- see https://stackoverflow.com/a/72040978/752004 -->
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
 
 </Project>

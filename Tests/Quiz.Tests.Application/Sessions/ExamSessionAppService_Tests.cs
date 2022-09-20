@@ -1,4 +1,5 @@
 ﻿using Quiz.Application.Exams;
+using Quiz.Application.Users;
 
 namespace Quiz.Application.Sessions.Tests {
 
@@ -11,22 +12,26 @@ namespace Quiz.Application.Sessions.Tests {
                 Mock.Of<ILogger<ExamAppService>>(),
                 _guidGenerator,
                 QuizDbContext,
-                QuizIdentityDbContext,
                 _mapper);
 
             var questionService = new QuestionAppService(
                 Mock.Of<ILogger<QuestionAppService>>(),
                 _guidGenerator,
                 QuizDbContext,
-                QuizIdentityDbContext,
+                _mapper);
+
+            var candidateAppService = new NullCandidateAppService(
+                Mock.Of<ILogger<NullCandidateAppService>>(),
+                _guidGenerator,
+                QuizDbContext,
                 _mapper);
 
             _service = new ExamSessionAppService(
                 Mock.Of<ILogger<ExamSessionAppService>>(),
                 _guidGenerator,
                 QuizDbContext,
-                QuizIdentityDbContext,
                 _mapper,
+                candidateAppService,
                 examService,
                 questionService);
         }

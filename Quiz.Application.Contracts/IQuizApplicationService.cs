@@ -13,8 +13,9 @@ namespace Quiz.Application {
 
         Task<ICollection<TEntityDto>> GetAll(PagedAndSortedResultRequestDto input);
         //Task<TEntityDto> FirstOrDefault(Expression<Func<TEntity, bool>> predicate = null);
-        //Task<bool> Any(Expression<Func<TEntity, bool>> predicate = null);
         //Task<int> Count(Expression<Func<TEntity, bool>> predicate = null);
+
+        Task<bool> Any(TPrimaryKey id);
 
         Task<int> Create(TEntityDto dto);
         Task<int> Delete(TPrimaryKey id);

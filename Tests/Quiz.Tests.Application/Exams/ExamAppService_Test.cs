@@ -11,7 +11,6 @@ namespace Quiz.Application.Exams.Tests {
                 Mock.Of<ILogger<ExamAppService>>(),
                 _guidGenerator,
                 QuizDbContext,
-                QuizIdentityDbContext,
                 _mapper);
         }
 

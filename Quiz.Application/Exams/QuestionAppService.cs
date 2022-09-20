@@ -12,13 +12,17 @@ using Quiz.Domain.Extensions;
 namespace Quiz.Application.Exams {
     public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
 
+        private readonly QuizDBContext _quizDBContext;
+        private readonly string _dbProviderName;
+
         public QuestionAppService(
             ILogger<QuestionAppService> logger,
             IGuidGenerator guidGenerator,
             QuizDBContext dbContext,
-            QuizIdentityDBContext dbIdentityContext,
             IMapper mapper) :
-            base(logger, guidGenerator, dbContext, dbIdentityContext, mapper) {
+            base(logger, guidGenerator, dbContext, mapper) {
+            _quizDBContext = dbContext;
+            _dbProviderName = dbContext.Database.ProviderName;
         }
 
         /// <summary>
@@ -59,7 +63,7 @@ namespace Quiz.Application.Exams {
 
             // take the group of exams from which to retrieve the questions
             IList<Guid> examIds = input.IsRecursive
-                ? await DoGetRecursiveExamIds(_dbContext.Exams.Where(ex => ex.Id == input.ExamId), 10)
+                ? await DoGetRecursiveExamIds(_quizDBContext.Exams.Where(ex => ex.Id == input.ExamId), 10)
                 : new List<Guid>() { input.ExamId.Value };
 
             // if there are no exam ids to select, return an empty list
@@ -82,6 +86,7 @@ namespace Quiz.Application.Exams {
                     await DoGetOnlyNewQuestions(
                             examIds,
                             sortingFunc,
+                            input.IsRandom,
                             input.SkipCount,
                             input.MaxResultCount,
                             input.CandidateId)
@@ -94,6 +99,7 @@ namespace Quiz.Application.Exams {
                     await DoGetOnlyOldErrorsOrDoubts(
                             examIds,
                             sortingFunc,
+                            input.IsRandom,
                             input.SkipCount,
                             input.MaxResultCount,
                             input.CandidateId)
@@ -102,49 +108,15 @@ namespace Quiz.Application.Exams {
 
             // else if sequential, get only sequental questions
             else {
-                // if user asks for random questions get some previous error
-                if (input.IsRandom) {
-                    // add at least 20% of previous error or questions marked as doubt
-                    int percentage = 20;
-                    questionsDto.AddRange(
-                        await DoGetOnlyOldErrorsOrDoubts(
-                                examIds,
-                                sortingFunc,
-                                input.SkipCount,
-                                (int)Math.Ceiling(input.MaxResultCount * percentage / 100.0),
-                                input.CandidateId)
-                        );
-                }
-
-                // add the questions for the exam
-                if (questionsDto.Count < input.MaxResultCount) {
-                    var alreadySelected = questionsDto.Select(q => q.Id).ToList();
-                    var newQuestionsDto = _mapper.Map<IList<QuestionAndChoicesDto>>(
-                                                            await _dbSet //.Set<Question>()
-                                                            .Include(q => q.Choices)
-                                                            .Where(q => examIds.Contains(q.ExamId))
-                                                            .Where(q => !alreadySelected.Contains(q.Id))
-                                                            .OrderBy(sortingFunc)
-                                                            .Skip(input.SkipCount)
-                                                            .Take(input.MaxResultCount - alreadySelected.Count)
-                                                            .ToListAsync());
-
-                    // if old doubt exists get their question id
-                    var qry = _dbContext.CandidateNotes
-                        .Where(cnote => newQuestionsDto.Select(q => q.Id).Contains(cnote.QuestionId))
-                        .Where(item => !item.IsMarkedAsHidden && item.IsMarkedAsDoubt)
-                        .WhereIf(input.CandidateId.HasValue, item => item.CandidateId == input.CandidateId.ToString());
-                    var doubts = await qry
-                                    .Select(item => new { item.QuestionId, item.IsMarkedAsDoubt })
-                                    .Distinct()
-                                    .ToListAsync();
-                    foreach (var cnote in doubts) {
-                        var dto = newQuestionsDto.FirstOrDefault(q => q.Id == cnote.QuestionId);
-                        if (dto != null) dto.IsMarkedAsDoubt = cnote.IsMarkedAsDoubt;
-                    }
-
-                    questionsDto.AddRange(newQuestionsDto);
-                }
+                questionsDto.AddRange(
+                    await DoGetAMix(
+                            examIds,
+                            sortingFunc,
+                            input.IsRandom,
+                            input.SkipCount,
+                            input.MaxResultCount,
+                            input.CandidateId)
+                    );
             }
 
             // now sort again the entire set of entities and return
@@ -184,7 +156,7 @@ namespace Quiz.Application.Exams {
         private async Task<IList<Guid>> DoGetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 10) {
             var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
             if (maxDeep > 0) {
-                var qry = _dbContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
+                var qry = _quizDBContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
                 if (qry.Any()) {
                     result.AddRange(await DoGetRecursiveExamIds(qry, --maxDeep));
                 }
@@ -205,31 +177,54 @@ namespace Quiz.Application.Exams {
         private async Task<ICollection<QuestionAndChoicesDto>> DoGetOnlyNewQuestions(
             IList<Guid> examIds,
             Expression<Func<Question, object?>> sorting,
+            bool isRandom,
             int skipCount,
             int maxResultCount,
             Guid? candidateId = null) {
             if (maxResultCount <= 0) throw new ArgumentOutOfRangeException(nameof(maxResultCount), $"{nameof(maxResultCount)} must be greater than 0");
 
             // get Questions Ids already used
-            var qrySessionsIds = _dbContext.ExamSessions
+            var qrySessionsIds = _quizDBContext.ExamSessions
                                         .WhereIf(candidateId.HasValue, session => session.CandidateId == candidateId.ToString())
                                         .Where(session => session.IsEnded)
                                         .Select(session => session.Id);
-            var oldQuestionsIds = await _dbContext.ExamSessionItems
+            var oldQuestionsIds = await _quizDBContext.ExamSessionItems
                         .Where(item => qrySessionsIds.Contains(item.SessionId) && item.IsAnswered)
                         .Select(item => item.QuestionId)
                         .Distinct()
                         .ToListAsync();
             //if (oldQuestionsIds.Count == 0) return new Question[] { };
 
-            var query = _dbSet //.Set<Question>()
-                .Include(q => q.Choices)
-                .Where(q => examIds.Contains(q.ExamId))
-                .Where(q => !oldQuestionsIds.Contains(q.Id))
-                .OrderBy(sorting)
-                .Skip(skipCount)
-                .Take(maxResultCount);
-            return _mapper.Map<IList<QuestionAndChoicesDto>>(await query.ToListAsync());
+            IList<Question>? questions = null;
+            if (isRandom && _dbProviderName.Contains("sqlite", StringComparison.OrdinalIgnoreCase)) {
+                // this is a SQLite database
+                var queryStr = _dbSet
+                    .Where(q => examIds.Contains(q.ExamId))
+                    .Where(q => !oldQuestionsIds.Contains(q.Id))
+                    .ToQueryString();
+                queryStr = "SELECT * " +
+                        queryStr.Substring(queryStr.IndexOf("FROM", StringComparison.OrdinalIgnoreCase)) +
+                        $" ORDER BY RANDOM() LIMIT {maxResultCount} OFFSET {skipCount}";
+                var ids = await _dbSet.FromSqlRaw(queryStr).Select(q => q.Id).ToListAsync();
+                questions = (ids.Count <= 0)
+                    ? new List<Question>(0)
+                    : await _dbSet //.Set<Question>()
+                                .Include(q => q.Choices)
+                                .Where(q => ids.Contains(q.Id))
+                                .ToListAsync();
+            } else {
+                // go forward with pure LINQ
+                questions = await _dbSet //.Set<Question>()
+                    .Include(q => q.Choices)
+                    .Where(q => examIds.Contains(q.ExamId))
+                    .Where(q => !oldQuestionsIds.Contains(q.Id))
+                    .OrderBy(sorting)
+                    .Skip(skipCount)
+                    .Take(maxResultCount)
+                    .ToListAsync();
+            }
+
+            return _mapper.Map<IList<QuestionAndChoicesDto>>(questions);
         }
 
         /// <summary>
@@ -239,13 +234,14 @@ namespace Quiz.Application.Exams {
         private async Task<ICollection<QuestionAndChoicesDto>> DoGetOnlyOldErrorsOrDoubts(
             IList<Guid> examIds,
             Expression<Func<Question, object?>> sorting,
+            bool isRandom,
             int skipCount,
             int maxResultCount,
             Guid? candidateId = null) {
             if (maxResultCount <= 0) throw new ArgumentOutOfRangeException(nameof(maxResultCount), $"{nameof(maxResultCount)} must be greater than 0");
 
             // if old errors or doubts exists get their ids
-            var qry = _dbContext.CandidateNotes
+            var qry = _quizDBContext.CandidateNotes
                 .Where(item => examIds.Contains(item.ExamId))
                 .Where(item => !item.IsMarkedAsHidden && (item.NumOfWrongAnswers > 0 || item.IsMarkedAsDoubt))
                 .WhereIf(candidateId.HasValue, item => item.CandidateId == candidateId.ToString());
@@ -257,13 +253,33 @@ namespace Quiz.Application.Exams {
             if (errorsOrDoubtsIds.Count == 0) return new QuestionAndChoicesDto[] { };
 
             // get all previous error related to the building exam session 
-            var questions = await _dbSet //.Set<Question>()
-                .Include(q => q.Choices)
-                .Where(q => errorsOrDoubtsIds.Select(x => x.QuestionId) .Contains(q.Id))
-                .OrderBy(sorting)
-                .Skip(skipCount)
-                .Take(maxResultCount)
-                .ToListAsync();
+            IList<Question>? questions = null;
+            if (isRandom && _dbProviderName.Contains("sqlite", StringComparison.OrdinalIgnoreCase)) {
+                // this is a SQLite database
+                var queryStr = _dbSet
+                        .Where(q => errorsOrDoubtsIds.Select(x => x.QuestionId).Contains(q.Id))
+                        .ToQueryString();
+                queryStr = "SELECT * " +
+                        queryStr.Substring(queryStr.IndexOf("FROM", StringComparison.OrdinalIgnoreCase)) +
+                        $" ORDER BY RANDOM() LIMIT {maxResultCount} OFFSET {skipCount}";
+                var ids = await _dbSet.FromSqlRaw(queryStr).Select(q => q.Id).ToListAsync();
+                questions = (ids.Count <= 0)
+                    ? new List<Question>(0)
+                    : await _dbSet //.Set<Question>()
+                                .Include(q => q.Choices)
+                                .Where(q => ids.Contains(q.Id))
+                                .ToListAsync();
+            }
+            else {
+                // go forward with pure LINQ
+                questions = await _dbSet //.Set<Question>()
+                    .Include(q => q.Choices)
+                    .Where(q => errorsOrDoubtsIds.Select(x => x.QuestionId).Contains(q.Id))
+                    .OrderBy(sorting)
+                    .Skip(skipCount)
+                    .Take(maxResultCount)
+                    .ToListAsync();
+            }
 
             var dtos = _mapper.Map<IList<QuestionAndChoicesDto>>(questions);
             foreach (var sitem in errorsOrDoubtsIds.Where(si => si.IsMarkedAsDoubt).ToArray()) {
@@ -272,6 +288,95 @@ namespace Quiz.Application.Exams {
             }
 
             return dtos;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <summary>
+        ///     get a set of questions for the new session with only questions in error in previous sessions 
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private async Task<IEnumerable<QuestionAndChoicesDto>> DoGetAMix(
+            IList<Guid> examIds, Expression<Func<Question, object>>
+            sortingFunc,
+            bool isRandom,
+            int skipCount,
+            int maxResultCount,
+            Guid? candidateId = null) {
+
+            List<QuestionAndChoicesDto>? questionsDto = new List<QuestionAndChoicesDto>(maxResultCount);
+
+            // if user asks for random questions get some previous error
+            if (isRandom) {
+                // add at least 20% of previous error or questions marked as doubt
+                int percentage = 20;
+                questionsDto.AddRange(
+                    await DoGetOnlyOldErrorsOrDoubts(
+                            examIds,
+                            sortingFunc,
+                            isRandom,
+                            skipCount,
+                            (int)Math.Ceiling(maxResultCount * percentage / 100.0),
+                            candidateId)
+                    );
+
+            }
+
+            // add the questions for the exam
+            if (questionsDto.Count < maxResultCount) {
+                var alreadySelected = questionsDto.Select(q => q.Id).ToList();
+
+                IList<Question>? newQuestions = null;
+                if (isRandom && _dbProviderName.Contains("sqlite", StringComparison.OrdinalIgnoreCase)) {
+                    // this is a SQLite database
+                    var queryStr = _dbSet
+                                .Where(q => examIds.Contains(q.ExamId))
+                                .Where(q => !alreadySelected.Contains(q.Id))
+                                .ToQueryString();
+                    queryStr = "SELECT * " +
+                            queryStr.Substring(queryStr.IndexOf("FROM", StringComparison.OrdinalIgnoreCase)) +
+                            $" ORDER BY RANDOM() LIMIT {maxResultCount - alreadySelected.Count} OFFSET {skipCount}";
+                    var qryIds = _dbSet
+                                .FromSqlRaw(queryStr)
+                                .Select(q => q.Id);
+                    newQuestions = await _dbSet //.Set<Question>()
+                                .Include(q => q.Choices)
+                                .Where(q => qryIds.Contains(q.Id))
+                                .ToListAsync();
+                }
+                else {
+                    // go forward with pure LINQ
+                    newQuestions = await _dbSet //.Set<Question>()
+                                .Include(q => q.Choices)
+                                .Where(q => examIds.Contains(q.ExamId))
+                                .Where(q => !alreadySelected.Contains(q.Id))
+                                .OrderBy(sortingFunc)
+                                .Skip(skipCount)
+                                .Take(maxResultCount - alreadySelected.Count)
+                                .ToListAsync();
+                }
+
+                var newQuestionsDto = _mapper.Map<IList<QuestionAndChoicesDto>>(newQuestions);
+
+                // if old doubt exists get their question id
+                var qry = _quizDBContext.CandidateNotes
+                    .Where(cnote => newQuestionsDto.Select(q => q.Id).Contains(cnote.QuestionId))
+                    .Where(item => !item.IsMarkedAsHidden && item.IsMarkedAsDoubt)
+                    .WhereIf(candidateId.HasValue, item => item.CandidateId == candidateId.ToString());
+                var doubts = await qry
+                                .Select(item => new { item.QuestionId, item.IsMarkedAsDoubt })
+                                .Distinct()
+                                .ToListAsync();
+                foreach (var cnote in doubts) {
+                    var dto = newQuestionsDto.FirstOrDefault(q => q.Id == cnote.QuestionId);
+                    if (dto != null) dto.IsMarkedAsDoubt = cnote.IsMarkedAsDoubt;
+                }
+
+                questionsDto.AddRange(newQuestionsDto);
+            }
+
+            return questionsDto;
         }
 
     }
