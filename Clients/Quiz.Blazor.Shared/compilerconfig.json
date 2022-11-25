@@ -2,5 +2,9 @@
   {
     "outputFile": "wwwroot/css/bootstrap-theme.css",
     "inputFile": "wwwroot/css/bootstrap-theme.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/app.css",
+    "inputFile": "wwwroot/css/app.scss"
   }
 ]

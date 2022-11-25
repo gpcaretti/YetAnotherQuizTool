@@ -3,7 +3,7 @@ using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Application;
-using Quiz.Application.Maintenance;
+using Quiz.Application.UI;
 using Quiz.Application.Users;
 using Quiz.Blazor.ServerApp.Areas.Identity;
 using Quiz.Blazor.ServerApp.Services;
@@ -109,9 +109,9 @@ namespace Quiz.Blazor.ServerApp {
             builder.Services.AddServerSideBlazor();
             builder.Services.AddBlazoredModal();
 
-            builder.Services.AddQuizStandardServices();
-            builder.Services.AddOrReplace<ICandidateAppService, IdentityCandidateAppService>();
-            builder.Services.AddOrReplace<IDataExportAppService, ExportAppService>();
+            builder.Services.AddQuizStandardServices(ServiceLifetime.Scoped);
+            builder.Services.AddOrReplace<ICandidateAppService, IdentityCandidateAppService>(ServiceLifetime.Scoped);
+            builder.Services.AddOrReplace<IUIAppService, UIAppService>(ServiceLifetime.Scoped);
 
             // TODO: configure form post size
             //builder.Services.Configure<FormOptions>(options => {

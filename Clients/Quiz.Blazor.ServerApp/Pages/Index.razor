@@ -15,7 +15,7 @@
 
 <div class="my-3">
 	<div class="list-group">
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizViewer/"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">
 			<div class="fw-bold text-primary">Run a quiz session</div>
 			<AuthorizeView>
 				<NotAuthorized>
@@ -25,7 +25,7 @@
 			</AuthorizeView>
 		</button>
 
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/OldQuizSessions"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.OldQuizSessions))">
 			<div class="fw-bold text-primary">Restore old or not finished quiz session</div>
 			<AuthorizeView>
 				<NotAuthorized>
@@ -37,7 +37,7 @@
 	</div>
 
 	<div class="list-group mt-5">
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizSettings"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizStatistics))">
 			<div class="fw-bold text-primary">Quiz statistics</div>
 			<AuthorizeView>
 				<NotAuthorized>

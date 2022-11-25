@@ -1,4 +1,6 @@
-﻿@page "/OldQuizSessions"
+﻿@*@page "/OldQuizSessions"*@
+@attribute [Route(QuizAppConsts.Navigation.OldQuizSessions)]
+
 @using Quiz.Application.Sessions
 
 @inject AuthenticationStateProvider _authenticationStateProvider
@@ -30,7 +32,7 @@
 					<span class="d-block">Executed on: @session.ExecutedOn</span>
 					<span class="d-block">Tot: @session.NumOfQuestions</span>
 					<span class="d-block">Wrong: @session.NumOfWrongAnswers</span>
-					<button type="button" class="" @onclick="@(() => UriHelper.NavigateTo("/QuizViewer/?sessionId=" + session.Id))">Restore it!</button>
+					<button type="button" class="" @onclick="@(() => UriHelper.NavigateTo($"{QuizAppConsts.Navigation.QuizRunner}/?sessionId={session.Id}"))">Restore it!</button>
 					<hr />
 				}
 			</div>

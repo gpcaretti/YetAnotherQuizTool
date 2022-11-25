@@ -369,3 +369,6 @@ FodyWeavers.xsd
 [Pp]atenteN/
 DAL/
 *[Pp]rivate*
+maui.android.cmd
+yaqt.keystore
+*TemporaryKey.pfx

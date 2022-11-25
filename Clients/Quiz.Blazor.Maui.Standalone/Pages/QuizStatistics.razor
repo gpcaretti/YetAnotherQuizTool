@@ -1,20 +1,19 @@
-﻿@page "/QuizStatistics"
+﻿@*@page "/QuizStatistics"*@
+@attribute [Route(QuizAppConsts.Navigation.QuizStatistics)]
 
 @using Quiz.Application.Dtos;
+@using Quiz.Application.UI;
 @using Quiz.Application.Sessions;
 @using Quiz.Application.Users
 
 @inject ICandidateAppService _candidateAppService
 @inject IExamSessionAppService _examSessionAppService
-@*@inject ILogger<QuizSettings> _logger*@
+@inject IUIAppService _notificationService
+@*@inject ILogger<QuizStatistics> _logger*@
 
 @*@attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]*@
 
 <h3>Quiz Settings</h3>
-
-@if (WaitingCnt > 0) {
-	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
-}
 
 <div class="row">
 	<div class="card full-space-col col-lg-9">
@@ -61,32 +60,28 @@
 
 	protected CandidateDto? ApplicationUser;
 
-	protected int WaitingCnt;
-
 	protected IList<SessionsStatisticsDto> Stats = new List<SessionsStatisticsDto>();
 
 	protected override async Task OnInitializedAsync() {
-		WaitingCnt = 1;
+		_notificationService.ShowActivityIndicator();
 		try {
 			// get the current user
 			ApplicationUser = await _candidateAppService.GetCurrentUser();
 			_ = RefreshUserStats();
 		} finally {
-			if (WaitingCnt > 0) WaitingCnt--;
+			_notificationService.HideActivityIndicator();
 		}
 	}
 
 	private async Task RefreshUserStats() {
-		WaitingCnt++;
-		StateHasChanged();
+		_notificationService.ShowActivityIndicator();
 		try {
 			Stats = await _examSessionAppService.GetUserStats(
 								new UserSessionsRequestDto {
 										CandidateId = ApplicationUser!.Id,
 									});
 		} finally {
-			if (WaitingCnt > 0) WaitingCnt--;
-			StateHasChanged();
+			_notificationService.HideActivityIndicator();
 		}
 	}
 }

@@ -5,7 +5,6 @@
              x:Class="Quiz.Blazor.Maui.Standalone.App">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary Source="Styles/LightTheme.xaml" />
 
             <Color x:Key="PageBackgroundColor">#512bdf</Color>
             <Color x:Key="PrimaryTextColor">White</Color>
@@ -21,6 +20,7 @@
                 <Setter Property="BackgroundColor" Value="{DynamicResource SystemGreen}" />
                 <Setter Property="Padding" Value="14,10" />
             </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

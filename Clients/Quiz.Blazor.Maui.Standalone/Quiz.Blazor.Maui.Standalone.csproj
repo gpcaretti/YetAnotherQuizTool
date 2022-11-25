@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks>net7.0-android;net7.0-maccatalyst;net7.0-ios</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-        <!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
         <OutputType>Exe</OutputType>
         <RootNamespace>Quiz.Blazor.Maui.Standalone</RootNamespace>
         <UseMaui>true</UseMaui>
+        <Nullable>disable</Nullable>
         <SingleProject>true</SingleProject>
-        <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
-        <!-- Display name -->
-        <ApplicationTitle>YAQT</ApplicationTitle>
+        <Title>Yet Another Quiz Tool</Title>
+        <ApplicationTitle>Patente Nautica 2022</ApplicationTitle> <!-- Display name -->
 
         <!-- App Identifier -->
         <ApplicationId>it.gpsoftware.yaqt</ApplicationId>
         <ApplicationIdGuid>9911BAF7-B173-42B7-95F5-B51E8E2E16B8</ApplicationIdGuid>
 
         <!-- Versions -->
-        <ApplicationDisplayVersion>0.8.9</ApplicationDisplayVersion>
-        <ApplicationVersion>9</ApplicationVersion>
+        <ApplicationDisplayVersion>0.9.6</ApplicationDisplayVersion>
+        <ApplicationVersion>19</ApplicationVersion>
+        <Copyright>GP software engineering 2022</Copyright>
 
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
@@ -30,49 +31,14 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-        <Copyright>GP software engineering 2022</Copyright>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
-        <AndroidKeyStore>True</AndroidKeyStore>
-        <AndroidSigningKeyStore>yaqt.keystore</AndroidSigningKeyStore>
-        <AndroidSigningKeyAlias>key</AndroidSigningKeyAlias>
-        <AndroidSigningKeyPass></AndroidSigningKeyPass>
-        <AndroidSigningStorePass></AndroidSigningStorePass>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows10.0.19041.0|AnyCPU'">
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-windows10.0.19041.0|AnyCPU'">
       <DefineConstants>WINDOWS</DefineConstants>
-      <Optimize>False</Optimize>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows10.0.19041.0|AnyCPU'">
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-windows10.0.19041.0|AnyCPU'">
       <DefineConstants>WINDOWS</DefineConstants>
-      <Optimize>True</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-android|AnyCPU'">
-      <Optimize>True</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-ios|AnyCPU'">
-      <Optimize>True</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-maccatalyst|AnyCPU'">
-      <Optimize>True</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-android|AnyCPU'">
-      <Optimize>False</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-ios|AnyCPU'">
-      <Optimize>False</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-maccatalyst|AnyCPU'">
-      <Optimize>False</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
@@ -94,27 +60,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AndroidResource Remove="Domain\**" />
-      <Compile Remove="Domain\**" />
-      <Content Remove="Domain\**" />
-      <EmbeddedResource Remove="Domain\**" />
-      <MauiXaml Remove="Domain\**" />
-      <None Remove="Domain\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="Resources\Splash\splash_org.svg" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Blazored.Modal" Version="7.1.0" />
-      <PackageReference Include="CommunityToolkit.Maui" Version="1.3.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.10" />
-      <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
-      <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
-      <PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
-      <PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.2" />
-      <PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -125,28 +72,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Update="Pages\Index.razor">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Resources\Images\patenteN\" />
-      <Folder Include="wwwroot\images\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Styles\DarkTheme.xaml.cs">
-        <DependentUpon>DarkTheme.xaml</DependentUpon>
+      <Compile Update="Views\MainView.xaml.cs">
+        <SubType>Code</SubType>
+        <DependentUpon>%(Filename)</DependentUpon>
       </Compile>
     </ItemGroup>
 
     <ItemGroup>
-      <MauiXaml Update="Styles\DarkTheme.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Styles\LightTheme.xaml">
-        <Generator>MSBuild:Compile</Generator>
+      <MauiXaml Update="Views\MainView.xaml">
+        <SubType>Designer</SubType>
       </MauiXaml>
     </ItemGroup>
 

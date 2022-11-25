@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject NavigationManager _navManager
+
+<PageTitle>Home</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
+<MudText Class="mb-8">Welcome to your new app, powered by MudBlazor!</MudText>
+<MudAlert Severity="Severity.Normal">
+	You can find documentation and examples on our website here:
+	<MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink>
+</MudAlert>
+
+<hr />
+
+<MudPaper Width="">
+	<MudList Clickable="true">
+		<MudListItem Text="Inbox" Icon="@Icons.Material.Filled.Inbox" OnClick="@(() => _navManager.NavigateTo("/Counter"))"/>
+		<MudListItem Text="Sent" Icon="@Icons.Material.Filled.Send" />
+		<MudDivider />
+		<MudListItem Text="Trash" />
+		<MudListItem Text="Spam" />
+	</MudList>
+
+	<MudList Clickable="true">
+		<MudListItem Avatar="@Icons.Material.Filled.Image" OnClick="@(() => _navManager.NavigateTo("/Counter"))">
+			Photos
+		</MudListItem>
+		<MudListItem Avatar="@Icons.Material.Filled.Work">
+			Work
+		</MudListItem>
+		<MudListItem Avatar="@Icons.Material.Filled.Umbrella">
+			Vacation
+		</MudListItem>
+	</MudList>
+
+</MudPaper>

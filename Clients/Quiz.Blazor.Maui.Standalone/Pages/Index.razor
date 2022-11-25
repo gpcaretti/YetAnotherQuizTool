@@ -2,13 +2,16 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Configuration
 @using Quiz.Application.Exams
+@using Quiz.Application.UI;
 @using Quiz.Domain
 @using System.Diagnostics
 @using static Microsoft.Maui.ApplicationModel.Permissions
 
+@implements IDisposable
 @inject NavigationManager _navManager
 @inject IServiceProvider _serviceProvider
 @inject IConfiguration _configuration
+@inject IUIAppService _uiService
 
 <h1>Welcome!</h1>
 
@@ -19,24 +22,18 @@
 
 <div class="my-3">
 	<div class="list-group">
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizRunner/"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">
 			<div class="fw-bold text-primary">Run a quiz session</div>
 		</button>
 
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/OldQuizSessions"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.OldQuizSessions))">
 			<div class="fw-bold text-primary">Restore old or not finished quiz session</div>
 		</button>
 
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo("/QuizStatistics"))">
+		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizStatistics))">
 			<div class="fw-bold text-primary">Quiz statistics</div>
 		</button>
 	</div>
-
-	<div class="mt-5">
-	</div>
-
-	<p>
-	</p>
 </div>
 
 @*<SurveyPrompt Title="How is Blazor working for you?" />*@
@@ -45,15 +42,41 @@
 
 	private static bool _firstTimeOnAfterRender = true;
 
+	protected override async Task OnInitializedAsync() {
+		_uiService.ShowActivityIndicator();
+
+		await base.OnInitializedAsync();
+
+		// Subscribe to the event
+		_navManager.LocationChanged += LocationChanged;
+	}
+
+	void IDisposable.Dispose() {
+		// Unsubscribe from the event when our component is disposed
+		_navManager.LocationChanged -= LocationChanged;
+	}
+
+	void LocationChanged(object sender, LocationChangedEventArgs e) {
+		string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
+		System.Diagnostics.Debug.WriteLine($"Notified of navigation via {navigationMethod} to {e.Location}");
+	}
+
 	//
 	// I invoke it only for performance reason (activate the SQlite cache for exams)
 	//
-	protected override Task OnAfterRenderAsync(bool firstRender) {
-		if (_firstTimeOnAfterRender) {
-			_firstTimeOnAfterRender = false;
-			_ = Task.Run(async () => { await LocalCacheExams(); });
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		await base.OnAfterRenderAsync(firstRender);
+		try {
+			if (_firstTimeOnAfterRender) {
+				_firstTimeOnAfterRender = false;
+				_ = InvokeAsync(() => { _ = LocalCacheExams(); });
+				//_ = Task.Run(async () => { await LocalCacheExams(); });
+			}
+			//return Task.CompletedTask;
 		}
-		return Task.CompletedTask;
+		finally {
+			_uiService.HideActivityIndicator();
+		}
 
 		async Task LocalCacheExams() {
 			using var scope = _serviceProvider.CreateScope();
@@ -62,8 +85,8 @@
 		}
 	}
 
-	private async Task<PermissionStatus> ChecPermission<TPermission>(bool request = false)
-	where TPermission : BasePermission, new() {
+	private async Task<PermissionStatus> CheckPermission<TPermission>(bool request = false)
+		where TPermission : BasePermission, new() {
 		PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
 
 		if ((status == PermissionStatus.Granted) || !request) return status;

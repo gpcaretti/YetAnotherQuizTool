@@ -1,21 +1,14 @@
-﻿@page "/QuizRunner"
+﻿@*@page "/QuizRunner"*@
+@attribute [Route(QuizAppConsts.Navigation.QuizRunner)]
 
 @using Quiz.Application.Exams
 @using Quiz.Application.Sessions
 
 @*@attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]*@
+@implements IDisposable
 
 <PageTitle>YAQT - Take your quiz</PageTitle>
 <h1>Take your quiz!</h1>
-
-@if (WaitingCnt > 0) {
-	<div class="spinner" />
-@*	<div class="d-flex justify-content-center">
-		<div class="spinner-border text-primary" role="status">
-			<span class="visually-hidden">Loading...</span>
-		</div>
-	</div>*@
-}
 
 <div class="row">
 @*	@if (WaitingCnt > 0) {

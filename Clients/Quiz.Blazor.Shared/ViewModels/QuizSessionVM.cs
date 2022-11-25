@@ -1,14 +1,12 @@
 ﻿using Quiz.Application.Exams;
 using Quiz.Application.Sessions;
-using Quiz.Domain.Exams.Sessions;
 
 namespace Quiz.Blazor.Shared.ViewModels {
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class QuizSessionVM {
-
         public Guid CandidateId { get; private set; }
 
         public Guid? ExamId { get; private set; }
@@ -21,18 +19,29 @@ namespace Quiz.Blazor.Shared.ViewModels {
         public int TotalQuestions => Questions.Count;
         public int TotalAnswers => Answers.Count;
 
-        public int QuizIndex { get; private set; } = -1;
+        public int QuizIndex {
+            get => _quizIndex;
+            private set {
+                _quizIndex = value;
+                NotifyStateChanged();
+            }
+        }
+
+        private int _quizIndex = -1;
+
         public bool RandomizeChoices { get; set; }
         public bool IsEnded { get; set; } = true;
         public bool IsAlreadySubmitted { get; set; }
         public bool ShowOnlyErrors { get; set; }
         public bool ShowRightChoice { get; set; }
 
+        public event Action? OnChange;
+
         public QuizSessionVM(Guid candidateId) {
             CandidateId = candidateId;
         }
 
-        // create a new user quiz session 
+        // create a new user quiz session
         public void SetExam(PrepareExamSessionResponseDto input) {
             if ((input.ExamId == Guid.Empty) || ((input.Questions?.Count ?? 0) <= 0))
                 throw new Exception("Please, first select and exam with a number of questions  major than zro.");
@@ -76,18 +85,12 @@ namespace Quiz.Blazor.Shared.ViewModels {
         }
 
         public QuestionAndChoicesDto? GetCurrentQuestion() => GetQuestion(QuizIndex);
+
         public QuestionAndChoicesDto? GetQuestion(int index) => (index >= 0) && (index < Questions.Count) ? Questions[index] : null;
 
         public AnswerDetailsDto? GetCurrentAnswer() => Answers.FirstOrDefault(ans => ans.QuestionId == GetCurrentQuestion()?.Id);
-        public AnswerDetailsDto? GetAnswer(int index) => (index >= 0) && (index < Answers.Count) ? Answers[index] : null;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool ShowHideAnswers() {
-            ShowRightChoice = !ShowRightChoice;
-            return ShowRightChoice;
-        }
+        public AnswerDetailsDto? GetAnswer(int index) => (index >= 0) && (index < Answers.Count) ? Answers[index] : null;
 
         /// <summary>
         ///     Shift of <paramref name="nShift"/> positions from the current question.
@@ -137,6 +140,14 @@ namespace Quiz.Blazor.Shared.ViewModels {
         }
 
         /// <summary>
+        ///
+        /// </summary>
+        public bool ShowHideAnswers() {
+            ShowRightChoice = !ShowRightChoice;
+            return ShowRightChoice;
+        }
+
+        /// <summary>
         ///		Locally register user answer for the current question
         /// </summary>
         /// <returns>true if the record has been done, else false (e.g. exam ended, quesiton not found, etc.)</returns>
@@ -153,11 +164,11 @@ namespace Quiz.Blazor.Shared.ViewModels {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="questionId"></param>
         /// <param name="isMarkedAsDoubt"></param>
-        public void MarkUserAnswerAsDoubt(Guid questionId, bool? isMarkedAsDoubt = null) {
+        private void MarkUserAnswerAsDoubt(Guid questionId, bool? isMarkedAsDoubt = null) {
             if (IsEnded) return;
             var answer = Answers.FirstOrDefault(ans => ans.QuestionId == questionId);
             if (answer != null) {
@@ -165,5 +176,8 @@ namespace Quiz.Blazor.Shared.ViewModels {
             }
         }
 
+        private void NotifyStateChanged() {
+            OnChange?.Invoke();
+        }
     }
 }
