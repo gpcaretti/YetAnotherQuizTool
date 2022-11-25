@@ -12,6 +12,9 @@ using Quiz.Domain.Extensions;
 namespace Quiz.Application.Exams {
     public class QuestionAppService : QuizApplicationService<Question, QuestionDto, Guid>, IQuestionAppService {
 
+        public static readonly int MIN_AVAILABLE_ERRORS = 10;
+
+
         private readonly QuizDBContext _quizDBContext;
         private readonly string _dbProviderName;
 
@@ -106,14 +109,14 @@ namespace Quiz.Application.Exams {
                     );
             }
 
-            // else if sequential, get only sequental questions
+            // else if random or sequential, get only sequental questions
             else {
                 questionsDto.AddRange(
                     await DoGetAMix(
                             examIds,
                             sortingFunc,
                             input.IsRandom,
-                            input.SkipCount,
+                            minAvailableErrors: MIN_AVAILABLE_ERRORS,
                             input.MaxResultCount,
                             input.CandidateId)
                     );
@@ -156,7 +159,9 @@ namespace Quiz.Application.Exams {
         private async Task<IList<Guid>> DoGetRecursiveExamIds(IQueryable<Exam> exams, int maxDeep = 10) {
             var result = new List<Guid>(await exams.Select(ex => ex.Id).Distinct().ToListAsync());
             if (maxDeep > 0) {
-                var qry = _quizDBContext.Exams.Where(ex => ex.AncestorId != null && exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
+                var qry = _quizDBContext.Exams
+                            .Where(ex => ex.AncestorId != null)
+                            .Where(ex => exams.Select(exx => exx.Id).Contains(ex.AncestorId.Value));
                 if (qry.Any()) {
                     result.AddRange(await DoGetRecursiveExamIds(qry, --maxDeep));
                 }
@@ -228,8 +233,10 @@ namespace Quiz.Application.Exams {
         }
 
         /// <summary>
-        ///     get a set of questions for the new session with only questions in error in previous sessions 
+        ///     Get a set of questions for the new session with only questions in error in previous sessions 
+        ///     if existing old errors or doubts are less or equals than 'skipCount' return no old errors/doubts
         /// </summary>
+        /// <param name="skipCount">min number of old errors or doubts available to get</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private async Task<ICollection<QuestionAndChoicesDto>> DoGetOnlyOldErrorsOrDoubts(
             IList<Guid> examIds,
@@ -240,7 +247,7 @@ namespace Quiz.Application.Exams {
             Guid? candidateId = null) {
             if (maxResultCount <= 0) throw new ArgumentOutOfRangeException(nameof(maxResultCount), $"{nameof(maxResultCount)} must be greater than 0");
 
-            // if old errors or doubts exists get their ids
+            // if old errors or doubts exists and are more than 'skipCount' get their ids else exit returning an empty array of old errors/doubts
             var qry = _quizDBContext.CandidateNotes
                 .Where(item => examIds.Contains(item.ExamId))
                 .Where(item => !item.IsMarkedAsHidden && (item.NumOfWrongAnswers > 0 || item.IsMarkedAsDoubt))
@@ -250,7 +257,8 @@ namespace Quiz.Application.Exams {
                 .Select(item => new { item.QuestionId, item.IsMarkedAsDoubt })
                 .Distinct()
                 .ToListAsync();
-            if (errorsOrDoubtsIds.Count == 0) return new QuestionAndChoicesDto[] { };
+            // if existing old errors or doubts are less or equals than 'skipCount' returns no old errors/doubts
+            if (errorsOrDoubtsIds.Count <= skipCount) return new QuestionAndChoicesDto[] { };
 
             // get all previous error related to the building exam session 
             IList<Question>? questions = null;
@@ -291,17 +299,20 @@ namespace Quiz.Application.Exams {
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <summary>
         ///     get a set of questions for the new session with only questions in error in previous sessions 
         /// </summary>
+        /// <param name="examIds"></param>
+        /// <param name="sortingFunc"></param>
+        /// <param name="isRandom"></param>
+        /// <param name="minAvailableErrors"></param>
+        /// <param name="maxResultCount"></param>
+        /// <param name="candidateId"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private async Task<IEnumerable<QuestionAndChoicesDto>> DoGetAMix(
             IList<Guid> examIds, Expression<Func<Question, object>>
             sortingFunc,
             bool isRandom,
-            int skipCount,
+            int minAvailableErrors,
             int maxResultCount,
             Guid? candidateId = null) {
 
@@ -316,7 +327,7 @@ namespace Quiz.Application.Exams {
                             examIds,
                             sortingFunc,
                             isRandom,
-                            skipCount,
+                            minAvailableErrors,
                             (int)Math.Ceiling(maxResultCount * percentage / 100.0),
                             candidateId)
                     );
@@ -332,14 +343,15 @@ namespace Quiz.Application.Exams {
                     // this is a SQLite database
                     var queryStr = _dbSet
                                 .Where(q => examIds.Contains(q.ExamId))
-                                .Where(q => !alreadySelected.Contains(q.Id))
+                                .WhereIf(alreadySelected.Count > 0, q => !alreadySelected.Contains(q.Id))
                                 .ToQueryString();
                     queryStr = "SELECT * " +
                             queryStr.Substring(queryStr.IndexOf("FROM", StringComparison.OrdinalIgnoreCase)) +
-                            $" ORDER BY RANDOM() LIMIT {maxResultCount - alreadySelected.Count} OFFSET {skipCount}";
-                    var qryIds = _dbSet
+                            $" ORDER BY RANDOM() LIMIT {maxResultCount - alreadySelected.Count} OFFSET {minAvailableErrors}";
+                    var qryIds = await _dbSet
                                 .FromSqlRaw(queryStr)
-                                .Select(q => q.Id);
+                                .Select(q => q.Id)
+                                .ToListAsync();
                     newQuestions = await _dbSet //.Set<Question>()
                                 .Include(q => q.Choices)
                                 .Where(q => qryIds.Contains(q.Id))
@@ -352,7 +364,7 @@ namespace Quiz.Application.Exams {
                                 .Where(q => examIds.Contains(q.ExamId))
                                 .Where(q => !alreadySelected.Contains(q.Id))
                                 .OrderBy(sortingFunc)
-                                .Skip(skipCount)
+                                .Skip(minAvailableErrors)
                                 .Take(maxResultCount - alreadySelected.Count)
                                 .ToListAsync();
                 }

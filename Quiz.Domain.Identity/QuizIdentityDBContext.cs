@@ -21,7 +21,7 @@ namespace Quiz.Domain.Identity {
 
         protected QuizIdentityDBContext(
             DbContextOptions options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            IOptions<Duende.IdentityServer.EntityFramework.Options.OperationalStoreOptions> operationalStoreOptions)
             : base(options, operationalStoreOptions) {
         }
 

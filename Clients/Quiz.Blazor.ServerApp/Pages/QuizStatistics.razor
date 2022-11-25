@@ -1,0 +1,93 @@
+﻿@*@page "/QuizStatistics"*@
+@attribute [Route(QuizAppConsts.Navigation.QuizStatistics)]
+
+@using Quiz.Application.Dtos;
+@using Quiz.Application.Sessions;
+@using Quiz.Application.Users
+
+@inject ICandidateAppService _candidateAppService
+@inject IExamSessionAppService _examSessionAppService
+@*@inject ILogger<QuizStatistics> _logger*@
+
+@attribute [Authorize(Roles = $"{QuizConstants.Roles.Candidate},{QuizConstants.Roles.Admin}")]
+
+<h3>Quiz Settings</h3>
+
+@if (WaitingCnt > 0) {
+	<div class="spinner mx-auto align-middle" style="z-index: 1000;"></div>
+}
+
+<div class="row">
+	<div class="card full-space-col col-lg-9">
+		<div class="card-header">
+			<h4 class="card-title">User sessions</h4>
+		</div>
+		<div class="card-body">
+			<div class="list-group list-group-numbered">
+				<div class="list-group-item d-flex justify-content-between align-items-start bg-primary text-white">
+					<span class="ms-2 me-auto">General statistics</span>
+				</div>
+				<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+					<span class="ms-2 me-auto">Closed exam sessions</span>
+					<span class="badge bg-success rounded-pill">@(Stats.Sum(s => s.NumOfCarriedOutSessions))</span>
+				</div>
+				<div class="list-group-item d-flex justify-content-between align-items-start text-success">
+					<span class="ms-2 me-auto">Errors still open</span>
+					<span class="badge bg-danger rounded-pill">@(Stats.Sum(s => s.NumOfWrongAnswers))</span>
+				</div>
+			</div>
+			<OverallSessionStatsButtons User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
+
+			@foreach (var examStats in Stats!) {
+				<OverallSessionsStats Stats="@examStats" />
+				<OverallSessionStatsButtons RootExamId="@examStats.ExamId" User="@ApplicationUser" @bind-NeedToRefresh="RefreshStats" />
+			}
+		</div>
+	</div>
+</div>
+
+@code {
+	private bool _refreshStats;
+
+	public bool RefreshStats {
+		get => _refreshStats;
+		set {
+			if (value != _refreshStats) {
+				_refreshStats = value;
+				InvokeAsync(() => RefreshUserStats());
+
+			}
+		}
+	}
+
+	protected CandidateDto? ApplicationUser;
+
+	protected int WaitingCnt;
+
+	protected IList<SessionsStatisticsDto> Stats = new List<SessionsStatisticsDto>();
+
+	protected override async Task OnInitializedAsync() {
+		WaitingCnt = 1;
+		try {
+			// get the current user
+			ApplicationUser = await _candidateAppService.GetCurrentUser();
+			_ = RefreshUserStats();
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+		}
+	}
+
+	private async Task RefreshUserStats() {
+		WaitingCnt++;
+		StateHasChanged();
+		try {
+			Stats = await _examSessionAppService.GetUserStats(
+								new UserSessionsRequestDto {
+										CandidateId = ApplicationUser!.Id,
+									});
+		} finally {
+			if (WaitingCnt > 0) WaitingCnt--;
+			StateHasChanged();
+		}
+	}
+}

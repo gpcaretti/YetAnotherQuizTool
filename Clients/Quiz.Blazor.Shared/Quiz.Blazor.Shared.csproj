@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
+      <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <Content Remove="compilerconfig.json" />
+      <Content Remove="wwwroot\css\bootstrap-theme.scss" />
       <Content Remove="wwwroot\css\_bootstrap-theme-variables.scss" />
     </ItemGroup>
 
@@ -32,6 +33,7 @@
 
     <ItemGroup>
       <None Include="compilerconfig.json" />
+      <None Include="wwwroot\css\bootstrap-theme.scss" />
       <None Include="wwwroot\css\_bootstrap-theme-variables.scss" />
       <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.css.map" />
       <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap-grid.min.css.map" />
@@ -49,26 +51,24 @@
       <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.min.css.map" />
       <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.css.map" />
       <None Include="wwwroot\node_modules\bootstrap\dist\css\bootstrap.rtl.min.css.map" />
-      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.js" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.js.map" />
-      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.min.js" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.js" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.js.map" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.min.js" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.esm.min.js.map" />
-      <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.js" />
-      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.js.map" />
-      <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.min.js" />
       <None Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.min.js.map" />
+        <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.js" />
+        <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.bundle.min.js" />
+        <Content Include="wwwroot\node_modules\bootstrap\dist\js\bootstrap.js" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
-        <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.10" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="6.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+        <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.0" />
         <PackageReference Include="Blazored.Modal" Version="7.1.0" />
     </ItemGroup>
 
@@ -81,6 +81,11 @@
     <ItemGroup>
         <!-- see https://stackoverflow.com/a/72040978/752004 -->
         <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="Shared\" />
     </ItemGroup>
 
 </Project>

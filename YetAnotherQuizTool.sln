@@ -7,8 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution Items", "_Solutio
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
-		README.md = README.md
 		maui.android.cmd = maui.android.cmd
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Application", "Quiz.Application\Quiz.Application.csproj", "{483BF027-3527-4600-9115-3873228B3563}"
@@ -25,13 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Quiz.DB.Scripts", "Quiz.DB.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{54F1BAA1-A0FE-4573-AE5D-785BA689C23E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Application.AspNet", "Clients\Quiz.Application.AspNet\Quiz.Application.AspNet.csproj", "{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.ServerApp", "Clients\Quiz.Blazor.ServerApp\Quiz.Blazor.ServerApp.csproj", "{87B69C53-AF4A-4DA5-A83E-F461170E4DDD}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.Host.Client", "Clients\Quiz.Blazor.Host.Client\Quiz.Blazor.Host.Client.csproj", "{D7589CD2-B8B4-4A92-B13F-504CA99268FE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.Host.Server", "Clients\Quiz.Blazor.Host.Server\Quiz.Blazor.Host.Server.csproj", "{91964445-34CC-4355-826D-ED1D76AE6960}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{001B53AC-87A2-464C-8B81-CF4BE1434F7C}"
 EndProject
@@ -49,7 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Domain.Migration.SQLSe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Domain.Migration.SQLite", "Quiz.Domain.Migration.SQLite\Quiz.Domain.Migration.SQLite.csproj", "{C9922EAB-1E03-441B-812C-993859848807}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.Maui.Standalone", "Clients\Quiz.Blazor.Maui.Standalone\Quiz.Blazor.Maui.Standalone.csproj", "{528D8913-7C87-4C95-ABE5-4E5270F1403C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Mudblazor.ServerApp", "Clients\Quiz.Mudblazor.ServerApp\Quiz.Mudblazor.ServerApp.csproj", "{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quiz.Blazor.Maui.Standalone", "Clients\Quiz.Blazor.Maui.Standalone\Quiz.Blazor.Maui.Standalone.csproj", "{B8EEB164-813C-4C15-987E-81FAAE8CE47B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,22 +65,10 @@ Global
 		{90275E62-D836-4591-A56E-F54A8F16B10A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90275E62-D836-4591-A56E-F54A8F16B10A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90275E62-D836-4591-A56E-F54A8F16B10A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{87B69C53-AF4A-4DA5-A83E-F461170E4DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{87B69C53-AF4A-4DA5-A83E-F461170E4DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87B69C53-AF4A-4DA5-A83E-F461170E4DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87B69C53-AF4A-4DA5-A83E-F461170E4DDD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7589CD2-B8B4-4A92-B13F-504CA99268FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7589CD2-B8B4-4A92-B13F-504CA99268FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7589CD2-B8B4-4A92-B13F-504CA99268FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7589CD2-B8B4-4A92-B13F-504CA99268FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91964445-34CC-4355-826D-ED1D76AE6960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91964445-34CC-4355-826D-ED1D76AE6960}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91964445-34CC-4355-826D-ED1D76AE6960}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91964445-34CC-4355-826D-ED1D76AE6960}.Release|Any CPU.Build.0 = Release|Any CPU
 		{52FCA3A6-479C-4084-B742-E7CDB3937B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{52FCA3A6-479C-4084-B742-E7CDB3937B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52FCA3A6-479C-4084-B742-E7CDB3937B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -113,27 +97,29 @@ Global
 		{C9922EAB-1E03-441B-812C-993859848807}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9922EAB-1E03-441B-812C-993859848807}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9922EAB-1E03-441B-812C-993859848807}.Release|Any CPU.Build.0 = Release|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9AB1B156-369C-4F14-A64A-83C21CF44ECE} = {A524FFB7-9275-4541-8F71-2EA5EAE32F98}
-		{2EBECDBD-2A1A-4669-9CCE-644F89BDC6F5} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
 		{87B69C53-AF4A-4DA5-A83E-F461170E4DDD} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
-		{D7589CD2-B8B4-4A92-B13F-504CA99268FE} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
-		{91964445-34CC-4355-826D-ED1D76AE6960} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
 		{52FCA3A6-479C-4084-B742-E7CDB3937B3E} = {001B53AC-87A2-464C-8B81-CF4BE1434F7C}
 		{3E2A4EB7-9E20-4E7C-9127-688C75FB1EA4} = {001B53AC-87A2-464C-8B81-CF4BE1434F7C}
 		{697F8B15-E2CA-4D31-BD1D-0F1B8357F665} = {001B53AC-87A2-464C-8B81-CF4BE1434F7C}
 		{3A3B7AD3-E3BB-445F-A22E-7ADBD8277645} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
-		{528D8913-7C87-4C95-ABE5-4E5270F1403C} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
+		{3F3F4EA8-14D5-4528-BB71-2A7AE291778A} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
+		{B8EEB164-813C-4C15-987E-81FAAE8CE47B} = {54F1BAA1-A0FE-4573-AE5D-785BA689C23E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E6D1A2C2-BF70-4B12-9A49-F43FAD897E86}
