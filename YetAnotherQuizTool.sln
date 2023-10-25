@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution Items", "_Solutio
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
-		maui.android.cmd = maui.android.cmd
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -19,6 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Application.Contracts"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Quiz.DB.Scripts", "Quiz.DB.Scripts", "{9AB1B156-369C-4F14-A64A-83C21CF44ECE}"
 	ProjectSection(SolutionItems) = preProject
+		maui.android.cmd = maui.android.cmd
 		Quiz.DB.Scripts\quizPatenteN.private.script.sql = Quiz.DB.Scripts\quizPatenteN.private.script.sql
 		Quiz.DB.Scripts\Script.sql = Quiz.DB.Scripts\Script.sql
 	EndProjectSection
@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Domain.Migration.SQLit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Mudblazor.ServerApp", "Clients\Quiz.Mudblazor.ServerApp\Quiz.Mudblazor.ServerApp.csproj", "{3F3F4EA8-14D5-4528-BB71-2A7AE291778A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quiz.Blazor.Maui.Standalone", "Clients\Quiz.Blazor.Maui.Standalone\Quiz.Blazor.Maui.Standalone.csproj", "{B8EEB164-813C-4C15-987E-81FAAE8CE47B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Blazor.Maui.Standalone", "Clients\Quiz.Blazor.Maui.Standalone\Quiz.Blazor.Maui.Standalone.csproj", "{B8EEB164-813C-4C15-987E-81FAAE8CE47B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

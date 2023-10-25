@@ -3,16 +3,38 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<base href="~/" />
-	<link href="_content/Quiz.Blazor.Shared/css/bootstrap.min.css" rel="stylesheet" />
-	<link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
-	<link href="_content/Quiz.Blazor.Shared/css/app.css" rel="stylesheet" />
+	<meta content="" name="description">
+	<meta content="" name="keywords">
+
+	<!-- Favicons -->
+	<link href="_content/Quiz.Blazor.Shared/images/theme/favicon.png" rel="icon">
+	<link href="_content/Quiz.Blazor.Shared/images/theme/apple-touch-icon.png" rel="apple-touch-icon">
+
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+	<link href="_content/Quiz.Blazor.Shared/css/bootstrap-theme.min.css" rel="stylesheet" />
+	@*<link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />*@
 	<link href="Quiz.Blazor.ServerApp.styles.css" rel="stylesheet" />
+
+	<environment include="Development">
+		<link href="_content/Quiz.Blazor.Shared/css/app.css" rel="stylesheet" />
+	</environment>
+	<environment exclude="Development">
+		<link href="_content/Quiz.Blazor.Shared/css/app.min.css" rel="stylesheet" />
+	</environment>
+
 	<component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+
+	<!--
+		* Template Name: Arsha - v4.9.1
+		* Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
+	-->
 </head>
 <body>
 	@RenderBody()
