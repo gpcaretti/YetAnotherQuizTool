@@ -6,7 +6,10 @@ namespace Quiz.Blazor.Maui.Standalone.Services;
 
 internal class UIAppService : IUIAppService {
 
+    private static readonly DeviceIdiom[] _mobileIdioms = new[] { DeviceIdiom.Phone, DeviceIdiom.Watch };
+
     private MainView? _mainView;
+
     public MainView CurrentPage {
         get {
             _mainView ??= (MainView)MauiApplication.Current!.MainPage!;
@@ -30,6 +33,10 @@ internal class UIAppService : IUIAppService {
         //        mainView.HideActivityIndicator();
         //    });
         //}
+    }
+
+    public bool IsMobileDevice() {
+        return _mobileIdioms.Contains(DeviceInfo.Idiom);
     }
 
     public void HideActivityIndicator() {

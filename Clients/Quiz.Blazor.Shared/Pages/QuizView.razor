@@ -1,136 +1,140 @@
-﻿@using Quiz.Application.Dtos
+﻿@*
+    This is the component to display a quiz, possibily including an image
+*@
+@using Quiz.Application.Dtos
 @using Quiz.Application.Exams
 @using Quiz.Application.Sessions
 @using Quiz.Blazor.Shared.ViewModels
 
 @if (ExamSession != null) {
-	_question = ExamSession.GetCurrentQuestion();
-	_answer = ExamSession.GetCurrentAnswer();
+    _question = ExamSession.GetCurrentQuestion();
+    _answer = ExamSession.GetCurrentAnswer();
 }
 
 @if ((ExamSession == null) || (_question == null) || (_answer == null)) {
-	<div class="alert alert-danger" role="alert">
-		<b>Ops!</b> Please, provide an valid exam session to this component<br>
-	</div>
-	return;
+    <div class="alert alert-danger" role="alert">
+        <b>Ops!</b> Please, provide an valid exam session to this component<br>
+    </div>
+    return;
 }
 
 
-<!-- question text, iamge -->
+<!-- question text, image -->
 <header class="clearfix">
-	<h3>
-		@if (ExamSession.IsEnded || ExamSession.ShowRightChoice) {
-			if (!string.IsNullOrEmpty(_question.Code)) {
-				<span class="d-block">@_question.Code</span>
-			} else {
-				<span class="d-block">@(ExamSession.QuizIndex + 1)</span>
-			}
-		}
-		@_question!.Statement
-	</h3>
-	<small class="float-end">@(ExamSession.QuizIndex + 1) of @ExamSession.TotalQuestions</small>
-	@if (!string.IsNullOrEmpty(_question.ImageUri)) {
-		var imgUrl = $"_content/Quiz.Blazor.Shared{(_question.ImageUri.StartsWith("~") ? _question.ImageUri.Substring(1) : _question.ImageUri)}";
-		<img src="@imgUrl" class="mx-auto d-block" style="max-width:100%" alt="1 Image for q. @_question.Code" />
-	}
+    <h3>
+        @if (ExamSession.IsEnded || ExamSession.ShowRightChoice) {
+            if (!string.IsNullOrEmpty(_question.Code)) {
+                <span class="d-block">@_question.Code</span>
+            } else {
+                <span class="d-block">@(ExamSession.QuizIndex + 1)</span>
+            }
+        }
+        @_question!.Statement
+    </h3>
+    <small class="float-end">@(ExamSession.QuizIndex + 1) of @ExamSession.TotalQuestions</small>
+    @if (!string.IsNullOrEmpty(_question.ImageUri)) {
+        // question refers to image. Load and display it
+        var imgUrl = $"_content/Quiz.Blazor.Shared{(_question.ImageUri.StartsWith("~") ? _question.ImageUri.Substring(1) : _question.ImageUri)}";
+        <img src="@imgUrl" class="mx-auto d-block" style="max-width:100%" alt="1 Image for q. @_question.Code" />
+    }
 </header>
 
 <!-- quiz options -->
 <ul class="list-group">
-	@foreach (var choice in _question.Choices.OrderBy(c => c.Position).ToList()) {
-		var isReadOnly = ExamSession.IsEnded;
-		var isChecked = choice.Id == (_answer?.UserChoiceId ?? Guid.Empty);
-		var colorMark = (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && !choice.IsCorrect
-			? "fw-bold text-danger"
-			: (ExamSession.IsEnded || ExamSession.ShowRightChoice) && !isChecked && choice.IsCorrect
-			? "fw-bold text-success border border-danger"
-			: (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && choice.IsCorrect
-			? "fw-bold text-success"
-			: "";
-		<li class="list-group-item list-group-item-action @colorMark"
-		@onclick="@(() => ExamSession.RegisterUserAnswer(_question.Id, choice.Id))">
-			<div class="form-group form-check">
-				<label class="my-1">
-					<input type="radio" name="choice"
-					class="form-check-input"
-					checked="@isChecked"
-					value="@choice.Id"
-					readonly="@isReadOnly"
-					disabled="@isReadOnly"
-						@onchange="@(() => ExamSession.RegisterUserAnswer(_question.Id, choice.Id))" />
-					@choice.Statement
-				</label>
-				@*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
-			</div>
-		</li>
-	}
+    @foreach (var choice in _question.Choices.OrderBy(c => c.Position).ToList()) {
+        var isReadOnly = ExamSession.IsEnded;
+        var isChecked = choice.Id == (_answer?.UserChoiceId ?? Guid.Empty);
+        var colorMark = (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && !choice.IsCorrect
+            ? "fw-bold text-danger"
+            : (ExamSession.IsEnded || ExamSession.ShowRightChoice) && !isChecked && choice.IsCorrect
+            ? "fw-bold text-success border border-danger"
+            : (ExamSession.IsEnded || ExamSession.ShowRightChoice) && isChecked && choice.IsCorrect
+            ? "fw-bold text-success"
+            : "";
+        <li class="list-group-item list-group-item-action @colorMark"
+        @onclick="@(() => ExamSession.RegisterUserAnswer(_question.Id, choice.Id))">
+            <div class="form-group form-check">
+                <label class="my-1">
+                    <input type="radio" name="choice"
+                    class="form-check-input"
+                    checked="@isChecked"
+                    value="@choice.Id"
+                    readonly="@isReadOnly"
+                    disabled="@isReadOnly"
+                        @onchange="@(() => ExamSession.RegisterUserAnswer(_question.Id, choice.Id))" />
+                    @choice.Statement
+                </label>
+                @*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
+            </div>
+        </li>
+    }
 </ul>
 
 <!-- quiz markups -->
 <div class="form-group form-check">
-	<label class="my-2 mx-3">
-		<input type="checkbox" name="choice"
-				class="form-check-input"
-				checked="@_answer.IsMarkedAsDoubt"
-				readonly="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
-				disabled="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
-				@onchange="@((ChangeEventArgs e) => _answer.IsMarkedAsDoubt = ((bool?)e.Value).GetValueOrDefault())" />
-		Markup the answer as doubt
-	</label>
-	@*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
+    <label class="my-2 mx-3">
+        <input type="checkbox" name="choice"
+                class="form-check-input"
+                checked="@_answer.IsMarkedAsDoubt"
+                readonly="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
+                disabled="@(ExamSession.IsEnded && ExamSession.IsAlreadySubmitted)"
+                @onchange="@((ChangeEventArgs e) => _answer.IsMarkedAsDoubt = ((bool?)e.Value).GetValueOrDefault())" />
+        Markup the answer as doubt
+    </label>
+    @*<label><input class="form-check-input" type="radio" name="choice" @bind-value="@(() => RegisterUserAnswer(choice.QuestionId, choice.Id))"/>@choice.Statement</label>*@
 </div>
 
 <!-- ctrl buttons for questions (next, prev, start, end...) -->
 <div name="quizCommands">
-	<div class="row my-3">
-		<div class="col-12 text-center clearfix">
-			<button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
-					name="PrevBtn"
-					disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-					@onclick="@(() => ExamSession!.ShiftQuestionsOf(-1))">
-				Prev
-			</button>
-			<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
-					name="NextBtn"
-					disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-					@onclick="@(() => ExamSession!.ShiftQuestionsOf(+1))">
-				Next
-			</button>
-		</div>
-	</div>
-	<div class="row my-3">
-		<div class="col-12 text-center clearfix">
-			<button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
-					disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-					@onclick="@(() => ExamSession!.MoveToQuestion(0))">
-				Start
-			</button>
-			<button type="button" class="btn btn-primary mx-auto"
-					name="ShowHideBtn"
-					title="Show/hide solution"
-					disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-					@onclick="@(() => ExamSession!.ShowHideAnswers())">
-				Show/Hide
-			</button>
-			<button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
-					disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
-					@onclick="@(() => ExamSession!.MoveToQuestion(ExamSession!.TotalQuestions))">
-				End
-			</button>
-		</div>
-	</div>
+    <div class="row my-3">
+        <div class="col-12 text-center clearfix">
+            <button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
+                    name="PrevBtn"
+                    disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
+                    @onclick="@(() => ExamSession!.ShiftQuestionsOf(-1))">
+                Prev
+            </button>
+            <button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
+                    name="NextBtn"
+                    disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
+                    @onclick="@(() => ExamSession!.ShiftQuestionsOf(+1))">
+                Next
+            </button>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-12 text-center clearfix">
+            <button type="button" class="btn btn-warning float-start" style="width: 5.5rem"
+                    disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
+                    @onclick="@(() => ExamSession!.MoveToQuestion(0))">
+                Start
+            </button>
+            <button type="button" class="btn btn-primary mx-auto"
+                    name="ShowHideBtn"
+                    title="Show/hide solution"
+                    disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
+                    @onclick="@(() => ExamSession!.ShowHideAnswers())">
+                Show/Hide
+            </button>
+            <button type="button" class="btn btn-primary float-end" style="width: 5.5rem"
+                    disabled="@((ExamSession?.TotalQuestions ?? 0) <= 0)"
+                    @onclick="@(() => ExamSession!.MoveToQuestion(ExamSession!.TotalQuestions))">
+                End
+            </button>
+        </div>
+    </div>
 </div>
 
 @code {
-	[Parameter] public QuizSessionVM? ExamSession { get; set; }
-	//[Parameter] public EventCallback<PrepareExamSessionRequestDto> PrepareExamSessionSubmitted { get; set; }
+    [Parameter] public QuizSessionVM? ExamSession { get; set; }
+    //[Parameter] public EventCallback<PrepareExamSessionRequestDto> PrepareExamSessionSubmitted { get; set; }
 
-	protected QuestionAndChoicesDto? _question = null;
-	protected AnswerDetailsDto? _answer = null;
+    protected QuestionAndChoicesDto? _question = null;
+    protected AnswerDetailsDto? _answer = null;
 
-	protected override void OnInitialized() {
-		_question = ExamSession?.GetCurrentQuestion();
-		_answer = ExamSession?.GetCurrentAnswer();
-	}
+    protected override void OnInitialized() {
+        _question = ExamSession?.GetCurrentQuestion();
+        _answer = ExamSession?.GetCurrentAnswer();
+    }
 
 }

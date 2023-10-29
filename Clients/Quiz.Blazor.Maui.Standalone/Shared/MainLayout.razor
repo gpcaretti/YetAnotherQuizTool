@@ -1,16 +1,32 @@
-﻿@inherits LayoutComponentBase
-
+﻿@using Quiz.Application.UI;
+@inherits LayoutComponentBase
+@inject IUIAppService _uiService
+@inject NavigationManager _navManager
 <PageTitle>YAQT by GP software v. @AppInfo.Current.VersionString</PageTitle>
+<style>
+    body {
+        background-color: transparent;
+        /* this is used only for the desktop version */
+        background-image: url('@(!_uiService.IsMobileDevice() ? "_content/Quiz.Blazor.Shared/images/theme/index_bg.jpg" : string.Empty)');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+</style>
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    @if (!_uiService.IsMobileDevice()) {
+        // show sidebar only on not-mobile devices
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    } else {
+        // show topbar only on mobile devices
+        <div class="top-row fixed-top px-4">
+            <a href="#" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.Home))">Home</a>
+            <a href="#" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">New Quiz</a>
+        </div>
+    }
 
     <main>
-@*        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>*@
-
         <article class="content px-4">
             @Body
         </article>

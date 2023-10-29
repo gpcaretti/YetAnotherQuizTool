@@ -1,18 +1,17 @@
 ﻿// Variables
-
-$red: #b00b0f; // rosso PiP
-// $yellow: #edfb00;     // giallo PiP
-
-$danger: $red;
-//$warning: $yellow;
+$bgcolor-transparent: rgba(5, 39, 103, .5);
+$bgcolor-transparent-dark: rgba(3, 7, 55, .75);
+$color-for-darkbg: #fff;
 
 
-$colors: ( "red": $red,
-//"yellow":   $yellow,
+$colors: (
+    "color-for-darkbg": $color-for-darkbg,
+    //"yellow":   $yellow,
 );
 
-$theme-colors: ( "danger": $danger,
-//"warning":    $warning,
+$theme-colors: (
+    "color-for-darkbg": $color-for-darkbg,
+    //"warning":    $warning,
 );
 
 // The yiq lightness value that determines when the lightness of color changes from "dark" to "light". Acceptable values are between 0 and 255.

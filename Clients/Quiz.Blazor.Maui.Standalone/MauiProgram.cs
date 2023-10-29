@@ -35,7 +35,7 @@ namespace Quiz.Blazor.Maui.Standalone {
                 .ConfigureFonts(fonts => {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 })
-                                //.UseMauiCommunityToolkit()
+              //.UseMauiCommunityToolkit()
                                 ;
         }
 
@@ -54,6 +54,7 @@ namespace Quiz.Blazor.Maui.Standalone {
             builder.Services.AddMauiBlazorWebView();
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
+            //builder.Logging.AddDebug();
 #endif
             // add libraries' services
             builder.Services.AddBlazoredModal();
@@ -64,7 +65,9 @@ namespace Quiz.Blazor.Maui.Standalone {
             //builder.Services.AddSingleton<IUIAppService>(srv => new UIAppService());
             builder.Services.AddSingleton<WeatherForecastService>();
 
-            // Check if the db exists, if not copy it from internal resourses, if not exist, create it blank
+        /// <summary>
+        /// Check if the db exists, if not copy it from internal resourses, if not exist, create it blank
+        /// </summary>
             static void ConfigureDatabase(MauiAppBuilder builder) {
                 // Set path to the SQLite database (it will be created if it does not exist)
                 var connectionString = builder.Configuration.GetConnectionString("QuizDBConnection")

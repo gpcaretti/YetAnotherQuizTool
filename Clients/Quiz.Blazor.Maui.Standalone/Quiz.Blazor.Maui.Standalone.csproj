@@ -14,16 +14,16 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <Title>Yet Another Quiz Tool</Title>
-        <ApplicationTitle>Patente Nautica 2022</ApplicationTitle> <!-- Display name -->
+        <ApplicationTitle>Patente Nautica 2023</ApplicationTitle> <!-- Display name -->
 
         <!-- App Identifier -->
         <ApplicationId>it.gpsoftware.yaqt</ApplicationId>
         <ApplicationIdGuid>9911BAF7-B173-42B7-95F5-B51E8E2E16B8</ApplicationIdGuid>
 
         <!-- Versions -->
-        <ApplicationDisplayVersion>0.9.6</ApplicationDisplayVersion>
-        <ApplicationVersion>19</ApplicationVersion>
-        <Copyright>GP software engineering 2022</Copyright>
+        <ApplicationDisplayVersion>0.9.8</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+        <Copyright>GP software engineering 2022-24</Copyright>
 
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
@@ -51,12 +51,38 @@
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
         <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
+        <MauiImage Update="Resources\Images\index_bg.jpg">
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+          <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </MauiImage>
+        <MauiImage Update="Resources\Images\index_bg_dark_xs.jpg">
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+          <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </MauiImage>
+        <MauiImage Update="Resources\Images\index_bg_xs.jpg">
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+          <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </MauiImage>
 
         <!-- Custom Fonts -->
         <MauiFont Include="Resources\Fonts\*" />
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="compilerconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\Images\index_bg.jpg" />
+      <None Remove="Resources\Images\index_bg_dark_xs.jpg" />
+      <None Remove="Resources\Images\index_bg_xs.jpg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -82,6 +108,10 @@
       <MauiXaml Update="Views\MainView.xaml">
         <SubType>Designer</SubType>
       </MauiXaml>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\js\" />
     </ItemGroup>
 
 </Project>

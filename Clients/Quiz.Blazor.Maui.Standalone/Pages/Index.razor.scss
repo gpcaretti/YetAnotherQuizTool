@@ -1,0 +1,32 @@
+﻿@import "../../Quiz.Blazor.Shared/wwwroot/css/bootstrap-theme-variables";
+
+.homepage-item {
+    //background-color: transparent;
+    color: $color-for-darkbg;
+    text-align: center;
+
+    a,
+    button {
+        background-color: transparent;
+        padding: 0.5rem;
+        /*background: rgba(5, 39, 103, .5);*/
+        color: $color-for-darkbg !important;
+        border: 1px solid $color-for-darkbg;
+        border-radius: 5px 20px 5px 5px;
+        width: 100%;
+
+        &:hover,
+        &:focus:hover,
+        &:focus-visible {
+            /*border: solid $color-for-darkbg !important;*/
+            /*background-color: navy;*/
+            border: 1px solid $color-for-darkbg;
+            background: $bgcolor-transparent;
+        }
+
+        img {
+            height: 7.5rem;
+            padding: 0.5rem;
+        }
+    }
+}

@@ -1,11 +1,11 @@
 ﻿@page "/"
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Configuration
-@using Quiz.Application.Exams
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.Extensions.Configuration;
+@using Quiz.Application.Exams;
 @using Quiz.Application.UI;
-@using Quiz.Domain
-@using System.Diagnostics
-@using static Microsoft.Maui.ApplicationModel.Permissions
+@using Quiz.Domain;
+@using System.Diagnostics;
+@using static Microsoft.Maui.ApplicationModel.Permissions;
 
 @implements IDisposable
 @inject NavigationManager _navManager
@@ -13,95 +13,133 @@
 @inject IConfiguration _configuration
 @inject IUIAppService _uiService
 
-<h1>Welcome!</h1>
+<h1 class="mt-2">Welcome!</h1>
 
-@*@if (!_signInManager.IsSignedIn(User)) {
-	<h3 class="text-danger">Please, loggin to use following commands</h3>
-	}
+@*
+@if (!_signInManager.IsSignedIn(User)) {
+    <h3 class="text-danger">Please, loggin to use following commands</h3>
+}
 *@
 
+<section class="homepage-menu container-fluid" role="navigation">
+    <div class="row justify-content-center">
+        <div class="homepage-item col-6 col-lg-3 p-2">
+            <button type="button" class="mx-auto text-body" role="menuitem" title=""
+                    style="border: none; border-bottom: 2px solid white; border-radius: 0;"
+                    @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">
+                <img src="_content/Quiz.Blazor.Shared/images/theme/boat_ico1.png" alt="Sail boat">
+                <h3>Quiz</h3>
+                <p class="my-0">Svolgi nuove sessioni di quiz</p>
+            </button>
+        </div>
+        <div class="homepage-item col-6 col-lg-3 p-2">
+            <button type="button" class="mx-auto text-body" role="menuitem" title=""
+                    style="border: none; border-bottom: 2px solid white; border-radius: 0;"
+                    @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.OldQuizSessions))">
+                <img src="_content/Quiz.Blazor.Shared/images/theme/compass_ico1.png" alt="Sail boat">
+                <h3>Vecchi Quiz</h3>
+                <p class="my-0">Recupera vecchie sessioni</p>
+            </button>
+        </div>
+        <div class="homepage-item col-6 col-lg-3 p-2">
+            <button type="button" class="mx-auto text-body" role="menuitem" title=""
+                    style="border: none; border-bottom: 2px solid white; border-radius: 0;"
+                    @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizStatistics))">
+                <img src="_content/Quiz.Blazor.Shared/images/theme/map_ico1.png" alt="Sail boat">
+                <h3>Statistiche</h3>
+                <p class="my-0">Lo storico dei test</p>
+            </button>
+        </div>
+    </div>
+</section>
+
 <div class="my-3">
-	<div class="list-group">
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">
-			<div class="fw-bold text-primary">Run a quiz session</div>
-		</button>
+    <div class="list-group list-group-transparent">
+        <button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizRunner))">
+            <div class="text-primary">Run a quiz session</div>
+        </button>
 
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.OldQuizSessions))">
-			<div class="fw-bold text-primary">Restore old or not finished quiz session</div>
-		</button>
+        <button type="button" class="list-group-item list-group-item-action py-2"
+        @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.OldQuizSessions))">
+            <div class="fw-bold text-primary">Restore old or not finished quiz session</div>
+        </button>
 
-		<button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizStatistics))">
-			<div class="fw-bold text-primary">Quiz statistics</div>
-		</button>
-	</div>
+        <button type="button" class="list-group-item list-group-item-action py-2" @onclick="@(() => _navManager.NavigateTo(QuizAppConsts.Navigation.QuizStatistics))">
+            <div class="fw-bold text-primary">Quiz statistics</div>
+        </button>
+    </div>
 </div>
 
 @*<SurveyPrompt Title="How is Blazor working for you?" />*@
 
 @code {
+    private static bool _firstTimeOnAfterRender = true;
+    private static readonly DeviceIdiom[] _mobileIdioms = new[] { DeviceIdiom.Phone, DeviceIdiom.Watch };
 
-	private static bool _firstTimeOnAfterRender = true;
+    private bool IsMobile() {
+        return _mobileIdioms.Contains(DeviceInfo.Idiom);
+    }
 
-	protected override async Task OnInitializedAsync() {
-		_uiService.ShowActivityIndicator();
+    protected override async Task OnInitializedAsync() {
+        _uiService.ShowActivityIndicator();
 
-		await base.OnInitializedAsync();
+        await base.OnInitializedAsync();
 
-		// Subscribe to the event
-		_navManager.LocationChanged += LocationChanged;
-	}
+        // Subscribe to the event
+        _navManager.LocationChanged += LocationChanged;
+    }
 
-	void IDisposable.Dispose() {
-		// Unsubscribe from the event when our component is disposed
-		_navManager.LocationChanged -= LocationChanged;
-	}
+    void IDisposable.Dispose() {
+        // Unsubscribe from the event when our component is disposed
+        _navManager.LocationChanged -= LocationChanged;
+    }
 
-	void LocationChanged(object sender, LocationChangedEventArgs e) {
-		string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
-		System.Diagnostics.Debug.WriteLine($"Notified of navigation via {navigationMethod} to {e.Location}");
-	}
+    void LocationChanged(object sender, LocationChangedEventArgs e) {
+        string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
+        System.Diagnostics.Debug.WriteLine($"Notified of navigation via {navigationMethod} to {e.Location}");
+    }
 
-	//
-	// I invoke it only for performance reason (activate the SQlite cache for exams)
-	//
-	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		await base.OnAfterRenderAsync(firstRender);
-		try {
-			if (_firstTimeOnAfterRender) {
-				_firstTimeOnAfterRender = false;
-				_ = InvokeAsync(() => { _ = LocalCacheExams(); });
-				//_ = Task.Run(async () => { await LocalCacheExams(); });
-			}
-			//return Task.CompletedTask;
-		}
-		finally {
-			_uiService.HideActivityIndicator();
-		}
+    //
+    // I invoke it only for performance reason (activate the SQlite cache for exams)
+    //
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        await base.OnAfterRenderAsync(firstRender);
+        try {
+            if (_firstTimeOnAfterRender) {
+                _firstTimeOnAfterRender = false;
+                _ = InvokeAsync(() => { _ = LocalCacheExams(); });
+                //_ = Task.Run(async () => { await LocalCacheExams(); });
+            }
+            //return Task.CompletedTask;
+        }
+        finally {
+            _uiService.HideActivityIndicator();
+        }
 
-		async Task LocalCacheExams() {
-			using var scope = _serviceProvider.CreateScope();
-			await using var dbContext = scope.ServiceProvider.GetRequiredService<QuizDBContext>();
-			_ = await dbContext.Exams.Select(e => e.Id).ToListAsync();
-		}
-	}
+        async Task LocalCacheExams() {
+            using var scope = _serviceProvider.CreateScope();
+            await using var dbContext = scope.ServiceProvider.GetRequiredService<QuizDBContext>();
+            _ = await dbContext.Exams.Select(e => e.Id).ToListAsync();
+        }
+    }
 
-	private async Task<PermissionStatus> CheckPermission<TPermission>(bool request = false)
-		where TPermission : BasePermission, new() {
-		PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
+    private async Task<PermissionStatus> CheckPermission<TPermission>(bool request = false)
+        where TPermission : BasePermission, new() {
+        PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
 
-		if ((status == PermissionStatus.Granted) || !request) return status;
+        if ((status == PermissionStatus.Granted) || !request) return status;
 
-		if (status == PermissionStatus.Denied && DeviceInfo.Platform == DevicePlatform.iOS) {
-			// Prompt the user to turn on in settings
-			// On iOS once a permission has been denied it may not be requested again from the application
-			return status;
-		}
+        if (status == PermissionStatus.Denied && DeviceInfo.Platform == DevicePlatform.iOS) {
+            // Prompt the user to turn on in settings
+            // On iOS once a permission has been denied it may not be requested again from the application
+            return status;
+        }
 
-		if (Permissions.ShouldShowRationale<TPermission>()) {
-			// Prompt the user with additional information as to why the permission is needed
-		}
+        if (Permissions.ShouldShowRationale<TPermission>()) {
+            // Prompt the user with additional information as to why the permission is needed
+        }
 
-		status = await Permissions.RequestAsync<TPermission>();
-		return status;
-	}
+        status = await Permissions.RequestAsync<TPermission>();
+        return status;
+    }
 }

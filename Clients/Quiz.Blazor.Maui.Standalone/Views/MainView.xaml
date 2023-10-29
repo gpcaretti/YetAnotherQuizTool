@@ -5,25 +5,34 @@
              xmlns:razor="clr-namespace:Quiz.Blazor.Maui.Standalone.Pages"
              x:Class="Quiz.Blazor.Maui.Standalone.Views.MainView"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
-    <Grid>
-        <BlazorWebView
-            x:Name="myBlazorView"
-            HostPage="wwwroot/index.html">
-            <BlazorWebView.RootComponents>
-                <RootComponent Selector="#app" ComponentType="{x:Type razor:Main}" />
-            </BlazorWebView.RootComponents>
-        </BlazorWebView>
-
-        <ActivityIndicator
-            x:Name="myActivityIndicator"
-            Background="transparent"
-            BackgroundColor="Transparent"
-            HeightRequest="60"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            WidthRequest="60"
-            Color="{DynamicResource PrimaryColor}"
-            IsRunning="False"
-            IsVisible="true" />
+    <Grid
+        Padding="0,0,0,0"
+        Margin="0,0,0,0">
+        <Image
+            x:Name="myBackgroundImage"
+            Aspect="AspectFill" />
+        <Grid
+            BackgroundColor="Transparent">
+            <BlazorWebView
+                x:Name="myBlazorView"
+                Background="Transparent"
+                BackgroundColor="Transparent"
+                HostPage="wwwroot/index.html">
+                <BlazorWebView.RootComponents>
+                    <RootComponent Selector="#app" ComponentType="{x:Type razor:Main}" />
+                </BlazorWebView.RootComponents>
+            </BlazorWebView>
+            <ActivityIndicator
+                x:Name="myActivityIndicator"
+                Background="transparent"
+                BackgroundColor="Transparent"
+                HeightRequest="60"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                WidthRequest="60"
+                Color="{DynamicResource PrimaryColor}"
+                IsRunning="False"
+                IsVisible="true" />
+        </Grid>
     </Grid>
 </ContentPage>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Quiz.Application.UI;
 using Quiz.Blazor.Maui.Standalone.Views;
 using RootApplication = Microsoft.Maui.Controls.Application;
 
@@ -7,15 +8,18 @@ namespace Quiz.Blazor.Maui.Standalone;
 public partial class App : RootApplication {
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
+    private readonly IUIAppService _uiAppService;
 
     public App(
         IServiceProvider serviceProvider,
-        IConfiguration configuration) {
-            InitializeComponent();
+        IConfiguration configuration,
+        IUIAppService uiAppService) {
+        InitializeComponent();
         _serviceProvider = serviceProvider;
         _configuration = configuration;
-        MainPage = new MainView();    // +++ MainPage = new AppShell();
+        MainPage = new MainView(uiAppService);    // +++ MainPage = new AppShell(uiAppService);
         MainPage.Title = $"{AppInfo.Name} - v. {AppInfo.Current.VersionString}";
+        _uiAppService = uiAppService;
     }
 
     protected override Window CreateWindow(IActivationState? activationState) {
@@ -67,11 +71,11 @@ public partial class App : RootApplication {
         }
 
         //using (var scope = _serviceProvider.CreateScope()) {
-        //	await using var appContext = scope.ServiceProvider.GetRequiredService<QuizDBContext>();
-        //	// applies all pending migrations to the db and if it doesn’t exist create it
-        //	await appContext.Database.EnsureCreatedAsync();
-        //	// seed data
-        //	await SeedData(appContext);
+        //  await using var appContext = scope.ServiceProvider.GetRequiredService<QuizDBContext>();
+        //  // applies all pending migrations to the db and if it doesn’t exist create it
+        //  await appContext.Database.EnsureCreatedAsync();
+        //  // seed data
+        //  await SeedData(appContext);
         //}
     }
 }

@@ -1,0 +1,28 @@
+﻿.homepage-item {
+  color: #fff;
+  text-align: center;
+}
+.homepage-item a,
+.homepage-item button {
+  background-color: transparent;
+  padding: 0.5rem;
+  /*background: rgba(5, 39, 103, .5);*/
+  color: #fff !important;
+  border: 1px solid #fff;
+  border-radius: 5px 20px 5px 5px;
+  width: 100%;
+}
+.homepage-item a:hover, .homepage-item a:focus:hover, .homepage-item a:focus-visible,
+.homepage-item button:hover,
+.homepage-item button:focus:hover,
+.homepage-item button:focus-visible {
+  /*border: solid $color-for-darkbg !important;*/
+  /*background-color: navy;*/
+  border: 1px solid #fff;
+  background: rgba(5, 39, 103, 0.5);
+}
+.homepage-item a img,
+.homepage-item button img {
+  height: 7.5rem;
+  padding: 0.5rem;
+}
